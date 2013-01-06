@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 03-Jan-2013 14:52:18
+% Last Modified by GUIDE v2.5 05-Jan-2013 21:32:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,7 +56,7 @@ function maingui_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.curdir = cd;
 
 %define a new empty patient
-handles.patient = struct('lung', {}, 'body', {}, ...
+handles.patient = struct('id', {}, 'lung', {}, 'body', {}, ...
                          'seglung', {}, 'segbody', {}, ...
                          'coreg', {}, 'parmslung', {}, 'parmsbody', {}, ...
                          'analysis', {});
@@ -199,7 +199,14 @@ handles.curdir = path;
 % Read lung images
 updateStatusBox(handles, 'Reading lung images.');
 
-[lungSlices,fov,matSize] = dicom2mat(path,filename);
+[lungSlices,parms,fov,matSize] = dicom2mat(path,filename);
+
+handles.patient(1).parms = parms;
+handles.patient(1).id = parms.PatientID;
+
+msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
+               size(lungSlices, 3), fov, matSize, parms.PatientID);
+updateStatusBox(handles, msg);
 
 handles.patient(1).lung = lungSlices;
 
@@ -215,3 +222,20 @@ set(handles.slider_slice, 'Visible', 'on');
 
 % Update handles structure
 guidata(hObject, handles)
+
+
+% --------------------------------------------------------------------
+function file_savepatient_Callback(hObject, eventdata, handles)
+% hObject    handle to file_savepatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+patientID = sprintf('pat_%s', handles.patient(1).id);
+
+msg = sprintf('Saving patient %s to workspace', patientID);
+updateStatusBox(handles, msg);
+
+assignin('base', patientID, handles.patient(1));
+
+patient = handles.patient(1);
+uisave('patient', patientID);

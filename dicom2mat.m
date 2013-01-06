@@ -1,4 +1,4 @@
-function [data,fov,matSize] = dicom2mat(path,files)
+function [data,parms,fov,matSize] = dicom2mat(path,files)
 
 % Calculate number of files
 num_files = length(files);
@@ -6,10 +6,10 @@ num_files = length(files);
 % Read DICOM files
 for im = 1:num_files    
     fileName = strcat(path,files{im});
-    info = dicominfo(fileName);
+    parms = dicominfo(fileName);
 
     % Read image and convert to 8-bit
-    I = dicomread(info);
+    I = dicomread(parms);
     I = double(I);
     I = I - min(I(:));
     I = I / max(I(:));
@@ -20,8 +20,8 @@ for im = 1:num_files
 end
 
 %Extract FOV from last file
-width = double(info.Width); %image width (e.g. 512)
-height = double(info.Height); %image height (e.g. 512)
-resolution = double(info.PixelSpacing);
+width = double(parms.Width); %image width (e.g. 512)
+height = double(parms.Height); %image height (e.g. 512)
+resolution = double(parms.PixelSpacing);
 matSize = [width, height];
 fov = matSize.*resolution';
