@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 05-Jan-2013 21:32:43
+% Last Modified by GUIDE v2.5 06-Jan-2013 18:57:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -239,3 +239,43 @@ assignin('base', patientID, handles.patient(1));
 
 patient = handles.patient(1);
 uisave('patient', patientID);
+
+
+% --------------------------------------------------------------------
+function file_loadpatient_Callback(hObject, eventdata, handles)
+% hObject    handle to file_loadpatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%try
+    [fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
+
+    if isequal(fname,0) || isequal(pname,0)
+       disp('User pressed cancel')
+    else
+       disp(['User selected ', fullfile(pname, fname)])
+    end
+
+    filename=[pname fname];
+    
+    new_experiment = load(filename);
+    new_patient = new_experiment.patient;
+    prev_patient = handles.patient(1);
+    
+    fn = fieldnames(new_patient);
+    for i = 1:numel(fn)
+        if isfield(prev_patient, fn{i})
+            handles.patient(1).(fn{i}) = new_patient.(fn{i});
+        else
+            msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
+            updateStatusBox(handles, msg);
+        end
+    end
+    
+    handles.experiment(1) = prev_patient;
+    
+    % Update handles structure
+    guidata(hObject, handles)
+    
+%catch err
+%    disp(err.message)
+%end
