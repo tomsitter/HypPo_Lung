@@ -1,15 +1,15 @@
 function varargout = maingui(varargin)
-% MAIN MATLAB code for maingui.fig
-%      MAIN, by itself, creates a new MAIN or raises the existing
+% MAINGUI MATLAB code for maingui.fig
+%      MAINGUI, by itself, creates a new MAINGUI or raises the existing
 %      singleton*.
 %
-%      H = MAIN returns the handle to a new MAIN or the handle to
+%      H = MAINGUI returns the handle to a new MAINGUI or the handle to
 %      the existing singleton*.
 %
-%      MAIN('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MAIN.M with the given input arguments.
+%      MAINGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in MAINGUI.M with the given input arguments.
 %
-%      MAIN('Property','Value',...) creates a new MAIN or raises the
+%      MAINGUI('Property','Value',...) creates a new MAINGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before maingui_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 06-Jan-2013 18:57:52
+% Last Modified by GUIDE v2.5 07-Jan-2013 13:25:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,6 +60,8 @@ handles.patient = struct('id', {}, 'lung', {}, 'body', {}, ...
                          'seglung', {}, 'segbody', {}, ...
                          'coreg', {}, 'parmslung', {}, 'parmsbody', {}, ...
                          'analysis', {});
+
+handles.viewer = 'LnB';
                      
 % Choose default command line output for maingui
 handles.output = hObject;
@@ -68,7 +70,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
-% uiwait(handles.figure_main);
+% uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -80,34 +82,6 @@ function varargout = maingui_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-
-
-% --------------------------------------------------------------------
-function file_menu_Callback(hObject, eventdata, handles)
-% hObject    handle to file_menu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function file_newpatient_Callback(hObject, eventdata, handles)
-% hObject    handle to file_newpatient (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function file_changepatient_Callback(hObject, eventdata, handles)
-% hObject    handle to file_changepatient (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
 
@@ -133,13 +107,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --------------------------------------------------------------------
-function file_analyze_Callback(hObject, eventdata, handles)
-% hObject    handle to file_analyze (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 % --- Executes on slider movement.
 function slider_slice_Callback(hObject, eventdata, handles)
 % hObject    handle to slider_slice (see GCBO)
@@ -148,13 +115,23 @@ function slider_slice_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
 val = get(hObject, 'Value');
 
-axes(handles.axes1);
-imagesc(handles.patient(1).lung(:, :, val));
+if not(isempty(handles.patient(1).body)) && strcmp(handles.viewer, 'LnB')
+    axes(handles.axes1);
+    imagesc(handles.patient(1).lung(:, :, val));
 
-axes(handles.axes2);
-imagesc(handles.patient(1).lung(:, :, val));
+    axes(handles.axes2);
+    imagesc(handles.patient(1).body(:, :, val));
+else
+    axes(handles.axes1);
+    imagesc(handles.patient(1).lung(:, :, val));
+
+    axes(handles.axes2);
+    imagesc(handles.patient(1).lung(:, :, val));
+end
+
 
 % --- Executes during object creation, after setting all properties.
 function slider_slice_CreateFcn(hObject, eventdata, handles)
@@ -169,6 +146,20 @@ end
 
 
 % --------------------------------------------------------------------
+function file_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to file_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function file_analyze_Callback(hObject, eventdata, handles)
+% hObject    handle to file_analyze (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
 function file_changeexp_Callback(hObject, eventdata, handles)
 % hObject    handle to file_changeexp (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -176,10 +167,79 @@ function file_changeexp_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-function load_lung_Callback(hObject, eventdata, handles)
-% hObject    handle to load_lung (see GCBO)
+function file_changepatient_Callback(hObject, eventdata, handles)
+% hObject    handle to file_changepatient (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function file_savepatient_Callback(hObject, eventdata, handles)
+% hObject    handle to file_savepatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+patientID = sprintf('pat_%s', handles.patient(1).id);
+
+msg = sprintf('Saving patient %s to workspace', patientID);
+updateStatusBox(handles, msg);
+
+assignin('base', patientID, handles.patient(1));
+
+patient = handles.patient(1);
+uisave('patient', patientID);
+
+% --------------------------------------------------------------------
+function file_loadpatient_Callback(hObject, eventdata, handles)
+% hObject    handle to file_loadpatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%try
+    [fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
+
+    if isequal(fname,0) || isequal(pname,0)
+       disp('User pressed cancel')
+    else
+       disp(['User selected ', fullfile(pname, fname)])
+    end
+
+    filename=[pname fname];
+    
+    new_experiment = load(filename);
+    new_patient = new_experiment.patient;
+    if not(isempty(handles.patient))
+        prev_patient = handles.patient(1);
+    else
+        prev_patient = handles.patient;
+    end
+    
+    fn = fieldnames(new_patient);
+    for i = 1:numel(fn)
+        if isfield(prev_patient, fn{i})
+            handles.patient(1).(fn{i}) = new_patient.(fn{i});
+        else
+            msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
+            updateStatusBox(handles, msg);
+        end
+    end
+    
+    if not(isempty(prev_patient))
+        handles.experiment(1) = prev_patient;
+    end
+    
+    % Update handles structure
+    guidata(hObject, handles)
+    
+%catch err
+%    disp(err.message)
+%end
+
+% --------------------------------------------------------------------
+function file_loadlung_Callback(hObject, eventdata, handles)
+% hObject    handle to file_loadlung (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
 % Locate appropriate files
 [filename,path]= uigetfile('*.*','Select Lung Images','MultiSelect','on',handles.curdir);
 
@@ -201,7 +261,7 @@ updateStatusBox(handles, 'Reading lung images.');
 
 [lungSlices,parms,fov,matSize] = dicom2mat(path,filename);
 
-handles.patient(1).parms = parms;
+handles.patient(1).parmslung = parms;
 handles.patient(1).id = parms.PatientID;
 
 msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
@@ -213,69 +273,50 @@ handles.patient(1).lung = lungSlices;
 axes(handles.axes1);
 imagesc(lungSlices(:, :, 1));
 
-set(handles.slider_slice, 'val', 1);
-set(handles.slider_slice, 'min', 1);
-set(handles.slider_slice, 'max', size(lungSlices, 3))
-set(handles.slider_slice, 'sliderstep', [1/(size(lungSlices, 3)-1), ...
-                                         1/(size(lungSlices, 3)-1)] );
-set(handles.slider_slice, 'Visible', 'on');
+updateSliceSlider(hObject, handles);
 
 % Update handles structure
 guidata(hObject, handles)
 
-
 % --------------------------------------------------------------------
-function file_savepatient_Callback(hObject, eventdata, handles)
-% hObject    handle to file_savepatient (see GCBO)
+function file_loadbody_Callback(hObject, eventdata, handles)
+% hObject    handle to file_loadbody (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+% Locate appropriate files
+[filename,path]= uigetfile('*.*','Select Body Images','MultiSelect','on',handles.curdir);
 
-patientID = sprintf('pat_%s', handles.patient(1).id);
+% If file selection is cancelled, pathname should be zero
+if path == 0
+    return
+end
 
-msg = sprintf('Saving patient %s to workspace', patientID);
+% Save list of file names
+handles.lung_ims = filename;
+
+% Save path of selected file
+handles.lung_dir = path;
+handles.curdir = path;
+%set(handles.lung_dir,'String',path);
+
+% Read lung images
+updateStatusBox(handles, 'Reading body images.');
+
+[bodySlices,parms,fov,matSize] = dicom2mat(path,filename);
+
+handles.patient(1).parmsbody = parms;
+handles.patient(1).id = parms.PatientID;
+
+msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
+               size(bodySlices, 3), fov, matSize, parms.PatientID);
 updateStatusBox(handles, msg);
 
-assignin('base', patientID, handles.patient(1));
+handles.patient(1).body = bodySlices;
 
-patient = handles.patient(1);
-uisave('patient', patientID);
+axes(handles.axes2);
+imagesc(bodySlices(:, :, 1));
 
+updateSliceSlider(hObject, handles);
 
-% --------------------------------------------------------------------
-function file_loadpatient_Callback(hObject, eventdata, handles)
-% hObject    handle to file_loadpatient (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-%try
-    [fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
-
-    if isequal(fname,0) || isequal(pname,0)
-       disp('User pressed cancel')
-    else
-       disp(['User selected ', fullfile(pname, fname)])
-    end
-
-    filename=[pname fname];
-    
-    new_experiment = load(filename);
-    new_patient = new_experiment.patient;
-    prev_patient = handles.patient(1);
-    
-    fn = fieldnames(new_patient);
-    for i = 1:numel(fn)
-        if isfield(prev_patient, fn{i})
-            handles.patient(1).(fn{i}) = new_patient.(fn{i});
-        else
-            msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
-            updateStatusBox(handles, msg);
-        end
-    end
-    
-    handles.experiment(1) = prev_patient;
-    
-    % Update handles structure
-    guidata(hObject, handles)
-    
-%catch err
-%    disp(err.message)
-%end
+% Update handles structure
+guidata(hObject, handles)
