@@ -61,7 +61,8 @@ handles.patient = struct('id', {}, 'lung', {}, 'body', {}, ...
                          'coreg', {}, 'parmslung', {}, 'parmsbody', {}, ...
                          'analysis', {});
 
-handles.viewer = 'LnB';
+handles.viewmode = 'LnB';
+handles.pat_index = 1;
                      
 % Choose default command line output for maingui
 handles.output = hObject;
@@ -116,20 +117,23 @@ function slider_slice_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
+%Get current patient
+pat_index = handles.pat_index;
+
 val = get(hObject, 'Value');
 
-if not(isempty(handles.patient(1).body)) && strcmp(handles.viewer, 'LnB')
+if not(isempty(handles.patient(pat_index).body)) && strcmp(handles.viewmode, 'LnB')
     axes(handles.axes1);
-    imagesc(handles.patient(1).lung(:, :, val));
+    imagesc(handles.patient(pat_index).lung(:, :, val));
 
     axes(handles.axes2);
-    imagesc(handles.patient(1).body(:, :, val));
+    imagesc(handles.patient(pat_index).body(:, :, val));
 else
     axes(handles.axes1);
-    imagesc(handles.patient(1).lung(:, :, val));
+    imagesc(handles.patient(pat_index).lung(:, :, val));
 
     axes(handles.axes2);
-    imagesc(handles.patient(1).lung(:, :, val));
+    imagesc(handles.patient(pat_index).lung(:, :, val));
 end
 
 
@@ -179,14 +183,17 @@ function file_savepatient_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-patientID = sprintf('pat_%s', handles.patient(1).id);
+%Get current patient
+pat_index = handles.pat_index;
+
+patientID = sprintf('pat_%s', handles.patient(pat_index).id);
 
 msg = sprintf('Saving patient %s to workspace', patientID);
 updateStatusBox(handles, msg);
 
-assignin('base', patientID, handles.patient(1));
+assignin('base', patientID, handles.patient(pat_index));
 
-patient = handles.patient(1);
+patient = handles.patient(pat_index);
 uisave('patient', patientID);
 
 % --------------------------------------------------------------------
@@ -195,6 +202,8 @@ function file_loadpatient_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %try
+    pat_index = handles.pat_index;
+
     [fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
 
     if isequal(fname,0) || isequal(pname,0)
@@ -207,25 +216,29 @@ function file_loadpatient_Callback(hObject, eventdata, handles)
     
     new_experiment = load(filename);
     new_patient = new_experiment.patient;
-    if not(isempty(handles.patient))
-        prev_patient = handles.patient(1);
-    else
-        prev_patient = handles.patient;
-    end
     
+    if isempty(handles.patient)
+        cur_patient = handles.patient;
+    else
+        cur_patient = handles.patient(pat_index);
+        pat_index = pat_index + 1;
+        handles.pat_index = pat_index;
+    end
+
     fn = fieldnames(new_patient);
     for i = 1:numel(fn)
-        if isfield(prev_patient, fn{i})
-            handles.patient(1).(fn{i}) = new_patient.(fn{i});
+        if isfield(cur_patient, fn{i})
+            handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
         else
             msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
             updateStatusBox(handles, msg);
         end
     end
     
-    if not(isempty(prev_patient))
-        handles.experiment(1) = prev_patient;
-    end
+    msg = sprintf('Loaded patient %s', new_patient.id);
+    updateStatusBox(handles, msg);
+    
+    updateSliceSlider(hObject, handles);
     
     % Update handles structure
     guidata(hObject, handles)
@@ -240,38 +253,9 @@ function file_loadlung_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Locate appropriate files
-[filename,path]= uigetfile('*.*','Select Lung Images','MultiSelect','on',handles.curdir);
-
-% If file selection is cancelled, pathname should be zero
-if path == 0
-    return
-end
-
-% Save list of file names
-handles.lung_ims = filename;
-
-% Save path of selected file
-handles.lung_dir = path;
-handles.curdir = path;
-%set(handles.lung_dir,'String',path);
-
-% Read lung images
-updateStatusBox(handles, 'Reading lung images.');
-
-[lungSlices,parms,fov,matSize] = dicom2mat(path,filename);
-
-handles.patient(1).parmslung = parms;
-handles.patient(1).id = parms.PatientID;
-
-msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
-               size(lungSlices, 3), fov, matSize, parms.PatientID);
-updateStatusBox(handles, msg);
-
-handles.patient(1).lung = lungSlices;
-
-axes(handles.axes1);
-imagesc(lungSlices(:, :, 1));
+%Read DICOM or PARREC files and store information in handles
+%under the currect patient
+handles = readImages(handles, 'lung');
 
 updateSliceSlider(hObject, handles);
 
@@ -283,38 +267,10 @@ function file_loadbody_Callback(hObject, eventdata, handles)
 % hObject    handle to file_loadbody (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% Locate appropriate files
-[filename,path]= uigetfile('*.*','Select Body Images','MultiSelect','on',handles.curdir);
 
-% If file selection is cancelled, pathname should be zero
-if path == 0
-    return
-end
-
-% Save list of file names
-handles.lung_ims = filename;
-
-% Save path of selected file
-handles.lung_dir = path;
-handles.curdir = path;
-%set(handles.lung_dir,'String',path);
-
-% Read lung images
-updateStatusBox(handles, 'Reading body images.');
-
-[bodySlices,parms,fov,matSize] = dicom2mat(path,filename);
-
-handles.patient(1).parmsbody = parms;
-handles.patient(1).id = parms.PatientID;
-
-msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
-               size(bodySlices, 3), fov, matSize, parms.PatientID);
-updateStatusBox(handles, msg);
-
-handles.patient(1).body = bodySlices;
-
-axes(handles.axes2);
-imagesc(bodySlices(:, :, 1));
+%Read DICOM or PARREC files and store information in handles
+%under the currect patient
+handles = readImages(handles, 'body');
 
 updateSliceSlider(hObject, handles);
 
