@@ -122,19 +122,7 @@ pat_index = handles.pat_index;
 
 val = get(hObject, 'Value');
 
-if not(isempty(handles.patient(pat_index).body)) && strcmp(handles.viewmode, 'LnB')
-    axes(handles.axes1);
-    imagesc(handles.patient(pat_index).lung(:, :, val));
-
-    axes(handles.axes2);
-    imagesc(handles.patient(pat_index).body(:, :, val));
-else
-    axes(handles.axes1);
-    imagesc(handles.patient(pat_index).lung(:, :, val));
-
-    axes(handles.axes2);
-    imagesc(handles.patient(pat_index).lung(:, :, val));
-end
+updateImagePanels(handles, val);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -163,18 +151,45 @@ function file_analyze_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --------------------------------------------------------------------
-function file_changeexp_Callback(hObject, eventdata, handles)
-% hObject    handle to file_changeexp (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
+% % --------------------------------------------------------------------
+% function file_changeexp_Callback(hObject, eventdata, handles)
+% % hObject    handle to file_changeexp (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
 
 % --------------------------------------------------------------------
 function file_changepatient_Callback(hObject, eventdata, handles)
 % hObject    handle to file_changepatient (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+patients = handles.patient;
+pat_index = handles.pat_index;
+
+ids = {patients(:).id};
+
+if isempty(ids) 
+    file_loadpatient_Callback(hObject, eventdata, handles)
+else
+    [selection, ok] = listdlg('PromptString', 'Select a patient:', ...
+                              'ListString', ids, 'SelectionMode', 'single', ...
+                              'InitialValue', pat_index);
+
+    if ok
+        if pat_index == selection
+            updateStatusBox(handles, 'Current patient selected', 0);
+        else
+            handles.pat_index = selection;
+
+            msg = sprintf('Changed to patient %s', ids{selection});
+            updateStatusBox(handles, msg, 1);
+
+            updateSliceSlider(hObject, handles);
+
+            guidata(hObject, handles);
+        end
+    end
+end
+
 
 
 % --------------------------------------------------------------------
@@ -189,7 +204,7 @@ pat_index = handles.pat_index;
 patientID = sprintf('pat_%s', handles.patient(pat_index).id);
 
 msg = sprintf('Saving patient %s to workspace', patientID);
-updateStatusBox(handles, msg);
+updateStatusBox(handles, msg, 1);
 
 assignin('base', patientID, handles.patient(pat_index));
 
@@ -210,6 +225,7 @@ function file_loadpatient_Callback(hObject, eventdata, handles)
        disp('User pressed cancel')
     else
        disp(['User selected ', fullfile(pname, fname)])
+       return;
     end
 
     filename=[pname fname];
@@ -231,12 +247,12 @@ function file_loadpatient_Callback(hObject, eventdata, handles)
             handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
         else
             msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
-            updateStatusBox(handles, msg);
+            updateStatusBox(handles, msg, 0);
         end
     end
     
     msg = sprintf('Loaded patient %s', new_patient.id);
-    updateStatusBox(handles, msg);
+    updateStatusBox(handles, msg, 1);
     
     updateSliceSlider(hObject, handles);
     

@@ -19,45 +19,34 @@ end
 if num_lungSlices == num_bodySlices
     numSlices = num_lungSlices;
     msg = sprintf('Found %d slices', numSlices);
-    updateStatusBox(handles, msg);
+    updateStatusBox(handles, msg, 0);
 else
     if not(isnan(num_bodySlices)) && not(isnan(num_lungSlices))
-        updateStatusBox(handles, 'Error: different number of lung and body slices');
+        updateStatusBox(handles, 'Error: different number of lung and body slices', 0);
     end
     numSlices = min(num_lungSlices, num_bodySlices);
     
     msg = sprintf('Found %d slices', numSlices);
-    updateStatusBox(handles, msg);
+    updateStatusBox(handles, msg, 0);
 end
 
+%TPS, this will likely be user defined
 set(handles.slider_slice, 'val', 1);
+val = 1;
+
+updateImagePanels(handles, val);
+
 if numSlices < 2
-    set(handles.slider_slice, 'sliderstep', [0, 0]);
+    set(handles.slider_slice, 'sliderstep', [1, 1]);
     set(handles.slider_slice, 'min', 0);
     set(handles.slider_slice, 'max', 1)
+    set(handles.slider_slice, 'Visible', 'off');
 else
     set(handles.slider_slice, 'sliderstep', [1/(numSlices-1), ...
                                              1/(numSlices-1)] );
     set(handles.slider_slice, 'min', 1);
     set(handles.slider_slice, 'max', numSlices)
-end
-set(handles.slider_slice, 'Visible', 'on');
-
-val = 1;
-
-%Display image
-if not(isempty(handles.patient(pat_index).body)) && strcmp(handles.viewmode, 'LnB')
-    axes(handles.axes1);
-    imagesc(handles.patient(pat_index).lung(:, :, val));
-
-    axes(handles.axes2);
-    imagesc(handles.patient(pat_index).body(:, :, val));
-else
-    axes(handles.axes1);
-    imagesc(handles.patient(pat_index).lung(:, :, val));
-
-    axes(handles.axes2);
-    imagesc(handles.patient(pat_index).lung(:, :, val));
+    set(handles.slider_slice, 'Visible', 'on');
 end
 
 % Update handles structure
