@@ -424,7 +424,7 @@ function analyze_threshold_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
+slice = get(handles.slice_slider, '
 patient = handles.patient(index);
 images = patient.lung(:,:,slice);
 thres = patient.threshold;

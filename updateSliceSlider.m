@@ -31,23 +31,29 @@ else
 end
 
 %TPS, this will likely be user defined
-set(handles.slider_slice, 'val', 1);
-val = 1;
+%set(handles.slider_slice, 'val', 1);
+%val = 1;
 
-updateImagePanels(handles, val);
+updateImagePanels(handles);
+
+currentSlice = max(1, get(handles.slider_slice, 'Value'));
 
 if numSlices < 2
     set(handles.slider_slice, 'sliderstep', [1, 1]);
     set(handles.slider_slice, 'min', 0);
-    set(handles.slider_slice, 'max', 1)
+    set(handles.slider_slice, 'max', 1);
+    set(handles.slider_slice, 'value', 1);
     set(handles.slider_slice, 'Visible', 'off');
 else
     set(handles.slider_slice, 'sliderstep', [1/(numSlices-1), ...
                                              1/(numSlices-1)] );
-    set(handles.slider_slice, 'min', 1);
     set(handles.slider_slice, 'max', numSlices)
+    set(handles.slider_slice, 'Value', currentSlice); 
+    set(handles.slider_slice, 'min', 1);
     set(handles.slider_slice, 'Visible', 'on');
 end
+
+handles.slice_index = currentSlice;
 
 % Update handles structure
 guidata(hObject, handles)

@@ -1,5 +1,9 @@
 function [data,parms,fov,matSize] = dicom2mat(path,files)
 
+if not(iscell(files))
+    files = {files};
+end
+
 % Calculate number of files
 num_files = length(files);
 

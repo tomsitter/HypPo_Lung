@@ -71,7 +71,8 @@ if strcmp(ext, 'PAR') || strcmp(ext, 'REC')
             slices(:, :, i) = tslices;
         end
     else
-        [slices,parms,fov,matSize] = parrec2mat(path,filename);
+        %Potential error -- must remove filepath from filename?
+        [slices,parms,fov,matSize] = parrec2mat(path,filename(1:end-len_ext));
     end
 else
     if iscell(filename)
