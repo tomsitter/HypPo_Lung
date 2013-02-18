@@ -59,12 +59,12 @@ handles.curdir = cd;
 handles.patient = struct('id', {}, 'lung', {}, 'body', {}, ...
                          'seglung', {}, 'segbody', {}, ...
                          'coreg', {}, 'parmslung', {}, 'parmsbody', {}, ...
-                         'analysis', {}, 'dataver', 0.01, 'threshold', -1, ...
-                         'mean_noise', -1);
+                         'analysis', {}, 'dataver', 0.01, 'threshold', {}, ...
+                         'mean_noise', {});
 
 handles.viewmode = 'LnB';
 handles.pat_index = 1;
-handles.slice_index = 1;
+% handles.slice_index = 1;
 handles.state = 'idle';
 
 % Choose default command line output for maingui
@@ -302,12 +302,6 @@ function analyze_seglungs_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 updateStatusBox(handles, 'Preparing to segment lungs', 0);
 
-
-% --------------------------------------------------------------------
-function analyze_noise_Callback(hObject, eventdata, handles)
-% hObject    handle to analyze_noise (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 updateStatusBox(handles, 'Select a region of noise', 0);
 
 handles.state = 'def_noiseregion';
@@ -317,9 +311,10 @@ axes = handles.axes1;
 %Get middle of xaxis to place region of interest
 xaxis = floor(get(handles.axes1, 'XLim'));
 mid_x = round(xaxis(2) / 2);
+size_box = xaxis(2) / 4;
 
 %Create an place region of interest, constrain to axis
-region = imrect(axes, [(mid_x-10) 0 20 20] );
+region = imrect(axes, [(mid_x-10) 0 size_box size_box] );
 fcn = makeConstrainToRectFcn('imrect', xaxis, get(axes, 'YLim'));
 setPositionConstraintFcn(region,fcn)
 handles.noise_region = region;
@@ -336,13 +331,58 @@ while strcmp(handles.state, 'def_noiseregion')
         handles.state = 'idle';
     end
 end
-%Allow user to reposition rectangle
-%region = wait(region);
 
-%Update noise region in case user moved region of interest
-%handles.noise_region = round(region.getPosition);
+[handles, mask] = threshold_mask(hObject, handles);
+
+axes(handles.axes2)
+imagesc(mask);
 
 updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+
+
+% --------------------------------------------------------------------
+function analyze_noise_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_noise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+updateStatusBox(handles, 'Select a region of noise', 0);
+
+% handles.state = 'def_noiseregion';
+% 
+% axes = handles.axes1;
+% 
+% %Get middle of xaxis to place region of interest
+% xaxis = floor(get(handles.axes1, 'XLim'));
+% mid_x = round(xaxis(2) / 2);
+% 
+% %Create an place region of interest, constrain to axis
+% region = imrect(axes, [(mid_x-10) 0 20 20] );
+% fcn = makeConstrainToRectFcn('imrect', xaxis, get(axes, 'YLim'));
+% setPositionConstraintFcn(region,fcn)
+% handles.noise_region = region;
+% 
+% while strcmp(handles.state, 'def_noiseregion')
+%     %h = guidata(handles);
+%     try
+%         handles.noise_region = round(region.getPosition);
+%         guidata(hObject, handles);
+%         %disp('looping');
+%         pause(0.5)
+%     catch err
+%         disp(err.message);
+%         handles.state = 'idle';
+%     end
+% end
+% %Allow user to reposition rectangle
+% %region = wait(region);
+% 
+% %Update noise region in case user moved region of interest
+% %handles.noise_region = round(region.getPosition);
+% 
+% updateImagePanels(handles);
 
 % Update handles structure
 %guidata(hObject, handles)
@@ -387,6 +427,7 @@ function push_apply_Callback(hObject, eventdata, handles)
 state = handles.state;
 handles.state = 'pause';
 index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
 patient = handles.patient(index);
 
 if strcmp(state, 'def_noiseregion')
@@ -395,15 +436,15 @@ if strcmp(state, 'def_noiseregion')
                      max(1, dims(3)), max(1, dims(4)));
     images = patient.lung;
       
-    curImage = images(:,:,handles.slice_index);
+    curImage = images(:,:,slice);
     
     axes(handles.axes2);
     roi = curImage(y:y+h, x:x+w);
     imagesc(roi);
     
     [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
-    handles.patient(index).threshold = threshold;
-    handles.patient(index).mean_noise = mean_noise;
+    handles.patient(index).threshold{slice} = threshold;
+    handles.patient(index).mean_noise{slice} = mean_noise;
     updateStatusBox(handles, 'Noise region selected for this image', 0);
     
     set(handles.analyze_threshold, 'Enable', 'on');
@@ -418,29 +459,39 @@ guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
-function analyze_threshold_Callback(hObject, eventdata, handles)
+function threshold(hObject, ~, handles)
 % hObject    handle to analyze_threshold (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
-patient = handles.patient(index);
-images = patient.lung(:,:,slice);
-thres = patient.threshold;
-mean_noise = patient.mean_noise;
+%Get lung images of current patient and slice
+% index = handles.pat_index;
+% slice = get(handles.slider_slice, 'Value');
+% patient = handles.patient(index);
+% images = patient.lung(:,:,slice);
+% 
+% %Get threshold values;
+% thres = patient.threshold{slice};
+% mean_noise = patient.mean_noise{slice};
+% if (isempty(thres))
+%     updateStatusBox(handles, 'Threshold value missing, calculate noise first' , 0);
+%     return;
+% elseif (isempty(mean_noise))
+%     updateStatusBox(handles, 'Mean noise value missing, calculate noise first' , 0);
+%     return;
+% end
+% 
+% %Threshold image to generate segmented lung mask
+% mask = threshold_mask(images, thres, mean_noise);
+% 
+% %Save mask
+% handles.patient(index).seglung{slice} = mask;
+% guidata(hObject, handles);
+% 
+% %Display to user
+% axes(handles.axes2);
+% imagesc(mask);
 
-threshold(images, thres, mean_noise);
-
-% images = patient.lung;
-% 
-% curImg = images(index);
-% 
-% mask = zeros(size(curImg));
-% 
-% mask = (curImg >= threshold);
-% 
-% threshImg = curImg .* mask;
 
 
 

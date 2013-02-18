@@ -36,7 +36,7 @@ end
 
 updateImagePanels(handles);
 
-currentSlice = max(1, get(handles.slider_slice, 'Value'));
+curSlice = max(1, get(handles.slider_slice, 'Value'));
 
 if numSlices < 2
     set(handles.slider_slice, 'sliderstep', [1, 1]);
@@ -48,12 +48,12 @@ else
     set(handles.slider_slice, 'sliderstep', [1/(numSlices-1), ...
                                              1/(numSlices-1)] );
     set(handles.slider_slice, 'max', numSlices)
-    set(handles.slider_slice, 'Value', currentSlice); 
+    set(handles.slider_slice, 'Value', curSlice); 
     set(handles.slider_slice, 'min', 1);
     set(handles.slider_slice, 'Visible', 'on');
 end
 
-handles.slice_index = currentSlice;
+% handles.slice_index = currentSlice;
 
 % Update handles structure
 guidata(hObject, handles)
