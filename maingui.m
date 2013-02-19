@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 14-Feb-2013 17:36:13
+% Last Modified by GUIDE v2.5 18-Feb-2013 20:21:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -222,47 +222,47 @@ function file_loadpatient_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-    pat_index = handles.pat_index;
+pat_index = handles.pat_index;
 
-    [fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
+[fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
 
-    if isequal(fname,0) || isequal(pname,0)
-       updateStatusBox(handles, 'Cancelled by user', 0)
+if isequal(fname,0) || isequal(pname,0)
+   updateStatusBox(handles, 'Cancelled by user', 0)
+else
+   updateStatusBox(handles, ['User selected ', fullfile(pname, fname)], 1)
+   %return;
+end
+
+filename=[pname fname];
+
+new_experiment = load(filename);
+new_patient = new_experiment.patient;
+
+if isempty(handles.patient)
+    cur_patient = handles.patient;
+else
+    cur_patient = handles.patient(pat_index);
+    pat_index = pat_index + 1;
+    handles.pat_index = pat_index;
+end
+
+fn = fieldnames(new_patient);
+for i = 1:numel(fn)
+    if isfield(cur_patient, fn{i})
+        handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
     else
-       updateStatusBox(handles, ['User selected ', fullfile(pname, fname)], 1)
-       %return;
+        msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
+        updateStatusBox(handles, msg, 0);
     end
+end
 
-    filename=[pname fname];
-    
-    new_experiment = load(filename);
-    new_patient = new_experiment.patient;
-    
-    if isempty(handles.patient)
-        cur_patient = handles.patient;
-    else
-        cur_patient = handles.patient(pat_index);
-        pat_index = pat_index + 1;
-        handles.pat_index = pat_index;
-    end
+% Update handles structure
+guidata(hObject, handles)
 
-    fn = fieldnames(new_patient);
-    for i = 1:numel(fn)
-        if isfield(cur_patient, fn{i})
-            handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
-        else
-            msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
-            updateStatusBox(handles, msg, 0);
-        end
-    end
-   
-    % Update handles structure
-    guidata(hObject, handles)
-    
-    msg = sprintf('Loaded patient %s', new_patient.id);
-    updateStatusBox(handles, msg, 1);
-    
-    updateSliceSlider(hObject, handles);
+msg = sprintf('Loaded patient %s', new_patient.id);
+updateStatusBox(handles, msg, 1);
+
+updateSliceSlider(hObject, handles);
 
 % --------------------------------------------------------------------
 function file_loadlung_Callback(hObject, eventdata, handles)
@@ -306,16 +306,14 @@ updateStatusBox(handles, 'Select a region of noise', 0);
 
 handles.state = 'def_noiseregion';
 
-axes = handles.axes1;
-
 %Get middle of xaxis to place region of interest
 xaxis = floor(get(handles.axes1, 'XLim'));
 mid_x = round(xaxis(2) / 2);
 size_box = xaxis(2) / 4;
 
 %Create an place region of interest, constrain to axis
-region = imrect(axes, [(mid_x-10) 0 size_box size_box] );
-fcn = makeConstrainToRectFcn('imrect', xaxis, get(axes, 'YLim'));
+region = imrect(handles.axes1, [(mid_x-10) 0 size_box size_box] );
+fcn = makeConstrainToRectFcn('imrect', xaxis, get(handles.axes1, 'YLim'));
 setPositionConstraintFcn(region,fcn)
 handles.noise_region = region;
 
@@ -342,52 +340,6 @@ updateImagePanels(handles);
 guidata(hObject, handles);
 
 
-
-% --------------------------------------------------------------------
-function analyze_noise_Callback(hObject, eventdata, handles)
-% hObject    handle to analyze_noise (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-updateStatusBox(handles, 'Select a region of noise', 0);
-
-% handles.state = 'def_noiseregion';
-% 
-% axes = handles.axes1;
-% 
-% %Get middle of xaxis to place region of interest
-% xaxis = floor(get(handles.axes1, 'XLim'));
-% mid_x = round(xaxis(2) / 2);
-% 
-% %Create an place region of interest, constrain to axis
-% region = imrect(axes, [(mid_x-10) 0 20 20] );
-% fcn = makeConstrainToRectFcn('imrect', xaxis, get(axes, 'YLim'));
-% setPositionConstraintFcn(region,fcn)
-% handles.noise_region = region;
-% 
-% while strcmp(handles.state, 'def_noiseregion')
-%     %h = guidata(handles);
-%     try
-%         handles.noise_region = round(region.getPosition);
-%         guidata(hObject, handles);
-%         %disp('looping');
-%         pause(0.5)
-%     catch err
-%         disp(err.message);
-%         handles.state = 'idle';
-%     end
-% end
-% %Allow user to reposition rectangle
-% %region = wait(region);
-% 
-% %Update noise region in case user moved region of interest
-% %handles.noise_region = round(region.getPosition);
-% 
-% updateImagePanels(handles);
-
-% Update handles structure
-%guidata(hObject, handles)
-
-
 % --- Executes on button press in push_applyall.
 function push_applyall_Callback(hObject, eventdata, handles)
 % hObject    handle to push_applyall (see GCBO)
@@ -395,28 +347,56 @@ function push_applyall_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 state = handles.state;
-handles.state = 'paused';
+handles.state = 'pause';
 index = handles.pat_index;
+%slice = get(handles.slider_slice, 'Value');
 patient = handles.patient(index);
 
 if strcmp(state, 'def_noiseregion')
+    dims = handles.noise_region;
+    [x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
+                     max(1, dims(3)), max(1, dims(4)));
     images = patient.lung;
+      
+    curImages = images(:,:,:);
     
-    [w,h,d] = size(images);
-    
-    images_4d = reshape(images, w, h, 1, d);
+    rois = curImages(y:y+h, x:x+w, :);
     
     figure;
-    montage(images_4d)
+    montage(reshape(rois, [size(rois, 1) size(rois, 2) 1 size(rois, 3)]))
     
-    updateStatusBox(handles, 'Noise region selected for all images', 0);
+    ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
+    
+    if not(ok)
+        
+        updateImagePanels(handles);
+
+        %Finished with current task
+        handles.state = 'idle';
+
+        guidata(hObject, handles);
+        updateStatusBox(handles, 'Reselect noise region and try again', 0);
+        return;
+    end
+    
+    axes(handles.axes2);
+    %roi = curImage(y:y+h, x:x+w);
+    %imagesc(roi);
+    
+    %[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
+    %handles.patient(index).threshold{slice} = threshold;
+    %handles.patient(index).mean_noise{slice} = mean_noise;
+    updateStatusBox(handles, 'Noise region selected for this image', 0);
+    
+    %set(handles.analyze_threshold, 'Enable', 'on');
 end
 
-%Update panel to remove rectangle from axis
 updateImagePanels(handles);
 
 %Finished with current task
 handles.state = 'idle';
+
+guidata(hObject, handles);
 
 % --- Executes on button press in push_apply.
 function push_apply_Callback(hObject, eventdata, handles)
@@ -456,43 +436,3 @@ updateImagePanels(handles);
 handles.state = 'idle';
 
 guidata(hObject, handles);
-
-
-% --------------------------------------------------------------------
-function threshold(hObject, ~, handles)
-% hObject    handle to analyze_threshold (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-%Get lung images of current patient and slice
-% index = handles.pat_index;
-% slice = get(handles.slider_slice, 'Value');
-% patient = handles.patient(index);
-% images = patient.lung(:,:,slice);
-% 
-% %Get threshold values;
-% thres = patient.threshold{slice};
-% mean_noise = patient.mean_noise{slice};
-% if (isempty(thres))
-%     updateStatusBox(handles, 'Threshold value missing, calculate noise first' , 0);
-%     return;
-% elseif (isempty(mean_noise))
-%     updateStatusBox(handles, 'Mean noise value missing, calculate noise first' , 0);
-%     return;
-% end
-% 
-% %Threshold image to generate segmented lung mask
-% mask = threshold_mask(images, thres, mean_noise);
-% 
-% %Save mask
-% handles.patient(index).seglung{slice} = mask;
-% guidata(hObject, handles);
-% 
-% %Display to user
-% axes(handles.axes2);
-% imagesc(mask);
-
-
-
-
-

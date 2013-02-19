@@ -18,7 +18,7 @@ end
 
 if num_lungSlices == num_bodySlices
     numSlices = num_lungSlices;
-    msg = sprintf('Found %d slices', numSlices);
+%     msg = sprintf('Found %d slices', numSlices);
     updateStatusBox(handles, msg, 0);
 else
     if not(isnan(num_bodySlices)) && not(isnan(num_lungSlices))
@@ -26,7 +26,7 @@ else
     end
     numSlices = min(num_lungSlices, num_bodySlices);
     
-    msg = sprintf('Found %d slices', numSlices);
+%     msg = sprintf('Found %d slices', numSlices);
     updateStatusBox(handles, msg, 0);
 end
 

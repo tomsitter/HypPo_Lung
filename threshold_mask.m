@@ -26,18 +26,19 @@ index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 patient = handles.patient(index);
 images = patient.lung(:,:,slice);
+final_mask = ones(size(images));
 
-%Get threshold values;
-thres = patient.threshold{slice};
-mean_noise = patient.mean_noise{slice};
-if (isempty(thres))
+if (length(patient.threshold) < slice) || (isempty(patient.threshold{slice}))
     updateStatusBox(handles, 'Threshold value missing, calculate noise first' , 0);
     return;
-elseif (isempty(mean_noise))
+elseif (length(patient.mean_noise) < slice) || (isempty(patient.mean_noise{slice}))
     updateStatusBox(handles, 'Mean noise value missing, calculate noise first' , 0);
     return;
 end
 
+%Get threshold values;
+thres = patient.threshold{slice};
+mean_noise = patient.mean_noise{slice};
 
 images = double(images);
 
