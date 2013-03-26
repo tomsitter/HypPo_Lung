@@ -21,6 +21,7 @@ function [handles, final_mask] = threshold_mask(hObject, handles)
     %imshow(mask(:,:,n))
 %end
 
+
 %Get lung images of current patient and slice
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
