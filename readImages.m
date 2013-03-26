@@ -1,7 +1,7 @@
 function handles = readImages(handles, type)
 %% This function accepts handles, a file path, filename(s) and the
 % type of image being read (currently support 'body' and 'lung')
-% Patient structure is return with update information.
+% Patient structure is returned with updated information.
 
 %Get current patient
 pat_index = handles.pat_index;
@@ -42,8 +42,8 @@ len_ext = 0;
         end
     else
         if not(isempty(exts))
-            ext = exts.ext
-            len_ext = length(ext)+ 1
+            ext = exts.ext;
+            len_ext = length(ext)+ 1;
         end
     end
 %end
@@ -65,8 +65,8 @@ if strcmp(ext, 'PAR') || strcmp(ext, 'REC')
     slices = [];
     if iscell(filename)
         for i = 1:length(filename)
-            f = filename{i}
-            filename{i} = f(1:end-len_ext(i))
+            f = filename{i};
+            filename{i} = f(1:end-len_ext(i));
             [tslices,parms,fov,matSize] = parrec2mat(path,filename{i});
             slices(:, :, i) = tslices;
         end
@@ -95,6 +95,12 @@ end
     updateStatusBox(handles, msg, 0);
 
     handles.patient(pat_index).(type) = slices;
+    
+    if strcmp(type, 'lung')
+        handles.patient(pat_index).lungmask = zeros(size(slices));
+    else
+        handles.patient(pat_index).bodymask = zeros(size(slices));
+    end
 
     updateSliceSlider(handles.slider_slice, handles);
     

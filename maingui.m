@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 18-Feb-2013 20:21:07
+% Last Modified by GUIDE v2.5 26-Mar-2013 16:35:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -45,7 +45,7 @@ end
 
 
 % --- Executes just before maingui is made visible.
-function maingui_OpeningFcn(hObject, eventdata, handles, varargin)
+function maingui_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -56,13 +56,11 @@ function maingui_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.curdir = cd;
 
 %define a new empty patient
-handles.patient = struct('id', {}, 'lung', {}, 'body', {}, ...
-                         'seglung', {}, 'segbody', {}, ...
-                         'coreg', {}, 'parmslung', {}, 'parmsbody', {}, ...
-                         'analysis', {}, 'dataver', 0.01, 'threshold', {}, ...
-                         'mean_noise', {});
+handles.patient = newPatient();
 
-handles.viewmode = 'LnB';
+handles.leftpanel = 'L';
+handles.rightpanel = 'B';
+
 handles.pat_index = 1;
 % handles.slice_index = 1;
 handles.state = 'idle';
@@ -78,7 +76,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = maingui_OutputFcn(hObject, eventdata, handles) 
+function varargout = maingui_OutputFcn(hObject, ~, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -89,7 +87,7 @@ varargout{1} = handles.output;
 
 
 
-function statusbox_Callback(hObject, eventdata, handles)
+function statusbox_Callback(hObject, ~, handles)
 % hObject    handle to statusbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -99,7 +97,7 @@ function statusbox_Callback(hObject, eventdata, handles)
 
 
 % --- Executes during object creation, after setting all properties.
-function statusbox_CreateFcn(hObject, eventdata, handles)
+function statusbox_CreateFcn(hObject, ~, handles)
 % hObject    handle to statusbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -112,7 +110,7 @@ end
 
 
 % --- Executes on slider movement.
-function slider_slice_Callback(hObject, eventdata, handles)
+function slider_slice_Callback(hObject, ~, handles)
 % hObject    handle to slider_slice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -129,7 +127,7 @@ updateImagePanels(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function slider_slice_CreateFcn(hObject, eventdata, handles)
+function slider_slice_CreateFcn(hObject, ~, handles)
 % hObject    handle to slider_slice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -141,15 +139,15 @@ end
 
 
 % --------------------------------------------------------------------
-function file_menu_Callback(hObject, eventdata, handles)
+function file_menu_Callback(hObject, ~, handles)
 % hObject    handle to file_menu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 
 % --------------------------------------------------------------------
-function file_analyze_Callback(hObject, eventdata, handles)
-% hObject    handle to file_analyze (see GCBO)
+function menu_analyze_Callback(hObject, ~, handles)
+% hObject    handle to menu_analyze (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -159,6 +157,33 @@ function file_analyze_Callback(hObject, eventdata, handles)
 % % hObject    handle to file_changeexp (see GCBO)
 % % eventdata  reserved - to be defined in a future version of MATLAB
 % % handles    structure with handles and user data (see GUIDATA)
+
+% --------------------------------------------------------------------
+function file_newpatient_Callback(hObject, ~, handles)
+% hObject    handle to file_newpatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+pat_index = length(handles.patient) + 1;
+
+new_patient = newPatient();
+
+fn = fieldnames(new_patient);
+for i = 1:numel(fn)
+        handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
+end
+
+handles.patient(pat_index).id = 'NoData';
+
+handles.pat_index = pat_index;
+
+updateStatusBox(handles, 'Created new patient', 1);
+
+updateSliceSlider(hObject, handles);
+
+updateViewOptions(handles);
+
+guidata(hObject, handles);
 
 % --------------------------------------------------------------------
 function file_changepatient_Callback(hObject, eventdata, handles)
@@ -187,6 +212,8 @@ else
             updateStatusBox(handles, msg, 1);
 
             updateSliceSlider(hObject, handles);
+            
+            updateViewOptions(handles);
 
             guidata(hObject, handles);
         end
@@ -196,7 +223,7 @@ end
 
 
 % --------------------------------------------------------------------
-function file_savepatient_Callback(hObject, eventdata, handles)
+function file_savepatient_Callback(hObject, ~, handles)
 % hObject    handle to file_savepatient (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -205,8 +232,8 @@ function file_savepatient_Callback(hObject, eventdata, handles)
 pat_index = handles.pat_index;
 
 patientID = sprintf('pat_%s', handles.patient(pat_index).id);
-
 patient = handles.patient(pat_index);
+
 uisave('patient', patientID);
 
 %Cannot have dashes in matlab variables, replace with underscore and then
@@ -217,7 +244,7 @@ msg = sprintf('Saving patient %s to workspace', patient_tempID);
 updateStatusBox(handles, msg, 1);
 
 % --------------------------------------------------------------------
-function file_loadpatient_Callback(hObject, eventdata, handles)
+function file_loadpatient_Callback(hObject, ~, handles)
 % hObject    handle to file_loadpatient (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -228,6 +255,7 @@ pat_index = handles.pat_index;
 
 if isequal(fname,0) || isequal(pname,0)
    updateStatusBox(handles, 'Cancelled by user', 0)
+   return;
 else
    updateStatusBox(handles, ['User selected ', fullfile(pname, fname)], 1)
    %return;
@@ -256,6 +284,8 @@ for i = 1:numel(fn)
     end
 end
 
+updateViewOptions(handles);
+
 % Update handles structure
 guidata(hObject, handles)
 
@@ -265,7 +295,7 @@ updateStatusBox(handles, msg, 1);
 updateSliceSlider(hObject, handles);
 
 % --------------------------------------------------------------------
-function file_loadlung_Callback(hObject, eventdata, handles)
+function file_loadlung_Callback(hObject, ~, handles)
 % hObject    handle to file_loadlung (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -275,12 +305,12 @@ function file_loadlung_Callback(hObject, eventdata, handles)
 handles = readImages(handles, 'lung');
 
 updateSliceSlider(hObject, handles);
-
+updateViewOptions(handles);
 % Update handles structure
 guidata(hObject, handles)
 
 % --------------------------------------------------------------------
-function file_loadbody_Callback(hObject, eventdata, handles)
+function file_loadbody_Callback(hObject, ~, handles)
 % hObject    handle to file_loadbody (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -290,17 +320,17 @@ function file_loadbody_Callback(hObject, eventdata, handles)
 handles = readImages(handles, 'body');
 
 updateSliceSlider(hObject, handles);
-
+updateViewOptions(handles);
 % Update handles structure
 guidata(hObject, handles)
 
 
 % --------------------------------------------------------------------
-function analyze_seglungs_Callback(hObject, eventdata, handles)
+function analyze_seglungs_Callback(hObject, ~, handles)
 % hObject    handle to analyze_seglungs (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-updateStatusBox(handles, 'Preparing to segment lungs', 0);
+updateStatusBox(handles, 'Preparing to segment lungs', 1);
 
 updateStatusBox(handles, 'Select a region of noise', 0);
 
@@ -326,22 +356,33 @@ while strcmp(handles.state, 'def_noiseregion')
         pause(0.5)
     catch err
         disp(err.message);
-        handles.state = 'idle';
+        break;
+        %handles.state = 'idle';
     end
 end
 
-[handles, mask] = threshold_mask(hObject, handles);
+% if strcmp(handles.state, 'thresh_all')
+%     patient = handles.patient( handles.pat_index );
+%     images = patient.lung;
+%     
+%     for i = 1:size(images, 3)
+%         [handles, mask] = threshold_mask(hObject, handles);
+%     end
+% else
+%     [handles, mask] = threshold_mask(hObject, handles);
+% end
 
-axes(handles.axes2)
-imagesc(mask);
-
-updateImagePanels(handles);
-
-guidata(hObject, handles);
+% 
+% axes(handles.axes2)
+% imagesc(mask);
+% 
+% updateImagePanels(handles);
+% 
+% guidata(hObject, handles);
 
 
 % --- Executes on button press in push_applyall.
-function push_applyall_Callback(hObject, eventdata, handles)
+function push_applyall_Callback(hObject, ~, handles)
 % hObject    handle to push_applyall (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -380,13 +421,17 @@ if strcmp(state, 'def_noiseregion')
     end
     
     axes(handles.axes2);
-    %roi = curImage(y:y+h, x:x+w);
-    %imagesc(roi);
+    %calculate optimal threshold value and threshold image
+    for slice = 1:size(curImages, 3)
+        roi = curImages(y:y+h, x:x+w, slice);
+        [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
+        handles.patient(index).threshold{slice} = threshold;
+        handles.patient(index).mean_noise{slice} = mean_noise;
+%         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
+        handles.patient(index).seglung(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+    end
     
-    %[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
-    %handles.patient(index).threshold{slice} = threshold;
-    %handles.patient(index).mean_noise{slice} = mean_noise;
-    updateStatusBox(handles, 'Noise region selected for this image', 0);
+    updateStatusBox(handles, 'Images thresholded', 0);
     
     %set(handles.analyze_threshold, 'Enable', 'on');
 end
@@ -399,7 +444,7 @@ handles.state = 'idle';
 guidata(hObject, handles);
 
 % --- Executes on button press in push_apply.
-function push_apply_Callback(hObject, eventdata, handles)
+function push_apply_Callback(hObject, ~, handles)
 % hObject    handle to push_apply (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -418,16 +463,19 @@ if strcmp(state, 'def_noiseregion')
       
     curImage = images(:,:,slice);
     
-    axes(handles.axes2);
     roi = curImage(y:y+h, x:x+w);
-    imagesc(roi);
     
+    axes(handles.axes2);
+    %calculate optimal threshold value and threshold image
     [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
     handles.patient(index).threshold{slice} = threshold;
     handles.patient(index).mean_noise{slice} = mean_noise;
-    updateStatusBox(handles, 'Noise region selected for this image', 0);
+%         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
+    handles.patient(index).seglung(:,:,slice) = thresholdmask((curImage), threshold, mean_noise);
     
-    set(handles.analyze_threshold, 'Enable', 'on');
+    updateStatusBox(handles, 'Image thresholded', 0);
+    
+    %set(handles.analyze_threshold, 'Enable', 'on');
 end
 
 updateImagePanels(handles);
@@ -435,4 +483,97 @@ updateImagePanels(handles);
 %Finished with current task
 handles.state = 'idle';
 
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function menu_view_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_view (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --------------------------------------------------------------------
+function view_left_Callback(hObject, eventdata, handles)
+% hObject    handle to view_left (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function view_right_Callback(hObject, eventdata, handles)
+% hObject    handle to view_right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function viewright_lungs_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_lungs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'L';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewright_lungmask_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_lungmask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'LM';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewright_body_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_body (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'B';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewright_bodymask_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_bodymask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'BM';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_lungs_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_lungs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'L';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_lungmask_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_lungmask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'LM';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_body_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_body (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'B';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_bodymask_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_bodymask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'BM';
+updateImagePanels(handles);
 guidata(hObject, handles);

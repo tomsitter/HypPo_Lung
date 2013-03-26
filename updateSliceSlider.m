@@ -19,15 +19,18 @@ end
 if num_lungSlices == num_bodySlices
     numSlices = num_lungSlices;
 %     msg = sprintf('Found %d slices', numSlices);
-    updateStatusBox(handles, msg, 0);
+%    updateStatusBox(handles, msg, 0);
 else
     if not(isnan(num_bodySlices)) && not(isnan(num_lungSlices))
         updateStatusBox(handles, 'Error: different number of lung and body slices', 0);
     end
     numSlices = min(num_lungSlices, num_bodySlices);
+    if isnan(numSlices)
+        numSlices = 0;
+    end
     
 %     msg = sprintf('Found %d slices', numSlices);
-    updateStatusBox(handles, msg, 0);
+%    updateStatusBox(handles, msg, 0);
 end
 
 %TPS, this will likely be user defined
