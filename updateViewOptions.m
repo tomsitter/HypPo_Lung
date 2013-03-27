@@ -3,7 +3,7 @@ function updateViewOptions(handles)
 pat_index = handles.pat_index;
 patient = handles.patient(pat_index);
 
-if not(isempty(patient.lung))
+if not(isempty(patient.lungs))
     set(handles.viewright_lungs, 'Enable', 'on');
     set(handles.viewleft_lungs, 'Enable', 'on');
 else

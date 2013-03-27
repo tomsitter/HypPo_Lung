@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 26-Mar-2013 16:35:49
+% Last Modified by GUIDE v2.5 26-Mar-2013 21:20:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,6 +64,8 @@ handles.rightpanel = 'B';
 handles.pat_index = 1;
 % handles.slice_index = 1;
 handles.state = 'idle';
+
+updateImagePanels(handles);
 
 % Choose default command line output for maingui
 handles.output = hObject;
@@ -355,9 +357,12 @@ while strcmp(handles.state, 'def_noiseregion')
         %disp('looping');
         pause(0.5)
     catch err
-        disp(err.message);
-        break;
-        %handles.state = 'idle';
+        if strcmp(err.message, 'Invalid or deleted object.')
+            %This is a known event. It happens when the user finishes
+            %selecting noise region. Not sure how to fix it but the algorithm
+            %runs fine.
+            break;
+        end
     end
 end
 
@@ -397,13 +402,13 @@ if strcmp(state, 'def_noiseregion')
     dims = handles.noise_region;
     [x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
                      max(1, dims(3)), max(1, dims(4)));
-    images = patient.lung;
+    images = patient.lungs;
       
     curImages = images(:,:,:);
     
     rois = curImages(y:y+h, x:x+w, :);
     
-    figure;
+    figure(2);
     montage(reshape(rois, [size(rois, 1) size(rois, 2) 1 size(rois, 3)]))
     
     ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
@@ -428,7 +433,7 @@ if strcmp(state, 'def_noiseregion')
         handles.patient(index).threshold{slice} = threshold;
         handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-        handles.patient(index).seglung(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+        handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
     end
     
     updateStatusBox(handles, 'Images thresholded', 0);
@@ -459,7 +464,7 @@ if strcmp(state, 'def_noiseregion')
     dims = handles.noise_region;
     [x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
                      max(1, dims(3)), max(1, dims(4)));
-    images = patient.lung;
+    images = patient.lungs;
       
     curImage = images(:,:,slice);
     
@@ -471,7 +476,7 @@ if strcmp(state, 'def_noiseregion')
     handles.patient(index).threshold{slice} = threshold;
     handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-    handles.patient(index).seglung(:,:,slice) = thresholdmask((curImage), threshold, mean_noise);
+    handles.patient(index).lungmask(:,:,slice) = thresholdmask((curImage), threshold, mean_noise);
     
     updateStatusBox(handles, 'Image thresholded', 0);
     
@@ -577,3 +582,186 @@ function viewleft_bodymask_Callback(hObject, eventdata, handles)
 handles.leftpanel = 'BM';
 updateImagePanels(handles);
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_manual_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_manual (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+function Overlay(image, mask)
+%Overlay mask as contour on image. Used in manual correction steps.
+
+imagesc(image);
+
+hold on;
+contour(mask,'g','LineWidth', 1);
+hold off;
+
+
+% --------------------------------------------------------------------
+function manual_ladd_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_ladd (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No lung images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).lungmask(:,:,slice);
+image = handles.patient(index).lungs(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to add.',1);
+
+Overlay(image, mask);
+
+roi = roipoly();
+
+mask = mask | roi;
+handles.patient(index).lungmask(:,:,slice) = mask;
+
+Overlay(image, mask);
+
+guidata(hObject, handles)
+
+% --------------------------------------------------------------------
+function manual_lremove_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_lremove (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No lung images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).lungmask(:,:,slice);
+image = handles.patient(index).lungs(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to add.',1);
+
+Overlay(image, mask);
+
+roi = roipoly();
+
+mask = mask & ~roi;
+handles.patient(index).lungmask(:,:,slice) = mask;
+
+Overlay(image, mask);
+
+guidata(hObject, handles)
+
+% --------------------------------------------------------------------
+function manual_lungmask_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_lungmask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function manual_bodymask_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_bodymask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function manual_badd_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_badd (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No body images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).bodymask(:,:,slice);
+image = handles.patient(index).body(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to add.',1);
+
+Overlay(image, mask);
+
+roi = roipoly();
+
+mask = mask | roi;
+handles.patient(index).bodymask(:,:,slice) = mask;
+
+Overlay(image, mask);
+
+guidata(hObject, handles)
+
+% --------------------------------------------------------------------
+function manual_bremove_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_bremove (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No body images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).bodymask(:,:,slice);
+image = handles.patient(index).body(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to add.',1);
+
+Overlay(image, mask);
+
+roi = roipoly();
+
+mask = mask & ~roi;
+handles.patient(index).bodymask(:,:,slice) = mask;
+
+Overlay(image, mask);
+
+guidata(hObject, handles)

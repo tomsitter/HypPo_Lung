@@ -4,8 +4,8 @@ function updateSliceSlider(hObject, handles)
 pat_index = handles.pat_index;
 
 if not(isempty(handles.patient))
-    if not(isempty(handles.patient(pat_index).lung))
-        num_lungSlices = size(handles.patient(pat_index).lung, 3);
+    if not(isempty(handles.patient(pat_index).lungs))
+        num_lungSlices = size(handles.patient(pat_index).lungs, 3);
     else
         num_lungSlices = nan;
     end

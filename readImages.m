@@ -83,26 +83,30 @@ else
 end
 %end
 
-    handles.patient(pat_index).(['parms' type]) = parms;
-    if isfield(parms, 'PatientID')
-        handles.patient(pat_index).id = parms.PatientID;
-    elseif isfield(parms, 'patient')
-        handles.patient(pat_index).id = parms.patient;
-    end
+handles.patient(pat_index).(['parms' type]) = parms;
+if isfield(parms, 'PatientID')
+    handles.patient(pat_index).id = parms.PatientID;
+elseif isfield(parms, 'patient')
+    handles.patient(pat_index).id = parms.patient;
+end
 
-    msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
-                   size(slices, 3), fov, matSize, handles.patient(pat_index).id);
-    updateStatusBox(handles, msg, 0);
+msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
+               size(slices, 3), fov, matSize, handles.patient(pat_index).id);
+updateStatusBox(handles, msg, 0);
 
-    handles.patient(pat_index).(type) = slices;
-    
-    if strcmp(type, 'lung')
-        handles.patient(pat_index).lungmask = zeros(size(slices));
-    else
-        handles.patient(pat_index).bodymask = zeros(size(slices));
-    end
+if strcmp(type, 'lung')
+    type = 'lungs';
+end
 
-    updateSliceSlider(handles.slider_slice, handles);
+handles.patient(pat_index).(type) = slices;
+
+if strcmp(type, 'lungs')
+    handles.patient(pat_index).lungmask = zeros(size(slices));
+else
+    handles.patient(pat_index).bodymask = zeros(size(slices));
+end
+
+updateSliceSlider(handles.slider_slice, handles);
     
 %     axes(handles.axes1);
 %     slider_val = get(handles.slider_slice, 'Value');
