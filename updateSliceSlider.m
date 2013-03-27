@@ -14,6 +14,8 @@ if not(isempty(handles.patient))
     else
         num_bodySlices = nan;
     end
+else
+    return;
 end
 
 if num_lungSlices == num_bodySlices

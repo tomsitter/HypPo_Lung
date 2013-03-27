@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 26-Mar-2013 21:20:05
+% Last Modified by GUIDE v2.5 26-Mar-2013 23:12:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -765,3 +765,37 @@ handles.patient(index).bodymask(:,:,slice) = mask;
 Overlay(image, mask);
 
 guidata(hObject, handles)
+
+
+% --------------------------------------------------------------------
+function analyze_segbody_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_segbody (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+patient = handles.patient(index);
+body_images = patient.body;
+
+updateStatusBox(handles, 'Preparing to segment body', 1);
+updateStatusBox(handles, 'Attempting to segment manually', 0);
+
+handles.state = 'def_autobodyseg';
+
+axes(handles.axes2);
+for slice = 1:size(body_images, 3)
+    patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+end
+
+handles.patient(index) = patient;
+
+guidata(hObject, handles);
+
+
+% --- Executes on button press in push_cancel.
+function push_cancel_Callback(hObject, eventdata, handles)
+% hObject    handle to push_cancel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%untested
+updateImagePanels(handles);
