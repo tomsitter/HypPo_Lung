@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 26-Mar-2013 23:12:05
+% Last Modified by GUIDE v2.5 27-Mar-2013 16:46:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -366,24 +366,34 @@ while strcmp(handles.state, 'def_noiseregion')
     end
 end
 
-% if strcmp(handles.state, 'thresh_all')
-%     patient = handles.patient( handles.pat_index );
-%     images = patient.lung;
-%     
-%     for i = 1:size(images, 3)
-%         [handles, mask] = threshold_mask(hObject, handles);
-%     end
-% else
-%     [handles, mask] = threshold_mask(hObject, handles);
-% end
+% --------------------------------------------------------------------
+function analyze_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+updateStatusBox(handles, 'Preparing to coregister images', 1);
 
-% 
-% axes(handles.axes2)
-% imagesc(mask);
-% 
-% updateImagePanels(handles);
-% 
-% guidata(hObject, handles);
+%updateStatusBox(handles, 'Select a region of noise', 0);
+
+[reg_bodymask, reg_body] = coregister_landmarks(handles);
+%
+
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+patient = handles.patient(index);
+
+patient.body(:,:,slice) = reg_body;
+patient.bodymask(:,:,slice) = reg_bodymask;
+
+lungmask = patient.lungmask(:,:,slice);
+
+axes(handles.axes1);
+imagesc(patient.lungs(:,:,slice));
+
+axes(handles.axes2);
+Overlay(reg_body, lungmask);
+
+guidata(hObject, handles);
 
 
 % --- Executes on button press in push_applyall.
@@ -799,3 +809,31 @@ function push_cancel_Callback(hObject, eventdata, handles)
 
 %untested
 updateImagePanels(handles);
+
+
+% --- Executes on button press in push_up.
+function push_up_Callback(hObject, eventdata, handles)
+% hObject    handle to push_up (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in push_right.
+function push_right_Callback(hObject, eventdata, handles)
+% hObject    handle to push_right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in push_down.
+function push_down_Callback(hObject, eventdata, handles)
+% hObject    handle to push_down (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in push_left.
+function push_left_Callback(hObject, eventdata, handles)
+% hObject    handle to push_left (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
