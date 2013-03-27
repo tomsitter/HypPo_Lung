@@ -39,7 +39,7 @@ bw = im2bw(norm_segmented,level_bw);
 
 % Labels connective regions and passes through area filter
 bw_erode = imerode(bw,se);
-L = logical(bw_erode);
+L = bwlabel(bw_erode);
 R = regionprops(L,'Area');
 idx = find([R.Area] > 40);   % Area threshold
 bw_filt = ismember(L,idx);
