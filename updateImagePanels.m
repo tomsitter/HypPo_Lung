@@ -31,16 +31,19 @@ switch leftpanel
                 imagesc(checkerboard(4,16));
             end
     case 'LM'
-            numslices = size(handles.patient(pat_index).lungmask, 3);
-            if (val > numslices)
-                val = numslices;
-            end
-            if not(isempty(handles.patient(pat_index).lungmask))
-                imagesc(handles.patient(pat_index).lungmask(:, :, val));
-            else
-                updateStatusBox(handles, 'No lung mask found', 0);
-                imagesc(checkerboard(4,16));
-            end
+        numslices = size(handles.patient(pat_index).lungmask, 3);
+        if (val > numslices)
+            val = numslices;
+        end
+        if not(isempty(handles.patient(pat_index).lungmask))
+            lungs = handles.patient(pat_index).lungs(:, :, val);
+            lungmask = handles.patient(pat_index).lungmask(:, :, val);
+            maskOverlay(lungs, lungmask);
+            %imagesc(handles.patient(pat_index).lungmask(:, :, val));
+        else
+            updateStatusBox(handles, 'No lung mask found', 0);
+            imagesc(checkerboard(4,16));
+        end
     case 'B'
         if not(isempty(handles.patient(pat_index).body))
             imagesc(handles.patient(pat_index).body(:, :, val));
@@ -54,11 +57,19 @@ switch leftpanel
             val = numslices;
         end
         if not(isempty(handles.patient(pat_index).bodymask))
-            imagesc(handles.patient(pat_index).bodymask(:, :, val));
+%             imagesc(handles.patient(pat_index).bodymask(:, :, val));
+            body = handles.patient(pat_index).body(:, :, val);
+            bodymask = handles.patient(pat_index).bodymask(:, :, val);
+            maskOverlay(body, bodymask);
         else
             updateStatusBox(handles, 'No body mask found', 0);
             imagesc(checkerboard(4,16));
         end
+    case 'C'
+        body = handles.patient(pat_index).body(:, :, val);
+        bodymask = handles.patient(pat_index).bodymask(:, :, val);
+        lungmask = handles.patient(pat_index).lungmask(:, :, val);
+        viewCoregistration(body, bodymask, lungmask);
     otherwise
         msg = sprintf('Unknown image state for left panel: %s', leftpanel);
         updateStatusBox(handes,msg, 1);
@@ -78,16 +89,19 @@ switch rightpanel
                 imagesc(checkerboard(4,16));
             end
     case 'LM'
-            numslices = size(handles.patient(pat_index).lungmask, 3);
-            if (val > numslices)
-                val = numslices;
-            end
-            if not(isempty(handles.patient(pat_index).lungmask))
-                imagesc(handles.patient(pat_index).lungmask(:, :, val));
-            else
-                updateStatusBox(handles, 'No lung mask', 0);
-                imagesc(checkerboard(4,16));
-            end
+        numslices = size(handles.patient(pat_index).lungmask, 3);
+        if (val > numslices)
+            val = numslices;
+        end
+        if not(isempty(handles.patient(pat_index).lungmask))
+%                 imagesc(handles.patient(pat_index).lungmask(:, :, val));
+            lungs = handles.patient(pat_index).lungs(:, :, val);
+            lungmask = handles.patient(pat_index).lungmask(:, :, val);
+            maskOverlay(lungs, lungmask);
+        else
+            updateStatusBox(handles, 'No lung mask', 0);
+            imagesc(checkerboard(4,16));
+        end
     case 'B'
         if not(isempty(handles.patient(pat_index).body))
             imagesc(handles.patient(pat_index).body(:, :, val));
@@ -101,11 +115,19 @@ switch rightpanel
             val = numslices;
         end
         if not(isempty(handles.patient(pat_index).bodymask))
-            imagesc(handles.patient(pat_index).bodymask(:, :, val));
+%             imagesc(handles.patient(pat_index).bodymask(:, :, val));
+            body = handles.patient(pat_index).body(:, :, val);
+            bodymask = handles.patient(pat_index).bodymask(:, :, val);
+            maskOverlay(body, bodymask);
         else
             updateStatusBox(handles, 'No body mask', 0);
             imagesc(checkerboard(4,16));
         end
+    case 'C'
+        body = handles.patient(pat_index).body(:, :, val);
+        bodymask = handles.patient(pat_index).bodymask(:, :, val);
+        lungmask = handles.patient(pat_index).lungmask(:, :, val);
+        viewCoregistration(body, bodymask, lungmask);
     otherwise
         msg = sprintf('Unknown image state for right panel: %s', rightpanel);
         updateStatusBox(handes,msg, 1);

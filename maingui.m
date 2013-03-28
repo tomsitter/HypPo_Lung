@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 27-Mar-2013 16:46:40
+% Last Modified by GUIDE v2.5 28-Mar-2013 16:06:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,7 +78,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = maingui_OutputFcn(hObject, ~, handles) 
+function varargout = maingui_OutputFcn(~, ~, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -129,7 +129,7 @@ updateImagePanels(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function slider_slice_CreateFcn(hObject, ~, handles)
+function slider_slice_CreateFcn(hObject, ~, ~)
 % hObject    handle to slider_slice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -391,7 +391,7 @@ axes(handles.axes1);
 imagesc(patient.lungs(:,:,slice));
 
 axes(handles.axes2);
-Overlay(reg_body, lungmask);
+maskOverlay(reg_body, lungmask);
 
 guidata(hObject, handles);
 
@@ -600,15 +600,6 @@ function analyze_manual_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-function Overlay(image, mask)
-%Overlay mask as contour on image. Used in manual correction steps.
-
-imagesc(image);
-
-hold on;
-contour(mask,'g','LineWidth', 1);
-hold off;
-
 
 % --------------------------------------------------------------------
 function manual_ladd_Callback(hObject, eventdata, handles)
@@ -617,6 +608,8 @@ function manual_ladd_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'LM';
+
 if slice == 0
     %This must be a blank patient.
     updateStatusBox(handles, 'No lung images found.', 1);
@@ -637,14 +630,18 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-Overlay(image, mask);
+maskOverlay(image, mask);
 
 roi = roipoly();
+
+if isempty(roi)
+    return;
+end
 
 mask = mask | roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-Overlay(image, mask);
+updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -655,6 +652,8 @@ function manual_lremove_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'LM';
+
 if slice == 0
     %This must be a blank patient.
     updateStatusBox(handles, 'No lung images found.', 1);
@@ -675,14 +674,18 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-Overlay(image, mask);
+maskOverlay(image, mask);
 
 roi = roipoly();
+
+if isempty(roi)
+    return;
+end
 
 mask = mask & ~roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-Overlay(image, mask);
+updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -707,6 +710,8 @@ function manual_badd_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'BM';
+
 if slice == 0
     %This must be a blank patient.
     updateStatusBox(handles, 'No body images found.', 1);
@@ -727,14 +732,18 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-Overlay(image, mask);
+maskOverlay(image, mask);
 
 roi = roipoly();
+
+if isempty(roi)
+    return;
+end
 
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-Overlay(image, mask);
+updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -745,6 +754,8 @@ function manual_bremove_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'BM';
+
 if slice == 0
     %This must be a blank patient.
     updateStatusBox(handles, 'No body images found.', 1);
@@ -765,14 +776,18 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-Overlay(image, mask);
+maskOverlay(image, mask);
 
 roi = roipoly();
+
+if isempty(roi)
+    return;
+end
 
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-Overlay(image, mask);
+updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -837,3 +852,22 @@ function push_left_Callback(hObject, eventdata, handles)
 % hObject    handle to push_left (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function viewright_coregistration_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_coregistration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'C';
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'C';
+updateImagePanels(handles);
+guidata(hObject, handles);

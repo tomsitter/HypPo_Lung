@@ -27,7 +27,7 @@ index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 patient = handles.patient(index);
 
-lungmask = patient.lungmask(:,:,slice);
+% lungmask = patient.lungmask(:,:,slice);
 bodymask = patient.bodymask(:,:,slice);
 lungs = patient.lungs(:,:,slice);
 body = patient.body(:,:,slice);
@@ -103,7 +103,8 @@ while(1)
 %     he = round(((he - min(he(:)))/max(he(:)))*256);
     he = double(he);
     he = he - min(he(:));
-    he = he / max(he(:));    
+    he = he / max(he(:));
+    he = imresize(he, size(reg_body));
 %     green = cat(3, zeros(size(reg_body)), ones(size(reg_body)), zeros(size(reg_body)));
 %     hold on;
 %     imshow(green);
@@ -114,7 +115,7 @@ while(1)
 %     hold on
     % Nov 30 2011
 %     h = imagesc(green);axis off, axis square, colormap gray   
-     h = imshow(green);axis off, axis square, colormap gray
+%      h = imshow(green);axis off, axis square, colormap gray
 %     imwrite(green,'C:\Users\Marcus\Documents\MATLAB\ClusteringCode_Tom_Jan32013\overlay.jpg','jpg')
 %     hold off
 %     set(h, 'AlphaData', he)

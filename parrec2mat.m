@@ -240,7 +240,7 @@ SS = tag(ss_i);                                                  % Scale Slope
 switch (output_format)
     case { 'FP' }, img = (RS*img + RI)./(RS*SS);
     case { 'DV' }, img = (RS*img + RI);
-    case { 'SV' }, img = img;
+    %case { 'SV' }, img = img;
 end
 
 return;

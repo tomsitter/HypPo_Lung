@@ -4,9 +4,9 @@ function [ closeMask ] = regiongrow_mask( image )
 
 %Initial parameters
 sigma = 2;
-percent = 5;
+%percent = 5;
 k = 4;
-flag = 2;
+%flag = 2;
 
 [height, width] = size(image);
 halfHeight = floor(height/2);
