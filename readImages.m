@@ -101,13 +101,14 @@ end
 handles.patient(pat_index).(type) = slices;
 
 if strcmp(type, 'lungs')
-    handles.patient(pat_index).lungmask = zeros(size(slices));
+    handles.patient(pat_index).lungmask = zeros(size(slices)); 
 else
-    handles.patient(pat_index).bodymask = zeros(size(slices));
+    handles.patient(pat_index).bodymask = zeros(size(slices));   
 end
 
-updateSliceSlider(handles.slider_slice, handles);
-    
+% updateSliceSlider(handles.slider_slice, handles);
+% updateViewOptions(handles);
+
 %     axes(handles.axes1);
 %     slider_val = get(handles.slider_slice, 'Value');
 %     if slider_val > size(slices, 3)

@@ -1,4 +1,4 @@
-function [reg_bodymask, reg_body] = coregister_landmarks(handles)
+function [reg_bodymask, reg_body, tform] = coregister_landmarks(handles)
 %COREGISTER_LANDMARKS aligns a lung mask with a body mask and returns the aligned
 %body mask and image.
 % function [reg_lungmask, reg_bodymask] = coregister(lungmask, bodymask)
@@ -126,8 +126,8 @@ while(1)
 %     contour(registeredProtonMask,[0 0],'r','LineWidth',1);
 %     contour(He_mask,[0 0],'g','LineWidth',1);
 
-    confirm = input('Is registration good enouph to continue ("y":Yes, "n":No)? ','s');
-    if (strcmpi(confirm,'y'))
+    confirm = questdlg('Is registration good enough to continue?','Yes');
+    if (strcmpi(confirm,'Yes'))
         break;
     end
 

@@ -88,7 +88,7 @@ if seed1(1) ~= 1  %seed1(1)==1 means the seed was not found
     mask1 = BWregionGrowing(mask,seed1(1),seed1(2));
     [~,Y] = find(mask1);
     if (max(round(Y)) > (width-10))
-        disp('Body background was segmented as the lung mask1')
+%         disp('Body background was segmented as the lung mask1')
         mask1 = false(size(mask));
     end
 else
@@ -99,7 +99,7 @@ if seed2(1) ~= 1  %seed2(1)==1 means the seed was not found
     mask2 =  BWregionGrowing(mask,seed2(1),seed2(2));
     [~,Y] = find(mask2);
     if (max(round(Y)) > (width-10))
-        disp('Body-background was segmented as the lung mask2')
+%         disp('Body-background was segmented as the lung mask2')
         mask2 = false(size(mask));
     end
 else

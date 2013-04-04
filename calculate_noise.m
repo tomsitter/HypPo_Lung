@@ -11,12 +11,12 @@ x = 0:1:max_noise;
 x = x+0.5;
 h = hist(noise_roi, x);
     
-dist_fit=1;
-while dist_fit==1
+% dist_fit=1;
+% while dist_fit==1
     
     % User selects initial parameter for regression
     % (Usual values for beta: 0.1, 0.01, 0.001)
-    beta_value = 0.1; %input('Input initial parameter beta for regression: ');
+    beta_value = 0.05; %input('Input initial parameter beta for regression: ');
     beta = [beta_value, beta_value, beta_value];
     
     % Determines best-fit Rayleigh model
@@ -38,8 +38,8 @@ while dist_fit==1
     RR = 1-SSerr/SStot;
     
     % If distribution is a bad fit, reinitialize parameters for regression
-    dist_fit = menu('Reinitialize regression parameters?','Yes','No');
-end
+%     dist_fit = menu('Reinitialize regression parameters?','Yes','No');
+% end
 
 % Calculates g(f)
 gf = abs(h-yhat);

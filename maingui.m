@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 28-Mar-2013 16:06:23
+% Last Modified by GUIDE v2.5 04-Apr-2013 15:44:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -180,9 +180,8 @@ handles.patient(pat_index).id = 'NoData';
 handles.pat_index = pat_index;
 
 updateStatusBox(handles, 'Created new patient', 1);
-
 updateSliceSlider(hObject, handles);
-
+updateMenuOptions(handles);
 updateViewOptions(handles);
 
 guidata(hObject, handles);
@@ -216,6 +215,7 @@ else
             updateSliceSlider(hObject, handles);
             
             updateViewOptions(handles);
+            updateMenuOptions(handles);
 
             guidata(hObject, handles);
         end
@@ -293,7 +293,7 @@ guidata(hObject, handles)
 
 msg = sprintf('Loaded patient %s', new_patient.id);
 updateStatusBox(handles, msg, 1);
-
+updateMenuOptions(handles);
 updateSliceSlider(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -308,6 +308,7 @@ handles = readImages(handles, 'lung');
 
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
+set(handles.analyze_seglungs, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -323,6 +324,7 @@ handles = readImages(handles, 'body');
 
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
+set(handles.analyze_segbody, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -367,31 +369,45 @@ while strcmp(handles.state, 'def_noiseregion')
 end
 
 % --------------------------------------------------------------------
-function analyze_coreg_Callback(hObject, eventdata, handles)
-% hObject    handle to analyze_coreg (see GCBO)
+function analyze_coreglm_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreglm (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 updateStatusBox(handles, 'Preparing to coregister images', 1);
 
 %updateStatusBox(handles, 'Select a region of noise', 0);
 
-[reg_bodymask, reg_body] = coregister_landmarks(handles);
+[reg_bodymask, reg_body, tform] = coregister_landmarks(handles);
 %
 
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 patient = handles.patient(index);
 
-patient.body(:,:,slice) = reg_body;
-patient.bodymask(:,:,slice) = reg_bodymask;
-
 lungmask = patient.lungmask(:,:,slice);
 
-axes(handles.axes1);
-imagesc(patient.lungs(:,:,slice));
+% axes(handles.axes1);
+% imagesc(patient.lungs(:,:,slice));
 
 axes(handles.axes2);
-maskOverlay(reg_body, lungmask);
+% maskOverlay(reg_body, lungmask);
+viewCoregistration(reg_body, reg_bodymask, lungmask);
+
+applyall = questdlg('Do you want to apply this transform to all images?');
+if strcmpi(applyall, 'Yes')
+    body = patient.body;
+    bodymask = patient.bodymask;
+    height = size(body,1);
+    width = size(body,2);
+    for i = 1:size(body, 3)
+%         reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
+%         reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
+        patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+        patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+    end
+end
+    
+updateStatusBox(handles, 'Finished Coregistration', 1);
 
 guidata(hObject, handles);
 
@@ -437,21 +453,28 @@ if strcmp(state, 'def_noiseregion')
     
     axes(handles.axes2);
     %calculate optimal threshold value and threshold image
-    for slice = 1:size(curImages, 3)
+    wb = waitbar(0, 'Segmentation in Progress');
+    numImages = size(curImages, 3);
+    for slice = 1:numImages
         roi = curImages(y:y+h, x:x+w, slice);
         [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
         handles.patient(index).threshold{slice} = threshold;
         handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
         handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+        waitbar(slice/numImages, wb);
     end
-    
+    close(wb);
+    handles.leftpanel='L';
+    handles.rightpanel='LM';
     updateStatusBox(handles, 'Images thresholded', 0);
     
     %set(handles.analyze_threshold, 'Enable', 'on');
 end
 
 updateImagePanels(handles);
+
+updateMenuOptions(handles);
 
 %Finished with current task
 handles.state = 'idle';
@@ -802,16 +825,25 @@ patient = handles.patient(index);
 body_images = patient.body;
 
 updateStatusBox(handles, 'Preparing to segment body', 1);
-updateStatusBox(handles, 'Attempting to segment manually', 0);
+updateStatusBox(handles, 'Attempting to segment automatically', 0);
 
-handles.state = 'def_autobodyseg';
+% handles.state = 'def_autobodyseg';
 
 axes(handles.axes2);
-for slice = 1:size(body_images, 3)
+numImages = size(body_images, 3);
+wb = waitbar(0, 'Segmenting Lung Cavities');
+for slice = 1:numImages
     patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+    waitbar(slice/numImages, wb);
 end
+close(wb);
 
 handles.patient(index) = patient;
+handles.leftpanel = 'B';
+handles.rightpanel = 'BM';
+
+updateImagePanels(handles);
+updateMenuOptions(handles);
 
 guidata(hObject, handles);
 
@@ -855,11 +887,12 @@ function push_left_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-function viewright_coregistration_Callback(hObject, eventdata, handles)
-% hObject    handle to viewright_coregistration (see GCBO)
+function viewright_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_coreg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'C';
+updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
 updateImagePanels(handles);
 guidata(hObject, handles);
 
@@ -869,5 +902,13 @@ function viewleft_coreg_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'C';
+updateStatusBox(handles, 'Lungs: Purple, Body: Green', 1);
 updateImagePanels(handles);
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
