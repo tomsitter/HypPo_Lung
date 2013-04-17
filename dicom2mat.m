@@ -14,13 +14,13 @@ for im = 1:num_files
 
     % Read image and convert to 8-bit
     I = dicomread(parms);
-    I = double(I);
-    I = I - min(I(:));
-    I = I / max(I(:));
-    I = I*255;
-    I = round(I);
-    I = uint8(I);
-    data(:,:,im) = I;
+%     I = double(I);
+%     I = I - min(I(:));
+%     I = I / max(I(:));
+%     I = I*255;
+%     I = round(I);
+%     I = uint8(I);
+    data(:,:,im) = uint8(mat2gray(I)*255);
 end
 
 %Extract FOV from last file

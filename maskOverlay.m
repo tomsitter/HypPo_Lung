@@ -1,5 +1,9 @@
 function maskOverlay(image, mask)
-%Overlay mask as contour on image. Used in manual correction steps.
+%MASKOVERLAY Overlay mask as contour on image.
+
+if nargin ~= 2
+    error('Wrong number of arguments; two expected.')
+end
 
 imagesc(image);
 

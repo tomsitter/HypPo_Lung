@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 04-Apr-2013 15:44:03
+% Last Modified by GUIDE v2.5 17-Apr-2013 11:55:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -864,7 +864,6 @@ function push_up_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
 % --- Executes on button press in push_right.
 function push_right_Callback(hObject, eventdata, handles)
 % hObject    handle to push_right (see GCBO)
@@ -910,5 +909,112 @@ guidata(hObject, handles);
 % --------------------------------------------------------------------
 function analyze_coreg_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function manual_addseed_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_addseed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+patient = handles.patient;
+pat_index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+bodyimg = patient(pat_index).body(:,:,slice);
+bodymask = patient(pat_index).bodymask(:,:,slice);
+
+handles.leftpanel='BM';
+updateImagePanels(handles);
+
+tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
+
+
+%newbodymask = manual_regiongrow( image, oldmask, seed )
+[x, y] = getpts(handles.axes1);
+x = uint16(x);
+y = uint16(y);
+
+set(handles.push_undoseed, 'UserData', bodymask);
+
+for i = 1:length(x)
+    newbodymask = segmentRegion(tolerance, bodyimg, y(i), x(i));
+%     newbodymask2 = BWregionGrowing(bodyimg, x(i), y(i));
+
+    bodymask = bodymask | newbodymask;
+end
+
+handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
+
+maskOverlay(bodyimg, bodymask);
+
+guidata(hObject, handles);
+
+
+function edit_tolerance_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_tolerance (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_tolerance as text
+%        str2double(get(hObject,'String')) returns contents of edit_tolerance as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_tolerance_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_tolerance (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in push_undoseed.
+function push_undoseed_Callback(hObject, eventdata, handles)
+% hObject    handle to push_undoseed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% patient = handles.patient;
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+saved_mask = get(hObject, 'UserData');
+
+set(hObject, 'UserData', handles.patient(index).bodymask(:,:,slice));
+
+handles.patient(index).bodymask(:,:,slice) = saved_mask;
+
+updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function export_left_Callback(hObject, eventdata, handles)
+% hObject    handle to export_left (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% saveImage(handles, 'left', 'tif') 
+
+exportImage(handles, 'left');
+
+% --------------------------------------------------------------------
+function export_right_Callback(hObject, eventdata, handles)
+% hObject    handle to export_right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+exportImage(handles, 'right') 
+
+
+% --------------------------------------------------------------------
+function file_export_Callback(hObject, eventdata, handles)
+% hObject    handle to file_export (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

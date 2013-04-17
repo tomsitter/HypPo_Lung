@@ -1,5 +1,9 @@
 function updateViewOptions(handles)
 
+if isempty(handles.patient)
+    return
+end
+
 pat_index = handles.pat_index;
 patient = handles.patient(pat_index);
 

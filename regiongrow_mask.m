@@ -119,5 +119,5 @@ end
 closeBW1 = imclose(mask1,se); % Applying closing function on mask1
 closeBW2 = imclose(mask2,se); % Applying closing function on mask2
 closeMask = closeBW1 | closeBW2; % Union of both mask
-closeMask = imfill(closeMask, 'holes'); % Filling holes in the final mask
+closeMask = uint8(imfill(closeMask, 'holes')); % Filling holes in the final mask
 
