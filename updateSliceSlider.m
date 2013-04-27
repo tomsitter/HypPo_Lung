@@ -42,6 +42,7 @@ end
 updateImagePanels(handles);
 
 curSlice = max(1, get(handles.slider_slice, 'Value'));
+curSlice = min(curSlice, numSlices);
 
 if numSlices < 2
     set(handles.slider_slice, 'sliderstep', [1, 1]);

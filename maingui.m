@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 17-Apr-2013 11:55:28
+% Last Modified by GUIDE v2.5 26-Apr-2013 22:28:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -367,6 +367,8 @@ while strcmp(handles.state, 'def_noiseregion')
         end
     end
 end
+
+set(handles.analyze_hetero, 'Enable', 'on');
 
 % --------------------------------------------------------------------
 function analyze_coreglm_Callback(hObject, eventdata, handles)
@@ -907,6 +909,27 @@ guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
+function viewright_hetero_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_hetero (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'H';
+% updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_hetero_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_hetero (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'H';
+% updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
 function analyze_coreg_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_coreg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1018,3 +1041,26 @@ function file_export_Callback(hObject, eventdata, handles)
 % hObject    handle to file_export (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function analyze_hetero_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_hetero (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+% slice = get(handles.slider_slice, 'Value');
+
+patient = handles.patient(index);
+lungs = patient.lungs;
+lungmask = patient.lungmask;
+
+for i = 1:size(lungs, 3)
+    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i));
+    
+    patient.hetero_image(:,:,i) = hetero;
+end
+
+
+handles.patient(index) = patient;
+guidata(hObject, handles);

@@ -102,6 +102,7 @@ handles.patient(pat_index).(type) = slices;
 
 if strcmp(type, 'lungs')
     handles.patient(pat_index).lungmask = zeros(size(slices)); 
+    handles.patient(pat_index).hetero_images = zeros(size(slices));
 else
     handles.patient(pat_index).bodymask = zeros(size(slices));   
 end
