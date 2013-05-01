@@ -48,6 +48,9 @@ gf = abs(h-yhat);
 %This whole section can be rewritten in 4 lines of code which are much more
 %efficient
 
+%% test edit
+
+
 % gf_sum1 = cumsum(gf(1:floor(max_noise)))';
 % rf_sum1 = [sum(yhat) - cumsum([0 yhat])]';
 % rf_sum1 = rf_sum1(1:floor(max_noise));
