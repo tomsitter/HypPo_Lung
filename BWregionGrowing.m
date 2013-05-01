@@ -37,6 +37,8 @@ while (1)
     else
         Current_Region(indx_vec) = 1; 
     end
+    imagesc(currentBoundary)
+%     sleep(100);
 end %while(1)
 area = imfill(Current_Region, 'holes');
 

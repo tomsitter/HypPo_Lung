@@ -43,4 +43,4 @@ L = bwlabel(bw_erode);
 R = regionprops(L,'Area');
 idx = find([R.Area] > 40);   % Area threshold
 bw_filt = ismember(L,idx);
-final_mask = imdilate(bw_filt,se);
+final_mask = uint8(imdilate(bw_filt,se));
