@@ -297,7 +297,7 @@ switch imgtype
                 imagesc(maingui.patient(pat_index).lungs(:, :, tslice));
             else
 %                 updateStatusBox(maingui, 'No lung images loaded', 0);
-                imagesc(checkerboard(4,16));
+                imagesc(gray);
             end
     case 'LM'
         numslices = size(maingui.patient(pat_index).lungmask, 3);
@@ -309,7 +309,7 @@ switch imgtype
             %imagesc(maingui.patient(pat_index).lungmask(:, :, val));
         else
 %             updateStatusBox(maingui, 'No lung mask found', 0);
-            imagesc(checkerboard(4,16));
+            imagesc(gray);
         end
     case 'B'
         numslices = size(maingui.patient(pat_index).body, 3);
@@ -318,7 +318,7 @@ switch imgtype
             imagesc(maingui.patient(pat_index).body(:, :, tslice));
         else
 %             updateStatusBox(maingui, 'No body images loaded', 0);
-            imagesc(checkerboard(4,16));
+            imagesc(gray);
         end
     case 'BM'
         numslices = size(maingui.patient(pat_index).bodymask, 3);
@@ -330,7 +330,7 @@ switch imgtype
             maskOverlay(body, bodymask);
         else
 %             updateStatusBox(maingui, 'No body mask found', 0);
-            imagesc(checkerboard(4,16));
+            imagesc(gray);
         end
     case 'C'
         body = maingui.patient(pat_index).body(:, :, slice);

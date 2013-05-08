@@ -57,11 +57,11 @@ handles.curdir = cd;
 
 %define a new empty patient
 handles.patient = newPatient();
+handles.pat_index = 1;
 
 handles.leftpanel = 'L';
 handles.rightpanel = 'B';
 
-handles.pat_index = 1;
 % handles.slice_index = 1;
 handles.state = 'idle';
 
@@ -168,14 +168,16 @@ function file_newpatient_Callback(hObject, ~, handles)
 
 pat_index = length(handles.patient) + 1;
 
-new_patient = newPatient();
+% new_patient = newPatient();
 
-fn = fieldnames(new_patient);
-for i = 1:numel(fn)
-        handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
-end
+% fn = fieldnames(new_patient);
+% for i = 1:numel(fn)
+%     handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
+% end
 
-handles.patient(pat_index).id = 'NoData';
+handles.patient(pat_index) = newPatient();
+
+% handles.patient(pat_index).id = 'NoData';
 
 handles.pat_index = pat_index;
 
@@ -697,7 +699,7 @@ axes(handles.axes1);
 %     return;
 % end
 
-updateStatusBox(handles, 'Select the area you want to add.',1);
+updateStatusBox(handles, 'Select the area you want to remove.',1);
 
 maskOverlay(image, mask);
 
@@ -799,7 +801,7 @@ axes(handles.axes1);
 %     return;
 % end
 
-updateStatusBox(handles, 'Select the area you want to add.',1);
+updateStatusBox(handles, 'Select the area you want to remove.',1);
 
 maskOverlay(image, mask);
 
@@ -1049,18 +1051,35 @@ function analyze_hetero_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
-% slice = get(handles.slider_slice, 'Value');
+slice = get(handles.slider_slice, 'Value');
 
 patient = handles.patient(index);
 lungs = patient.lungs;
 lungmask = patient.lungmask;
 
-for i = 1:size(lungs, 3)
-    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i));
-    
-    patient.hetero_image(:,:,i) = hetero;
+if length(patient.threshold{slice}) < slice
+    threshold = 0;
+else
+    threshold = patient.threshold{slice};
 end
 
+if not(threshold)
+    threshold = 0;
+end
 
+hetero_images = zeros(size(patient.hetero_images));
+
+for i = 1:size(lungs, 3)
+    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), threshold);
+    
+    hetero_images(:,:,i) = hetero;
+    
+    hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
+end
+
+%Normalization needs improvement if it is to be compared across patients
+hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
+patient.hetero_images = hetero_images;
+patient.hetero_score = hetero_score;
 handles.patient(index) = patient;
 guidata(hObject, handles);
