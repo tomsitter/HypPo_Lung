@@ -1,0 +1,25 @@
+# Compiled Matlab GUIs #
+########################
+*.asv
+
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+
+# Image Files #
+###############
+# Best not to upload patient data accidentally
+*.PAR
+*.REC
+*.SDAT
+*.SPAR
+*.dcm
+*.IMA
