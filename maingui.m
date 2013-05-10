@@ -174,8 +174,9 @@ pat_index = length(handles.patient) + 1;
 % for i = 1:numel(fn)
 %     handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
 % end
-
-handles.patient(pat_index) = newPatient();
+p = newPatient();
+p(1).id = 'newPatient';
+handles.patient(pat_index) = p;
 
 % handles.patient(pat_index).id = 'NoData';
 
@@ -513,7 +514,7 @@ if strcmp(state, 'def_noiseregion')
     handles.patient(index).threshold{slice} = threshold;
     handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-    handles.patient(index).lungmask(:,:,slice) = thresholdmask((curImage), threshold, mean_noise);
+    handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImage, threshold, mean_noise);
     
     updateStatusBox(handles, 'Image thresholded', 0);
     
@@ -835,12 +836,12 @@ updateStatusBox(handles, 'Attempting to segment automatically', 0);
 
 axes(handles.axes2);
 numImages = size(body_images, 3);
-wb = waitbar(0, 'Segmenting Lung Cavities');
+% wb = waitbar(0, 'Segmenting Lung Cavities');
 for slice = 1:numImages
     patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
-    waitbar(slice/numImages, wb);
+%     waitbar(slice/numImages, wb);
 end
-close(wb);
+% close(wb);
 
 handles.patient(index) = patient;
 handles.leftpanel = 'B';
