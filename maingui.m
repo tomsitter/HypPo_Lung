@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 26-Apr-2013 22:28:48
+% Last Modified by GUIDE v2.5 10-May-2013 11:13:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1084,3 +1084,18 @@ patient.hetero_images = hetero_images;
 patient.hetero_score = hetero_score;
 handles.patient(index) = patient;
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function file_button_Callback(hObject, eventdata, handles)
+newFig = box;
+%set(newFig, 'MenuBar', 'none');
+
+% hObject    handle to file_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+
