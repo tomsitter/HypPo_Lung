@@ -836,12 +836,12 @@ updateStatusBox(handles, 'Attempting to segment automatically', 0);
 
 axes(handles.axes2);
 numImages = size(body_images, 3);
-% wb = waitbar(0, 'Segmenting Lung Cavities');
+wb = waitbar(0, 'Segmenting Lung Cavities');
 for slice = 1:numImages
+    waitbar(slice/numImages, wb);
     patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
-%     waitbar(slice/numImages, wb);
 end
-% close(wb);
+close(wb);
 
 handles.patient(index) = patient;
 handles.leftpanel = 'B';
