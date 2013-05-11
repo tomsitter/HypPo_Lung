@@ -1,0 +1,1 @@
+function coregister_auto
