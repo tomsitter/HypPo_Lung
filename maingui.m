@@ -235,17 +235,19 @@ function file_savepatient_Callback(hObject, ~, handles)
 
 %Get current patient
 pat_index = handles.pat_index;
-
-patientID = sprintf('pat_%s', handles.patient(pat_index).id);
 patient = handles.patient(pat_index);
-
-uisave('patient', patientID);
-
+id = patient.id;
+ 
 %Cannot have dashes in matlab variables, replace with underscore and then
 %assign into workspace
-patient_tempID = strrep(patientID, '-', '_');
-assignin('base', patient_tempID, handles.patient(pat_index));
-msg = sprintf('Saving patient %s to workspace', patient_tempID);
+id = sprintf('pat_%s', id);
+id = strrep(id, '-', '_');
+id = strrep(id, ' ', '_');
+
+uisave('patient', id);
+
+assignin('base', id, patient);
+msg = sprintf('Saving patient %s to workspace', id);
 updateStatusBox(handles, msg, 1);
 
 % --------------------------------------------------------------------
@@ -453,8 +455,10 @@ if strcmp(state, 'def_noiseregion')
 
         guidata(hObject, handles);
         updateStatusBox(handles, 'Reselect noise region and try again', 0);
+        close(figure(2));
         return;
     end
+    close(figure(2));
     
     axes(handles.axes2);
     %calculate optimal threshold value and threshold image

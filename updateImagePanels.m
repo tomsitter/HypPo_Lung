@@ -2,6 +2,10 @@ function updateImagePanels(handles)
 
 slice = max(get(handles.slider_slice, 'Value'), 1);
 
+slice_str = sprintf('Slice: %d', slice);
+
+set(handles.text_slice, 'String', slice_str);
+
 colormap(gray)
 pat_index = handles.pat_index;
 leftpanel = handles.leftpanel;
