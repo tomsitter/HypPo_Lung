@@ -446,7 +446,7 @@ if strcmp(state, 'def_noiseregion')
     
     ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
     
-    if not(ok)
+    if not(strcmp(ok, 'Yes'))
         
         updateImagePanels(handles);
 
@@ -458,8 +458,8 @@ if strcmp(state, 'def_noiseregion')
         close(figure(2));
         return;
     end
-    close(figure(2));
     
+    close(figure(2));
     axes(handles.axes2);
     %calculate optimal threshold value and threshold image
     wb = waitbar(0, 'Segmentation in Progress');
