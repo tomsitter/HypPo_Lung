@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 13-May-2013 14:04:20
+% Last Modified by GUIDE v2.5 13-May-2013 15:45:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,6 +74,12 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 setappdata(handles.slice_offset, 'position', 'beginning');
+set(handles.slice_offset_beginning, 'Checked', 'On');
+set(handles.slice_offset_end, 'Checked', 'Off');
+
+setappdata(handles.extra_slices, 'show', 'true');
+set(handles.extra_slices_show, 'Checked', 'On');
+set(handles.extra_slices_hide, 'Checked', 'Off');
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -126,7 +132,6 @@ function slider_slice_Callback(hObject, ~, handles)
 %pat_index = handles.pat_index;
 
 %val = get(hObject, 'Value');
-
 updateImagePanels(handles);
 
 
@@ -1104,8 +1109,8 @@ newFig = box;
 
 
 % --------------------------------------------------------------------
-function slice_offset_Callback(hObject, eventdata, handles)
-% hObject    handle to slice_offset (see GCBO)
+function slice_offset_hide_Callback(hObject, eventdata, handles)
+% hObject    handle to slice_offset_hide (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -1134,11 +1139,46 @@ updateImagePanels(handles);
 
 
 
-
-
-
 % --- Executes during object creation, after setting all properties.
 function figure1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --------------------------------------------------------------------
+function slice_offset_Callback(hObject, eventdata, handles)
+% hObject    handle to slice_offset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function extra_slices_Callback(hObject, eventdata, handles)
+% hObject    handle to extra_slices (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function extra_slices_show_Callback(hObject, eventdata, handles)
+% hObject    handle to extra_slices_show (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.extra_slices_show, 'Checked', 'On');
+set(handles.extra_slices_hide, 'Checked', 'Off');
+setappdata(handles.extra_slices, 'show', 'true');
+updateSliceSlider(hObject, handles);
+updateImagePanels(handles);
+
+
+% --------------------------------------------------------------------
+function extra_slices_hide_Callback(hObject, eventdata, handles)
+% hObject    handle to extra_slices_hide (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.extra_slices_show, 'Checked', 'Off');
+set(handles.extra_slices_hide, 'Checked', 'On');
+setappdata(handles.extra_slices, 'show', 'false');
+updateSliceSlider(hObject, handles);
+updateImagePanels(handles);

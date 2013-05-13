@@ -25,9 +25,12 @@ if num_lungSlices == num_bodySlices
 else
     if not(isnan(num_bodySlices)) && not(isnan(num_lungSlices))
         updateStatusBox(handles, 'Error: different number of lung and body slices', 0);
-    end
-    %numSlices = min(num_lungSlices, num_bodySlices);
-	numSlices = max(num_lungSlices, num_bodySlices);
+	end
+	if strcmp(getappdata(handles.extra_slices, 'show'),'true')
+		numSlices = max(num_lungSlices, num_bodySlices);
+	else
+		numSlices = min(num_lungSlices, num_bodySlices);
+	end
     if isnan(numSlices)
         numSlices = 0;
     end

@@ -1,5 +1,11 @@
 function updateImagePanels(handles)
 
+%correct slider to integer number
+sliderValue = get(handles.slider_slice,'Value');
+sliderValue = round(sliderValue);
+set(handles.slider_slice,'Value',sliderValue);
+
+
 slice = max(get(handles.slider_slice, 'Value'), 1);
 
 colormap(gray)
@@ -7,20 +13,27 @@ pat_index = handles.pat_index;
 leftpanel = handles.leftpanel;
 rightpanel = handles.rightpanel;
 
-if strcmp(getappdata(handles.slice_offset, 'position'),'beginning')
-	if size(handles.patient(pat_index).lungs, 3)>size(handles.patient(pat_index).bodymask, 3)
-		lungSliceOffset = 0;
-		bodySliceOffset = abs(size(handles.patient(pat_index).lungs, 3)-size(handles.patient(pat_index).bodymask, 3));
-	else
-		lungSliceOffset = abs(size(handles.patient(pat_index).lungs, 3)-size(handles.patient(pat_index).bodymask, 3));
-		bodySliceOffset = 0;
+lungSliceOffset = 0;
+bodySliceOffset = 0;
+bothSliceOffset = 0;
+
+if size(handles.patient,1)>=pat_index
+	if strcmp(getappdata(handles.slice_offset, 'position'),'beginning')
+		if size(handles.patient(pat_index).lungs, 3)>size(handles.patient(pat_index).bodymask, 3)
+			lungSliceOffset = 0;
+			bodySliceOffset = abs(size(handles.patient(pat_index).lungs, 3)-size(handles.patient(pat_index).bodymask, 3));
+		else
+			lungSliceOffset = abs(size(handles.patient(pat_index).lungs, 3)-size(handles.patient(pat_index).bodymask, 3));
+			bodySliceOffset = 0;
+		end
+		%
+		if strcmp(getappdata(handles.extra_slices, 'show'),'true')
+			bothSliceOffset = 0;
+		else
+			bothSliceOffset = abs(size(handles.patient(pat_index).lungs, 3)-size(handles.patient(pat_index).bodymask, 3));
+		end
 	end
-else
-	lungSliceOffset = 0;
-	bodySliceOffset = 0;
 end
-
-
 %Check if there are are any patients
 %If not, set checkerboard images and return
 if isempty(handles.patient)
@@ -35,7 +48,7 @@ axes(handles.axes1);
 switch leftpanel
     case 'L'
         numslices = size(handles.patient(pat_index).lungs, 3);
-		tslice = slice-lungSliceOffset;
+		tslice = slice-lungSliceOffset+bothSliceOffset;
         %tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -50,7 +63,7 @@ switch leftpanel
         title('Lungs');
     case 'LM'
         numslices = size(handles.patient(pat_index).lungmask, 3);
-		tslice = slice-lungSliceOffset;
+		tslice = slice-lungSliceOffset+bothSliceOffset;
         %tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -68,7 +81,7 @@ switch leftpanel
         title('Lung Mask');
     case 'B'
         numslices = size(handles.patient(pat_index).body, 3);
-		tslice = slice-bodySliceOffset;
+		tslice = slice-bodySliceOffset+bothSliceOffset;
         %tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -83,7 +96,7 @@ switch leftpanel
         title('Proton');
     case 'BM'
         numslices = size(handles.patient(pat_index).bodymask, 3);
-		tslice = slice-bodySliceOffset;
+		tslice = slice-bodySliceOffset+bothSliceOffset;
         %tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -125,7 +138,7 @@ axes(handles.axes2);
 switch rightpanel
     case 'L'
         numslices = size(handles.patient(pat_index).lungs, 3);
-        tslice = slice-lungSliceOffset;
+        tslice = slice-lungSliceOffset+bothSliceOffset;
 		%tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -140,7 +153,7 @@ switch rightpanel
         title('Lungs');
     case 'LM'
         numslices = size(handles.patient(pat_index).lungmask, 3);
-        tslice = slice-lungSliceOffset;
+        tslice = slice-lungSliceOffset+bothSliceOffset;
 		%tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -158,7 +171,7 @@ switch rightpanel
         title('Lung Mask');
     case 'B'
         numslices = size(handles.patient(pat_index).body, 3);
-        tslice = slice-bodySliceOffset;
+        tslice = slice-bodySliceOffset+bothSliceOffset;
 		%tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
@@ -173,7 +186,7 @@ switch rightpanel
         title('Proton');
     case 'BM'
         numslices = size(handles.patient(pat_index).bodymask, 3);
-        tslice = slice-bodySliceOffset;
+        tslice = slice-bodySliceOffset+bothSliceOffset;
         %tslice = min(slice, numslices);
 		if tslice>numslices || tslice<=0
 			imagesc(gray);
