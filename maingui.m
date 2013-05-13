@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 10-May-2013 11:13:23
+% Last Modified by GUIDE v2.5 13-May-2013 14:04:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,6 +72,8 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+
+setappdata(handles.slice_offset, 'position', 'beginning');
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -1099,3 +1101,44 @@ newFig = box;
 
 
 
+
+
+% --------------------------------------------------------------------
+function slice_offset_Callback(hObject, eventdata, handles)
+% hObject    handle to slice_offset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function slice_offset_beginning_Callback(hObject, eventdata, handles)
+% hObject    handle to slice_offset_beginning (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.slice_offset_beginning, 'Checked', 'On');
+set(handles.slice_offset_end, 'Checked', 'Off');
+setappdata(handles.slice_offset, 'position', 'beginning');
+updateImagePanels(handles);
+
+
+
+% --------------------------------------------------------------------
+function slice_offset_end_Callback(hObject, eventdata, handles)
+% hObject    handle to slice_offset_end (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(handles.slice_offset_beginning, 'Checked', 'Off');
+set(handles.slice_offset_end, 'Checked', 'On');
+setappdata(handles.slice_offset, 'position', 'end');
+updateImagePanels(handles);
+
+
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function figure1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
