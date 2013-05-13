@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 26-Mar-2013 21:20:05
+% Last Modified by GUIDE v2.5 13-May-2013 09:25:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,11 +57,11 @@ handles.curdir = cd;
 
 %define a new empty patient
 handles.patient = newPatient();
+handles.pat_index = 1;
 
 handles.leftpanel = 'L';
 handles.rightpanel = 'B';
 
-handles.pat_index = 1;
 % handles.slice_index = 1;
 handles.state = 'idle';
 
@@ -78,7 +78,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = maingui_OutputFcn(hObject, ~, handles) 
+function varargout = maingui_OutputFcn(~, ~, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -129,7 +129,7 @@ updateImagePanels(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function slider_slice_CreateFcn(hObject, ~, handles)
+function slider_slice_CreateFcn(hObject, ~, ~)
 % hObject    handle to slider_slice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -168,21 +168,23 @@ function file_newpatient_Callback(hObject, ~, handles)
 
 pat_index = length(handles.patient) + 1;
 
-new_patient = newPatient();
+% new_patient = newPatient();
 
-fn = fieldnames(new_patient);
-for i = 1:numel(fn)
-        handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
-end
+% fn = fieldnames(new_patient);
+% for i = 1:numel(fn)
+%     handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
+% end
+p = newPatient();
+p(1).id = 'newPatient';
+handles.patient(pat_index) = p;
 
-handles.patient(pat_index).id = 'NoData';
+% handles.patient(pat_index).id = 'NoData';
 
 handles.pat_index = pat_index;
 
 updateStatusBox(handles, 'Created new patient', 1);
-
 updateSliceSlider(hObject, handles);
-
+updateMenuOptions(handles);
 updateViewOptions(handles);
 
 guidata(hObject, handles);
@@ -216,6 +218,7 @@ else
             updateSliceSlider(hObject, handles);
             
             updateViewOptions(handles);
+            updateMenuOptions(handles);
 
             guidata(hObject, handles);
         end
@@ -293,7 +296,7 @@ guidata(hObject, handles)
 
 msg = sprintf('Loaded patient %s', new_patient.id);
 updateStatusBox(handles, msg, 1);
-
+updateMenuOptions(handles);
 updateSliceSlider(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -308,6 +311,7 @@ handles = readImages(handles, 'lung');
 
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
+set(handles.analyze_seglungs, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -323,6 +327,7 @@ handles = readImages(handles, 'body');
 
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
+set(handles.analyze_segbody, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -366,24 +371,50 @@ while strcmp(handles.state, 'def_noiseregion')
     end
 end
 
-% if strcmp(handles.state, 'thresh_all')
-%     patient = handles.patient( handles.pat_index );
-%     images = patient.lung;
-%     
-%     for i = 1:size(images, 3)
-%         [handles, mask] = threshold_mask(hObject, handles);
-%     end
-% else
-%     [handles, mask] = threshold_mask(hObject, handles);
-% end
+set(handles.analyze_hetero, 'Enable', 'on');
 
-% 
-% axes(handles.axes2)
-% imagesc(mask);
-% 
-% updateImagePanels(handles);
-% 
-% guidata(hObject, handles);
+% --------------------------------------------------------------------
+function analyze_coreglm_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreglm (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+updateStatusBox(handles, 'Preparing to coregister images', 1);
+
+%updateStatusBox(handles, 'Select a region of noise', 0);
+
+[reg_bodymask, reg_body, tform] = coregister_landmarks(handles);
+%
+
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+patient = handles.patient(index);
+
+lungmask = patient.lungmask(:,:,slice);
+
+% axes(handles.axes1);
+% imagesc(patient.lungs(:,:,slice));
+
+axes(handles.axes2);
+% maskOverlay(reg_body, lungmask);
+viewCoregistration(reg_body, reg_bodymask, lungmask);
+
+applyall = questdlg('Do you want to apply this transform to all images?');
+if strcmpi(applyall, 'Yes')
+    body = patient.body;
+    bodymask = patient.bodymask;
+    height = size(body,1);
+    width = size(body,2);
+    for i = 1:size(body, 3)
+%         reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
+%         reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
+        patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+        patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+    end
+end
+    
+updateStatusBox(handles, 'Finished Coregistration', 1);
+
+guidata(hObject, handles);
 
 
 % --- Executes on button press in push_applyall.
@@ -427,21 +458,28 @@ if strcmp(state, 'def_noiseregion')
     
     axes(handles.axes2);
     %calculate optimal threshold value and threshold image
-    for slice = 1:size(curImages, 3)
+    wb = waitbar(0, 'Segmentation in Progress');
+    numImages = size(curImages, 3);
+    for slice = 1:numImages
         roi = curImages(y:y+h, x:x+w, slice);
         [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
         handles.patient(index).threshold{slice} = threshold;
         handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
         handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+        waitbar(slice/numImages, wb);
     end
-    
+    close(wb);
+    handles.leftpanel='L';
+    handles.rightpanel='LM';
     updateStatusBox(handles, 'Images thresholded', 0);
     
     %set(handles.analyze_threshold, 'Enable', 'on');
 end
 
 updateImagePanels(handles);
+
+updateMenuOptions(handles);
 
 %Finished with current task
 handles.state = 'idle';
@@ -476,7 +514,7 @@ if strcmp(state, 'def_noiseregion')
     handles.patient(index).threshold{slice} = threshold;
     handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-    handles.patient(index).lungmask(:,:,slice) = thresholdmask((curImage), threshold, mean_noise);
+    handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImage, threshold, mean_noise);
     
     updateStatusBox(handles, 'Image thresholded', 0);
     
@@ -598,54 +636,86 @@ function manual_ladd_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'LM';
+
 if slice == 0
     %This must be a blank patient.
     updateStatusBox(handles, 'No lung images found.', 1);
     return;
 end
 
+%Get mask and image
 mask = handles.patient(index).lungmask(:,:,slice);
 image = handles.patient(index).lungs(:,:,slice);
-if sum(sum(mask)) == 0
-    updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
-    return;
-end
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-Overlay(image, 
+maskOverlay(image, mask);
+
 roi = roipoly();
+
+if isempty(roi)
+    return;
+end
 
 mask = mask | roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-hold off;
-
-axes(handles.axes1);
-imagesc(image);
-
-hold on;
-contour(mask,'g','LineWidth', 1);
-hold off;
+updateImagePanels(handles);
 
 guidata(hObject, handles)
-
-function Overlay(image, mask)
-%Overlay mask as contour on image.
-
-axes(handles.axes1);
-imagesc(image);
-
-hold on;
-contour(mask,'g','LineWidth', 1);
-hold off;
 
 % --------------------------------------------------------------------
 function manual_lremove_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_lremove (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'LM';
 
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No lung images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).lungmask(:,:,slice);
+image = handles.patient(index).lungs(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to remove.',1);
+
+maskOverlay(image, mask);
+
+roi = roipoly();
+
+if isempty(roi)
+    return;
+end
+
+mask = mask & ~roi;
+handles.patient(index).lungmask(:,:,slice) = mask;
+
+updateImagePanels(handles);
+
+guidata(hObject, handles)
 
 % --------------------------------------------------------------------
 function manual_lungmask_Callback(hObject, eventdata, handles)
@@ -666,10 +736,513 @@ function manual_badd_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_badd (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'BM';
 
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No body images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).bodymask(:,:,slice);
+image = handles.patient(index).body(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to add.',1);
+
+maskOverlay(image, mask);
+
+roi = roipoly();
+
+if isempty(roi)
+    return;
+end
+
+mask = mask | roi;
+handles.patient(index).bodymask(:,:,slice) = mask;
+
+updateImagePanels(handles);
+
+guidata(hObject, handles)
 
 % --------------------------------------------------------------------
 function manual_bremove_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_bremove (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+handles.leftpanel = 'BM';
+
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No body images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).bodymask(:,:,slice);
+image = handles.patient(index).body(:,:,slice);
+
+axes(handles.axes1);
+
+% %Check if mask is defined
+% if sum(sum(mask)) == 0
+%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
+%     return;
+% end
+
+updateStatusBox(handles, 'Select the area you want to remove.',1);
+
+maskOverlay(image, mask);
+
+roi = roipoly();
+
+if isempty(roi)
+    return;
+end
+
+mask = mask & ~roi;
+handles.patient(index).bodymask(:,:,slice) = mask;
+
+updateImagePanels(handles);
+
+guidata(hObject, handles)
+
+
+% --------------------------------------------------------------------
+function analyze_segbody_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_segbody (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+patient = handles.patient(index);
+body_images = patient.body;
+
+updateStatusBox(handles, 'Preparing to segment body', 1);
+updateStatusBox(handles, 'Attempting to segment automatically', 0);
+
+% handles.state = 'def_autobodyseg';
+
+axes(handles.axes2);
+numImages = size(body_images, 3);
+wb = waitbar(0, 'Segmenting Lung Cavities');
+for slice = 1:numImages
+    waitbar(slice/numImages, wb);
+    patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+end
+close(wb);
+
+handles.patient(index) = patient;
+handles.leftpanel = 'B';
+handles.rightpanel = 'BM';
+
+updateImagePanels(handles);
+updateMenuOptions(handles);
+
+guidata(hObject, handles);
+
+
+% --- Executes on button press in push_cancel.
+function push_cancel_Callback(hObject, eventdata, handles)
+% hObject    handle to push_cancel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%untested
+updateImagePanels(handles);
+
+
+% --- Executes on button press in push_up.
+function push_up_Callback(hObject, eventdata, handles)
+% hObject    handle to push_up (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --- Executes on button press in push_right.
+function push_right_Callback(hObject, eventdata, handles)
+% hObject    handle to push_right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in push_down.
+function push_down_Callback(hObject, eventdata, handles)
+% hObject    handle to push_down (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in push_left.
+function push_left_Callback(hObject, eventdata, handles)
+% hObject    handle to push_left (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function viewright_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'C';
+updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'C';
+updateStatusBox(handles, 'Lungs: Purple, Body: Green', 1);
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function viewright_hetero_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_hetero (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'H';
+% updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function viewleft_hetero_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_hetero (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'H';
+% updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
+updateImagePanels(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_coreg_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function manual_addseed_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_addseed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+patient = handles.patient;
+pat_index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+bodyimg = patient(pat_index).body(:,:,slice);
+bodymask = patient(pat_index).bodymask(:,:,slice);
+
+handles.leftpanel='BM';
+updateImagePanels(handles);
+
+tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
+
+
+%newbodymask = manual_regiongrow( image, oldmask, seed )
+[x, y] = getpts(handles.axes1);
+x = uint16(x);
+y = uint16(y);
+
+set(handles.push_undoseed, 'UserData', bodymask);
+
+for i = 1:length(x)
+    newbodymask = segmentRegion(tolerance, bodyimg, y(i), x(i));
+%     newbodymask2 = BWregionGrowing(bodyimg, x(i), y(i));
+
+    bodymask = bodymask | newbodymask;
+end
+
+handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
+
+maskOverlay(bodyimg, bodymask);
+
+guidata(hObject, handles);
+
+
+function edit_tolerance_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_tolerance (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_tolerance as text
+%        str2double(get(hObject,'String')) returns contents of edit_tolerance as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_tolerance_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_tolerance (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in push_undoseed.
+function push_undoseed_Callback(hObject, eventdata, handles)
+% hObject    handle to push_undoseed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% patient = handles.patient;
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+saved_mask = get(hObject, 'UserData');
+
+set(hObject, 'UserData', handles.patient(index).bodymask(:,:,slice));
+
+handles.patient(index).bodymask(:,:,slice) = saved_mask;
+
+updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function export_left_Callback(hObject, eventdata, handles)
+% hObject    handle to export_left (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% saveImage(handles, 'left', 'tif') 
+
+exportImage(handles, 'left');
+
+% --------------------------------------------------------------------
+function export_right_Callback(hObject, eventdata, handles)
+% hObject    handle to export_right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+exportImage(handles, 'right') 
+
+
+% --------------------------------------------------------------------
+function file_export_Callback(hObject, eventdata, handles)
+% hObject    handle to file_export (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function analyze_hetero_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_hetero (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+patient = handles.patient(index);
+lungs = patient.lungs;
+lungmask = patient.lungmask;
+
+if length(patient.threshold{slice}) < slice
+    threshold = 0;
+else
+    threshold = patient.threshold{slice};
+end
+
+if not(threshold)
+    threshold = 0;
+end
+
+hetero_images = zeros(size(patient.hetero_images));
+
+for i = 1:size(lungs, 3)
+    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), threshold);
+    
+    hetero_images(:,:,i) = hetero;
+    
+    hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
+end
+
+%Normalization needs improvement if it is to be compared across patients
+hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
+patient.hetero_images = hetero_images;
+patient.hetero_score = hetero_score;
+handles.patient(index) = patient;
+guidata(hObject, handles);
+
+
+% --- Executes when figure1 is resized.
+function figure1_ResizeFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+position = get(hObject,'Position');
+windowSize = position(3:4);
+buildSize = getappdata(hObject,'buildSize');
+fractionSize = min(windowSize./buildSize);
+paddingSize = 10*fractionSize;
+axesPaddingSize = 30;
+%fractionSize = the ratio of the size of the window to the size it was
+%originally created at
+%
+originalFontUnits = get(handles.statusbox, 'fontUnits');
+set(handles.statusbox, 'fontUnits', 'pixels');
+statusboxFontSizePixels = get(handles.statusbox, 'fontSize');
+set(handles.statusbox, 'fontUnits', originalFontUnits);
+%
+statusboxPosition = [paddingSize,paddingSize,180*(statusboxFontSizePixels/13),windowSize(2)-2*paddingSize];
+if checkDimensions(statusboxPosition)
+	set(handles.statusbox, 'position', statusboxPosition);
+else
+	return;
+end
+%
+uipanel_adjustOriginalPosition = get(handles.uipanel_adjust, 'position');
+uipanel_actionPosition = [0,0,0,0];
+uipanel_actionPosition(1) = statusboxPosition(1)+statusboxPosition(3)+paddingSize;
+uipanel_actionPosition(2) = paddingSize;
+uipanel_actionPosition(3) = windowSize(1)-uipanel_actionPosition(1)-paddingSize;
+uipanel_actionPosition(4) = uipanel_adjustOriginalPosition(4)+20+5;
+if checkDimensions(uipanel_actionPosition)
+	set(handles.uipanel_action, 'position', uipanel_actionPosition);
+else
+	return;
+end
+%
+push_applyOriginalPosition = get(handles.push_apply, 'position');
+push_applyPosition = [0,0,0,0];
+push_applyPosition(1) = 30;%30
+push_applyPosition(2) = uipanel_actionPosition(4)-(uipanel_actionPosition(4)-3*push_applyOriginalPosition(4)-2*5)/2-push_applyOriginalPosition(4)-push_applyOriginalPosition(4)/4;
+push_applyPosition(3) = push_applyOriginalPosition(3);
+push_applyPosition(4) = push_applyOriginalPosition(4);
+if checkDimensions(push_applyPosition)
+	set(handles.push_apply, 'position', push_applyPosition);
+else
+	return;
+end
+%
+push_applyallOriginalPosition = get(handles.push_applyall, 'position');
+push_applyallPosition = [0,0,0,0];
+push_applyallPosition(1) = 30;%30
+push_applyallPosition(2) = uipanel_actionPosition(4)-(uipanel_actionPosition(4)-3*push_applyallOriginalPosition(4)-2*5)/2-push_applyOriginalPosition(4)-(push_applyallOriginalPosition(4)+5)-push_applyallOriginalPosition(4)/4;
+push_applyallPosition(3) = push_applyallOriginalPosition(3);
+push_applyallPosition(4) = push_applyallOriginalPosition(4);
+if checkDimensions(push_applyallPosition)
+	set(handles.push_applyall, 'position', push_applyallPosition);
+else
+	return;
+end
+%
+push_cancelOriginalPosition = get(handles.push_cancel, 'position');
+push_cancelPosition = [0,0,0,0];
+push_cancelPosition(1) = 30;%30
+push_cancelPosition(2) = uipanel_actionPosition(4)-(uipanel_actionPosition(4)-3*push_cancelOriginalPosition(4)-2*5)/2-push_cancelOriginalPosition(4)-2*(push_cancelOriginalPosition(4)+5)-push_cancelOriginalPosition(4)/4;
+push_cancelPosition(3) = push_cancelOriginalPosition(3);
+push_cancelPosition(4) = push_cancelOriginalPosition(4);
+if checkDimensions(push_cancelPosition)
+	set(handles.push_cancel, 'position', push_cancelPosition);
+else
+	return;
+end
+%
+uipanel_adjustPosition = [0,0,0,0];
+uipanel_adjustPosition(1) = push_cancelPosition(1)+push_cancelPosition(3)+30;
+uipanel_adjustPosition(2) = 10;
+uipanel_adjustPosition(3) = uipanel_adjustOriginalPosition(3);
+uipanel_adjustPosition(4) = uipanel_adjustOriginalPosition(4);
+if checkDimensions(uipanel_adjustPosition)
+	set(handles.uipanel_adjust, 'position', uipanel_adjustPosition);
+else
+	return;
+end
+%
+uipanel3OriginalPosition = get(handles.uipanel3, 'position');
+uipanel3Position = [0,0,0,0];
+uipanel3Position(1) = uipanel_adjustPosition(1)+uipanel_adjustPosition(3)+30;
+uipanel3Position(2) = (uipanel_actionPosition(4)-uipanel3OriginalPosition(4))/2;
+uipanel3Position(3) = uipanel3OriginalPosition(3);
+uipanel3Position(4) = uipanel3OriginalPosition(4);
+if checkDimensions(uipanel3Position)
+	set(handles.uipanel3, 'position', uipanel3Position);
+else
+	return;
+end
+%
+slider_sliceOriginalPosition = get(handles.slider_slice, 'position');
+slider_slicePosition = [0,0,0,0];
+slider_slicePosition(1) = statusboxPosition(1)+statusboxPosition(3)+paddingSize;
+slider_slicePosition(2) = uipanel_actionPosition(2)+uipanel_actionPosition(4)+paddingSize;
+slider_slicePosition(3) = windowSize(1)-slider_slicePosition(1)-paddingSize;
+slider_slicePosition(4) = slider_sliceOriginalPosition(4);
+if checkDimensions(slider_slicePosition)
+	set(handles.slider_slice, 'position', slider_slicePosition);
+else
+	return;
+end
+%
+%
+uipanel4Position = [0,0,0,0];
+uipanel4Position(1) = statusboxPosition(1)+statusboxPosition(3)+paddingSize;
+uipanel4Position(2) = slider_slicePosition(2)+slider_slicePosition(4)+paddingSize;
+uipanel4Position(3) = windowSize(1)-uipanel4Position(1)-paddingSize;
+uipanel4Position(4) = windowSize(2)-uipanel4Position(2)-paddingSize;
+if checkDimensions(uipanel4Position)
+	set(handles.uipanel4, 'position', uipanel4Position);
+else
+	return;
+end
+%
+%axesPaddingSize
+resizeHorizontal = false;
+if uipanel4Position(3)
+	
+end
+axes1Position = [0,0,0,0];
+axes1Position(1) = statusboxPosition(1)+statusboxPosition(3)+paddingSize;
+axes1Position(2) = paddingSize;
+axes1Position(4) = axes1Position(3);
+axes1Position(3) = (windowSize(2)-axes1Position(1)/2);
+if checkDimensions(axes1Position)
+	set(handles.axes1, 'position', axes1Position);
+else
+	return;
+end
+%
+
+% --- Executes during object creation, after setting all properties.
+function figure1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+%
+position = get(hObject, 'position');
+buildSize = position(3:4);
+%get width and height
+setappdata(hObject, 'buildSize', buildSize);
+%
+
+function good = checkDimensions(dims)
+good = false;
+if size(dims)==[1,4]
+	if dims>0
+		good = true;
+	end
+end
+
+
