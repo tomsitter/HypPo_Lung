@@ -1055,6 +1055,10 @@ function analyze_hetero_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_hetero (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+updateStatusBox(handles, 'Beginning heterogeneity calculation', 1);
+
+
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 
@@ -1062,29 +1066,39 @@ patient = handles.patient(index);
 lungs = patient.lungs;
 lungmask = patient.lungmask;
 
-if length(patient.threshold{slice}) < slice
-    threshold = 0;
+if length(patient.mean_noise{slice}) < slice
+%     threshold = 0;
+    noise = 0;
 else
-    threshold = patient.threshold{slice};
+%     threshold = patient.threshold{slice};
+    noise = patient.mean_noise{slice};
 end
 
-if not(threshold)
-    threshold = 0;
+if not(noise)
+    noise = 0;
 end
 
 hetero_images = zeros(size(patient.hetero_images));
+hetero_score = zeros(size(patient.lungs, 3));
 
+wb = waitbar(0, 'Calculating Heterogeneity...');
 for i = 1:size(lungs, 3)
-    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), threshold);
+    waitbar(i/size(lungs, 3), wb);
+    hetero = heterogeneity2(lungs(:,:,i), lungmask(:,:,i), noise);
     
     hetero_images(:,:,i) = hetero;
     
     hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
 end
+close(wb);
 
 %Normalization needs improvement if it is to be compared across patients
 hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
 patient.hetero_images = hetero_images;
 patient.hetero_score = hetero_score;
 handles.patient(index) = patient;
+
+updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
+set(handles.viewleft_hetero, 'Enable', 'on');
+set(handles.viewright_hetero, 'Enable', 'on');
 guidata(hObject, handles);

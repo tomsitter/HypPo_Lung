@@ -31,7 +31,7 @@ h = hist(noise_roi, x);
     hold on;
     plot(x,yhat,'r')
     hold off;
-    
+    close(figure(2));
     % Calculates coefficient of determination, r^2, value
     SStot = sum((h-mean(h)).^2);
     SSerr = sum((h-yhat).^2);
