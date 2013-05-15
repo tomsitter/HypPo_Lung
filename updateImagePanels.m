@@ -1,5 +1,7 @@
 function updateImagePanels(handles)
 
+
+
 slice = max(get(handles.slider_slice, 'Value'), 1);
 
 colormap(gray)
@@ -24,6 +26,7 @@ switch leftpanel
             tslice = min(slice, numslices);
             if not(isempty(handles.patient(pat_index).lungs))
                 imagesc(handles.patient(pat_index).lungs(:, :, tslice));
+               
             else
                 updateStatusBox(handles, 'No lung images loaded', 0);
                 imagesc(gray);
