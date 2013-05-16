@@ -20,7 +20,7 @@ matrix=zeros(ysize1,xsize1);
       %ysize=size(handles.patient(pat_index).lungs(:, :, i),1);
       %xsize=size(handles.patient(pat_index).lungs(:, :, i),2);
       %totalsize=xsize*ysize/4;
-      matrixtemp=imresize(handles.patient(pat_index).lungs(:, :, i),scale);
+       matrixtemp=imresize(handles.patient(pat_index).lungs(:, :, i),scale);
 %matrixtemp =  reshape(handles.patient(pat_index).lungs(:, :, i),4,totalsize);
 %matrixtemp=sum(matrixtemp,1)/4;
 %matrixtemp=reshape(matrixtemp,ysize/4,xsize)';
@@ -38,14 +38,18 @@ matrix=zeros(ysize1,xsize1);
                 updateStatusBox(handles, 'error', 0);
                 imagesc(gray);
         end
-       
-xname='X axis';
-yname='y axis';
-zname='z axis';
+if (get(handles.checkbox1, 'value') == get(handles.checkbox1,'Max')) 
+  matrix=rotatecustom(matrix);
+  
+else
+end
+%xname='X axis';
+%yname='y axis';
+%zname='z axis';
 sliceomatic(matrix);
-xsca=1:size(matrix,1);
-ysca=1:size(matrix, 2);
-zsca=1:size(matrix,3);
+%xsca=1:size(matrix,1);
+%ysca=1:size(matrix, 2);
+%zsca=1:size(matrix,3);
 
-save('new.mat', 'matrix', 'xname', 'yname', 'zname', 'xsca', 'ysca', 'zsca');
+%save('new.mat', 'matrix', 'xname', 'yname', 'zname', 'xsca', 'ysca', 'zsca');
 end

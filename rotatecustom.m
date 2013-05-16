@@ -1,0 +1,19 @@
+function matrix = rotatecustom(matrix)
+sizex=size(matrix, 1);
+sizey=size(matrix,2);
+sizez=size(matrix, 3);
+
+temp3d=[];
+
+for i=1:sizey
+    temp2d =[];
+    for j=1:sizez
+        temp2d=cat(2, temp2d, matrix(:,i,j));
+    end
+   temp3d=cat(3, temp3d, temp2d);
+end
+test=matrix(:,1,1);
+matrix=temp3d;
+
+end
+

@@ -31,7 +31,13 @@ matrix=zeros(ysize1,xsize1);
       matrix= cat(3,matrix,matrixtemp);
            end
        end
-            matrix=double(matrix);        
+       if (get(handles.checkbox1, 'value') == get(handles.checkbox1,'Max')) 
+  matrix=rotatecustom(matrix);
+  
+else
+end
+            matrix=double(matrix);      
+            
       dlmwrite('z.txt', size(matrix));
 
                else
