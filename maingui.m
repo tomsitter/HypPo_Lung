@@ -1100,20 +1100,56 @@ function pushbutton10_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton10 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-VisualizeLung(handles);
+w = waitforbuttonpress;
+a=0;
+if w == 0
+   w = waitforbuttonpress;
+   if w == 0
+        w = waitforbuttonpress;
+         if w == 0
+                w = waitforbuttonpress;
+                if w == 0
+                         w = waitforbuttonpress;
+                         display('FAILURE!!!');
+                else
+                     a=get(gcf,'currentcharacter');
+                        disp(a)
+                 end
+         else
+             a=get(gcf,'currentcharacter');
+                disp(a)
+        end
+   else
+        a=get(gcf,'currentcharacter');
+        disp(a)
+    end
+else
+    a=get(gcf,'currentcharacter');
+    disp(a)
+end
+if a=='1'
+   VisualizeLung(handles)
+elseif a=='2'
+    VisualizeProton(handles)
+else
+    display('Not Valid');
+end
 
 
 
 
 
 
-% --- Executes on button press in pushbutton11.
+
+%{
+ --- Executes on button press in pushbutton11.
 function pushbutton11_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton11 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 VisualizeProton(handles);
+%}
 
 
 
@@ -1171,7 +1207,7 @@ createMatrix(handles);
 
 
 % --- Executes on button press in checkbox1.
-function checkbox1_Callback(hObject, eventdata, handles)
+%function checkbox1_Callback(hObject, eventdata, handles)
 % hObject    handle to checkbox1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
