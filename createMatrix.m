@@ -39,11 +39,14 @@ xname='X axis';
 yname='y axis';
 zname='z axis';
 sliceomatic(matrix);
-xsca=1:size(matrix,1);
-ysca=1:size(matrix, 2);
-zsca=1:size(matrix,3);
+xsca=1:4:(size(matrix,1)*4);
+ysca=1:4:(size(matrix, 2)*4);
+zsca=1:4:(size(matrix,3)*4);
 
-save('new.mat', 'matrix', 'xname', 'yname', 'zname', 'xsca', 'ysca', 'zsca');
+save('temp.mat', 'matrix', 'xname', 'yname', 'zname', 'xsca', 'ysca', 'zsca');
+pause on;
+pause(0.5);
+view3Ddata();
 end
 
             %%%%%%256 X256
