@@ -12,10 +12,16 @@ rightpanel = handles.rightpanel;
 %Check if there are are any patients
 %If not, set checkerboard images and return
 if isempty(handles.patient)
+    hold on;
     axes(handles.axes1);
-    imagesc(gray);
+    hold on;
+    h1=imagesc(gray);
+    set(h1, 'HitTest', 'off');
+    hold on; 
     axes(handles.axes2);
-    imagesc(gray);
+    hold on;
+    h2=imagesc(gray);
+    set(h2, 'HitTest', 'off');
     return;
 end
 
@@ -25,11 +31,13 @@ switch leftpanel
             numslices = size(handles.patient(pat_index).lungs, 3);
             tslice = min(slice, numslices);
             if not(isempty(handles.patient(pat_index).lungs))
-                imagesc(handles.patient(pat_index).lungs(:, :, tslice));
+                h1=imagesc(handles.patient(pat_index).lungs(:, :, tslice));
+                set(h1, 'HitTest', 'off');
                
             else
                 updateStatusBox(handles, 'No lung images loaded', 0);
-                imagesc(gray);
+                h1=imagesc(gray);
+                set(h1, 'HitTest', 'off');
             end
             title('Lungs');
     case 'LM'
@@ -42,17 +50,20 @@ switch leftpanel
             %imagesc(handles.patient(pat_index).lungmask(:, :, val));
         else
             updateStatusBox(handles, 'No lung mask found', 0);
-            imagesc(gray);
+            h1=imagesc(gray);
+            set(h1, 'HitTest', 'off');
         end
         title('Lung Mask');
     case 'B'
         numslices = size(handles.patient(pat_index).body, 3);
         tslice = min(slice, numslices);
         if not(isempty(handles.patient(pat_index).body))
-            imagesc(handles.patient(pat_index).body(:, :, tslice));
+            h1=imagesc(handles.patient(pat_index).body(:, :, tslice));
+            set(h1, 'HitTest', 'off');
         else
             updateStatusBox(handles, 'No body images loaded', 0);
-            imagesc(gray);
+            h1=imagesc(gray);
+            set(h1, 'HitTest', 'off');
         end
         title('Proton');
     case 'BM'
@@ -65,7 +76,8 @@ switch leftpanel
             maskOverlay(body, bodymask);
         else
             updateStatusBox(handles, 'No body mask found', 0);
-            imagesc(gray);
+            h1=imagesc(gray);
+            set(h1, 'HitTest', 'off');
         end
         title('Proton Mask');
     case 'C'
@@ -78,10 +90,12 @@ switch leftpanel
         numslices = size(handles.patient(pat_index).hetero_images, 3);
         tslice = min(slice, numslices);  
         if not(isempty(handles.patient(pat_index).hetero_images(:, :, tslice)));
-            imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            h1=imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            set(h1, 'HitTest', 'off');
         else
             updateStatusBox(handles, 'No heterogeneity map', 0);
-            imagesc(gray);          
+            h1=imagesc(gray);    
+            set(h1, 'HitTest', 'off');
         end
         title('Heterogeneity');
     otherwise
@@ -96,46 +110,52 @@ switch rightpanel
         numslices = size(handles.patient(pat_index).lungs, 3);
         tslice = min(slice, numslices);
         if not(isempty(handles.patient(pat_index).lungs))
-            imagesc(handles.patient(pat_index).lungs(:, :, tslice));
+            h2=imagesc(handles.patient(pat_index).lungs(:, :, tslice));
+            set(h2, 'HitTest', 'off');
         else
             updateStatusBox(handles, 'No lung images loaded', 0);
-            imagesc(gray);
+            h2=imagesc(gray);
+             set(h2, 'HitTest', 'off');
         end
         title('Lungs');
     case 'LM'
         numslices = size(handles.patient(pat_index).lungmask, 3);
         tslice = min(slice, numslices);
         if not(isempty(handles.patient(pat_index).lungmask))
-%                 imagesc(handles.patient(pat_index).lungmask(:, :, val));
+%                 h2=imagesc(handles.patient(pat_index).lungmask(:, :, val));
             lungs = handles.patient(pat_index).lungs(:, :, tslice);
             lungmask = handles.patient(pat_index).lungmask(:, :, tslice);
             maskOverlay(lungs, lungmask);
         else
             updateStatusBox(handles, 'No lung mask', 0);
-            imagesc(gray);
+            h2=imagesc(gray);
+             set(h2, 'HitTest', 'off');
         end
         title('Lung Mask');
     case 'B'
         numslices = size(handles.patient(pat_index).body, 3);
         tslice = min(slice, numslices);
         if not(isempty(handles.patient(pat_index).body))
-            imagesc(handles.patient(pat_index).body(:, :, tslice));
+            h2=imagesc(handles.patient(pat_index).body(:, :, tslice));
+             set(h2, 'HitTest', 'off');
         else
             updateStatusBox(handles, 'No body images loaded', 0);
-            imagesc(gray);
+            h2=imagesc(gray);
+             set(h2, 'HitTest', 'off');
         end
         title('Proton');
     case 'BM'
         numslices = size(handles.patient(pat_index).bodymask, 3);
         tslice = min(slice, numslices);
         if not(isempty(handles.patient(pat_index).bodymask))
-%             imagesc(handles.patient(pat_index).bodymask(:, :, val));
+%             h2=imagesc(handles.patient(pat_index).bodymask(:, :, val));
             body = handles.patient(pat_index).body(:, :, tslice);
             bodymask = handles.patient(pat_index).bodymask(:, :, tslice);
             maskOverlay(body, bodymask);
         else
             updateStatusBox(handles, 'No body mask', 0);
-            imagesc(gray);
+            h2=imagesc(gray);
+             set(h2, 'HitTest', 'off');
         end
         title('Proton Mask');
     case 'C'
@@ -148,10 +168,12 @@ switch rightpanel
         numslices = size(handles.patient(pat_index).hetero_images, 3);
         tslice = min(slice, numslices);  
         if not(isempty(handles.patient(pat_index).hetero_images(:, :, tslice)));
-            imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            h2=imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+             set(h2, 'HitTest', 'off');
         else
             updateStatusBox(handles, 'No heterogeneity map', 0);
-            imagesc(gray);          
+            h2=imagesc(gray);   
+             set(h2, 'HitTest', 'off');
         end
         title('Heterogeneity');
     otherwise
@@ -159,3 +181,5 @@ switch rightpanel
         updateStatusBox(handes,msg, 1);
         title('');
 end
+set(h1, 'HitTest', 'off');
+set(h2, 'HitTest', 'off');

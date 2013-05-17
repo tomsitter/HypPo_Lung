@@ -22,9 +22,11 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 16-May-2013 11:45:14
+% Last Modified by GUIDE v2.5 17-May-2013 13:09:51
 
 % Begin initialization code - DO NOT EDIT
+global pressed;
+
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -46,7 +48,7 @@ end
 
 % --- Executes just before maingui is made visible.
 function maingui_OpeningFcn(hObject, ~, handles, varargin)
-% This function has no output args, see OutputFcn.
+% his function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1097,6 +1099,11 @@ guidata(hObject, handles);
 
 % --- Executes on button press in pushbutton10.
 function pushbutton10_Callback(hObject, eventdata, handles)
+global pressed;
+
+pressed=1;
+
+%{
 % hObject    handle to pushbutton10 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1134,7 +1141,7 @@ elseif a=='2'
 else
     display('Not Valid');
 end
-
+%}
 
 
 
@@ -1213,3 +1220,41 @@ createMatrix(handles);
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox1
+
+
+% --- Executes on mouse press over axes background.
+function axes1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global pressed;
+
+if pressed == 1 
+    VisualizeLung(handles);
+else
+end
+
+
+function axes2_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global pressed;
+if pressed == 1   
+VisualizeProton(handles);
+else
+end
+
+
+% --- Executes on button press in pushbutton13.
+function pushbutton13_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% hObject    handle to file_savepatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%Get current patient
+stevefunction(handles);
