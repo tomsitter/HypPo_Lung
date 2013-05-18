@@ -3,7 +3,7 @@ function hetero_image = heterogeneity2(image, mask, noise)
 % load roi012
 hetero_image = zeros(size(mask));
 
-lungsize = regionprops(mask, 'BoundingBox');
+% lungsize = regionprops(mask, 'BoundingBox');
 
 %clean up holes in lungmask
 mask = imclose(mask, strel('disk', 3));
@@ -17,14 +17,14 @@ stats = regionprops(L, 'BoundingBox');
 
 for i = 1:length(stats)
 
-    leftL = floor(stats(i).BoundingBox(1));
-    leftR = ceil(stats(i).BoundingBox(1) + stats(i).BoundingBox(3));
+%     leftL = floor(stats(i).BoundingBox(1));
+%     leftR = ceil(stats(i).BoundingBox(1) + stats(i).BoundingBox(3));
 
 % rightL = floor(stats(2).BoundingBox(1));
 % rightR = ceil(stats(2).BoundingBox(1) + stats(1).BoundingBox(3));
 
 % Lscale = 2 * round((rightL+rightR-leftL-leftR)/40) + 1;
-    Lscale = 9;
+    Lscale = 4;
 % noise0=mean2(   image(min(hy):max(hy),min(hx):max(hx)));
 
 
@@ -68,12 +68,12 @@ for i = 1:length(stats)
                 if sum(sum(overlap))==(1+2*round(Lscale))*(1+2*round(Lscale))
                     rage0=mean2(  image (i+ upL -1-round(Lscale):i+ upL -1+round(Lscale),...
                                       j+leftL-1-round(Lscale):j+leftL-1+round(Lscale))-noise);
-                    if rage0>noise && rage0>2.0
+                    if rage0>noise
                         ave0L(i,j)=rage0;
                         stdev0L(i,j)=std2(image(i+ upL -1-round(Lscale):i+ upL -1+round(Lscale),...
                                              j+leftL-1-round(Lscale):j+leftL-1+round(Lscale)));
                     else
-                        stdev0L(i,j)=-0.1;
+                        stdev0L(i,j)=-1;
                     end
                 else
                     [iroi,jroi]=find(overlap);
@@ -88,7 +88,7 @@ for i = 1:length(stats)
                         ave0L(i,j)=rage0;
                         stdev0L(i,j)=std(valroi0);
                     else
-                        stdev0L(i,j)=-0.1;
+                        stdev0L(i,j)=-1;
                     end
                 end
             end

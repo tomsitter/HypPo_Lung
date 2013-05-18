@@ -1081,16 +1081,16 @@ end
 hetero_images = zeros(size(patient.hetero_images));
 hetero_score = zeros(size(patient.lungs, 3));
 
-wb = waitbar(0, 'Calculating Heterogeneity...');
-for i = 1:size(lungs, 3)
-    waitbar(i/size(lungs, 3), wb);
-    hetero = heterogeneity2(lungs(:,:,i), lungmask(:,:,i), noise);
+% wb = waitbar(0, 'Calculating Heterogeneity...');
+% for i = 1:size(lungs, 3)
+%     waitbar(i/size(lungs, 3), wb);
+    hetero = heterogeneity2(lungs(:,:,7), lungmask(:,:,7), noise);
     
-    hetero_images(:,:,i) = hetero;
+    hetero_images(:,:,7) = hetero;
     
-    hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
-end
-close(wb);
+    hetero_score(7) = sum(hetero) / sum(lungmask(:,:,7));
+% end
+% close(wb);
 
 %Normalization needs improvement if it is to be compared across patients
 hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
