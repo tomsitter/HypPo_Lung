@@ -41,7 +41,8 @@ matrix=zeros(ysize1,xsize1);
 if (get(handles.checkbox1, 'value') == get(handles.checkbox1,'Max')) 
   matrix=rotatecustom(matrix);
   
-else
+elseif (get(handles.checkbox2, 'value') == get(handles.checkbox2,'Max')) 
+     matrix=rotatecustom2(matrix);
 end
 %xname='X axis';
 %yname='y axis';

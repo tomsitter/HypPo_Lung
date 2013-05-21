@@ -22,10 +22,11 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 17-May-2013 13:09:51
+% Last Modified by GUIDE v2.5 17-May-2013 14:13:15
 
 % Begin initialization code - DO NOT EDIT
 global pressed;
+pressed=0;
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -1258,3 +1259,12 @@ function pushbutton13_Callback(hObject, eventdata, handles)
 
 %Get current patient
 stevefunction(handles);
+
+
+% --- Executes on button press in checkbox2.
+function checkbox2_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox2

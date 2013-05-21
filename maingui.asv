@@ -22,10 +22,11 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 17-May-2013 10:07:59
+% Last Modified by GUIDE v2.5 17-May-2013 14:13:15
 
 % Begin initialization code - DO NOT EDIT
-pressed=0
+global pressed;
+
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -66,8 +67,9 @@ handles.rightpanel = 'B';
 % handles.slice_index = 1;
 handles.state = 'idle';
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 % Choose default command line output for maingui
 handles.output = hObject;
 
@@ -126,7 +128,9 @@ function slider_slice_Callback(hObject, ~, handles)
 
 %val = get(hObject, 'Value');
 
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -447,7 +451,9 @@ if strcmp(state, 'def_noiseregion')
     
     if not(ok)
         
-        updateImagePanels(handles);
+        [h1, h2]= updateImagePanels(handles);
+        set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 
         %Finished with current task
         handles.state = 'idle';
@@ -478,8 +484,9 @@ if strcmp(state, 'def_noiseregion')
     %set(handles.analyze_threshold, 'Enable', 'on');
 end
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 updateMenuOptions(handles);
 
 %Finished with current task
@@ -522,8 +529,9 @@ if strcmp(state, 'def_noiseregion')
     %set(handles.analyze_threshold, 'Enable', 'on');
 end
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 %Finished with current task
 handles.state = 'idle';
 
@@ -556,7 +564,9 @@ function viewright_lungs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'L';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -565,7 +575,9 @@ function viewright_lungmask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'LM';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -574,7 +586,9 @@ function viewright_body_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'B';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -583,7 +597,9 @@ function viewright_bodymask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'BM';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -592,7 +608,9 @@ function viewleft_lungs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'L';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -601,7 +619,9 @@ function viewleft_lungmask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'LM';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -610,7 +630,9 @@ function viewleft_body_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'B';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -619,7 +641,9 @@ function viewleft_bodymask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'BM';
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 
@@ -670,8 +694,9 @@ end
 mask = mask | roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles)
 
 % --------------------------------------------------------------------
@@ -714,8 +739,9 @@ end
 mask = mask & ~roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles)
 
 % --------------------------------------------------------------------
@@ -772,8 +798,9 @@ end
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles)
 
 % --------------------------------------------------------------------
@@ -816,8 +843,9 @@ end
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles)
 
 
@@ -848,9 +876,10 @@ handles.patient(index) = patient;
 handles.leftpanel = 'B';
 handles.rightpanel = 'BM';
 
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
 updateMenuOptions(handles);
-
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 
@@ -861,8 +890,9 @@ function push_cancel_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %untested
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 
 % --- Executes on button press in push_up.
 function push_up_Callback(hObject, eventdata, handles)
@@ -898,9 +928,10 @@ function viewright_coreg_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
 guidata(hObject, handles);
-
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 % --------------------------------------------------------------------
 function viewleft_coreg_Callback(hObject, eventdata, handles)
 % hObject    handle to viewleft_coreg (see GCBO)
@@ -908,9 +939,10 @@ function viewleft_coreg_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple, Body: Green', 1);
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
 guidata(hObject, handles);
-
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 
 % --------------------------------------------------------------------
 function viewright_hetero_Callback(hObject, eventdata, handles)
@@ -919,9 +951,10 @@ function viewright_hetero_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
 guidata(hObject, handles);
-
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 % --------------------------------------------------------------------
 function viewleft_hetero_Callback(hObject, eventdata, handles)
 % hObject    handle to viewleft_hetero (see GCBO)
@@ -929,9 +962,10 @@ function viewleft_hetero_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-updateImagePanels(handles);
+[h1, h2]= updateImagePanels(handles);
 guidata(hObject, handles);
-
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 
 % --------------------------------------------------------------------
 function analyze_coreg_Callback(hObject, eventdata, handles)
@@ -954,8 +988,9 @@ bodyimg = patient(pat_index).body(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
 
 handles.leftpanel='BM';
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
 
 
@@ -1018,8 +1053,9 @@ set(hObject, 'UserData', handles.patient(index).bodymask(:,:,slice));
 
 handles.patient(index).bodymask(:,:,slice) = saved_mask;
 
-updateImagePanels(handles);
-
+[h1, h2]= updateImagePanels(handles);
+set(h1,'ButtonDownFcn',@test);
+set(h2,'ButtonDownFcn',@test2);
 guidata(hObject, handles);
 
 
@@ -1098,7 +1134,10 @@ guidata(hObject, handles);
 
 % --- Executes on button press in pushbutton10.
 function pushbutton10_Callback(hObject, eventdata, handles)
+global pressed;
+
 pressed=1;
+
 %{
 % hObject    handle to pushbutton10 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1223,14 +1262,23 @@ function axes1_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to axes1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-VisualizeLung(handles);
+global pressed;
+
+if pressed == 1 
+    VisualizeLung(handles);
+else
+end
 
 
 function axes2_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to axes1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global pressed;
+if pressed == 1   
 VisualizeProton(handles);
+else
+end
 
 
 % --- Executes on button press in pushbutton13.
@@ -1238,3 +1286,30 @@ function pushbutton13_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton13 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% hObject    handle to file_savepatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%Get current patient
+stevefunction(handles);
+
+
+% --- Executes on button press in checkbox2.
+function checkbox2_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox2
+function test(src,varargin, handles)
+display(VisualizeLung(handles));
+
+function test2(src,varargin)
+display(matrix(4));
+
+function btn_Callback(hObject, eventdata, handles)
+set(h, 'Callback', {@test, handles});
+
+function test(hObject, eventdata, handles)
+handles

@@ -32,7 +32,7 @@ function sliceomaticmotion(fig,action)
  % obj = hittest(fig);
 
   % Some objects get a special pointer when the mouse waves
-  %{
+ 
   over them.  Get it from appdata.
   if ~isempty(obj)
       
