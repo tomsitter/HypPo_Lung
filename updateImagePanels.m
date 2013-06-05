@@ -79,7 +79,7 @@ switch leftpanel
         numslices = size(handles.patient(pat_index).hetero_images, 3);
         tslice = min(slice, numslices);  
         if not(isempty(handles.patient(pat_index).hetero_images(:, :, tslice)));
-            imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            imshow(handles.patient(pat_index).hetero_images(:, :, tslice));
         else
             updateStatusBox(handles, 'No heterogeneity map', 0);
             imagesc(gray);          
@@ -149,7 +149,7 @@ switch rightpanel
         numslices = size(handles.patient(pat_index).hetero_images, 3);
         tslice = min(slice, numslices);  
         if not(isempty(handles.patient(pat_index).hetero_images(:, :, tslice)));
-            imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            imshow(handles.patient(pat_index).hetero_images(:, :, tslice));
             bw = 0;
             if bw==1
                 map = [1 1 1; 0.92 0.92 0.92; 0.84 0.84 0.84; 0.76 0.76 0.76; 0.68 0.68 0.68; 0.6 0.6 0.6; ...

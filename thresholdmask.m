@@ -31,36 +31,70 @@ if not(isreal(norm_signal))
     return;
 end
 
-[center,member] = fcm(norm_signal,5);
-[c, m] = kmeans(norm_signal, 5, 'EmptyAction', 'singleton', 'Replicates', 5);
+% [center,member] = fcm(norm_signal,5);
+[c, m] = kmeans(image(:), 5, 'EmptyAction', 'singleton', 'Replicates', 5);
 
-temp_mask = reshape(c, size(image));
+% temp_mask = reshape(c, size(image));
 
-threshmask = temp_mask > 1;
+first_mask = zeros(size(image(:)));
 
+[val m_ind] = sort(m);
 
-[~,cidx] = sort(center);
-member = member';
-member_n = member(:,cidx);
-[~,label] = max(member_n,[],2);
-level_bw = (max(norm_signal(label == 1)) + ...
-min(norm_signal(label == 2)))/2;
+for i = 1:length(m)
+    first_mask(c == m_ind(i)) = i;
+end
+
+first_mask = reshape(first_mask, size(image));
+
+threshmask = first_mask > 1;
+
+%second level kmeans of noise region, not yet implemented
+
+cluster1 = first_mask == 1;
+
+second_signal = norm_signal(cluster1);
+
+[c2, m2] = kmeans(second_signal, 4, 'EmptyAction', 'singleton', 'Replicates', 5);
+
+% tmask = reshape(c2, size(image));
+
+c3 = c2 > 2;
+
+newcluster1 = zeros(size(cluster1));
+newcluster1(cluster1) = c3;
+newcluster2 = reshape(newcluster1, size(image));
+
+% newcluster1(newcluster1 == 1) = 0; 
+% newcluster1 = newcluster1 .* 2;
+
+final_mask = first_mask + newcluster2;
+
+threshmask = final_mask > 1;
+
+% [~,cidx] = sort(center);
+% member = member';
+% member_n = member(:,cidx);
+% [~,label] = max(member_n,[],2);
+% level_bw = (max(norm_signal(label == 1)) + ...
+% min(norm_signal(label == 2)))/2;
 
     
 % Binarizes the image based on the threshold level by FCM clustering
-bw = im2bw(norm_segmented,level_bw);
+% bw = im2bw(norm_segmented,level_bw);
 
 % Labels connective regions and passes through area filter
-bw_erode = imerode(bw,se);
-bw_erodek = imerode(threshmask, se);
+% bw_erode = imerode(bw,se);
+bw_erode = imerode(threshmask, se);
+% L = bwlabel(bw_erode);
 L = bwlabel(bw_erode);
-Lk = bwlabel(bw_erodek);
-R = regionprops(L,'Area');
-Rk = regionprops(Lk, 'Area');
-idx = find([R.Area] > 40);   % Area threshold
-idxk = find([Rk.Area] > 40);
-bw_filt = ismember(L,idx);
-bw_filtk = ismember(Lk, idxk);
-final_maskk = uint8(imdilate(bw_filtk, se));
+% R = regionprops(L,'Area');
+R = regionprops(L, 'Area');
+% idx = find([R.Area] > 40);   % Area threshold
+idx = find([R.Area] > 40);
+% bw_filt = ismember(L,idx);
+bw_filt = ismember(L, idx);
+final_mask = uint8(imdilate(bw_filt, se) .* final_mask);
+final_mask = final_mask > 0;
+
 % figure(3), imagesc(final_maskk);
-final_mask = uint8(imdilate(bw_filt,se));
+% final_mask = uint8(imdilate(bw_filt,se));

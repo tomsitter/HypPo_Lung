@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 26-Apr-2013 22:28:48
+% Last Modified by GUIDE v2.5 29-May-2013 20:49:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -722,6 +722,28 @@ updateImagePanels(handles);
 guidata(hObject, handles)
 
 % --------------------------------------------------------------------
+function manual_lremoveall_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_lremoveall (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No lung images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).lungmask(:,:,slice);
+handles.patient(index).lungmask(:,:,slice) = zeros(size(mask));
+
+updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
 function manual_lungmask_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_lungmask (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1079,23 +1101,23 @@ if not(noise)
 end
 
 hetero_images = zeros(size(patient.hetero_images));
-hetero_score = zeros(size(patient.lungs, 3));
+% hetero_score = zeros(size(patient.lungs, 3));
 
-% wb = waitbar(0, 'Calculating Heterogeneity...');
-% for i = 1:size(lungs, 3)
-%     waitbar(i/size(lungs, 3), wb);
-    hetero = heterogeneity2(lungs(:,:,7), lungmask(:,:,7), noise);
+wb = waitbar(0, 'Calculating Heterogeneity...');
+for i = 1:size(lungs, 3)
+    waitbar(i/size(lungs, 3), wb);
+    hetero = heterogeneity2(lungs(:,:,i), lungmask(:,:,i), noise);
     
-    hetero_images(:,:,7) = hetero;
+    hetero_images(:,:,i) = hetero;
     
-    hetero_score(7) = sum(hetero) / sum(lungmask(:,:,7));
-% end
-% close(wb);
+%     hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
+end
+close(wb);
 
 %Normalization needs improvement if it is to be compared across patients
-hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
+% hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
 patient.hetero_images = hetero_images;
-patient.hetero_score = hetero_score;
+% patient.hetero_score = hetero_score;
 handles.patient(index) = patient;
 
 updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
