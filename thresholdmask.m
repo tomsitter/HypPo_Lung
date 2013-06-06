@@ -1,9 +1,11 @@
-function final_mask = thresholdmask(image, thres, mean_noise)
+function binary_mask = thresholdmask(image, thres, mean_noise)
 
 
 %%%%%%%%%%%%%%%%%%%%% Binarization of Hypex Images %%%%%%%%%%%%%%%%%%%%%
 image = double(image);
 mask = image > thres;
+binary_mask = zeros(size(image));
+
 
 %%%%%%%%%%%%%%%%%%%%% Corrects hypex image by mask %%%%%%%%%%%%%%%%%%%%%
     
@@ -32,7 +34,7 @@ if not(isreal(norm_signal))
 end
 
 % [center,member] = fcm(norm_signal,5);
-[c, m] = kmeans(image(:), 5, 'EmptyAction', 'singleton', 'Replicates', 5);
+[c, m] = kmeans(norm_segmented(:), 5, 'EmptyAction', 'singleton', 'Replicates', 5);
 
 % temp_mask = reshape(c, size(image));
 
@@ -94,7 +96,7 @@ idx = find([R.Area] > 40);
 % bw_filt = ismember(L,idx);
 bw_filt = ismember(L, idx);
 final_mask = uint8(imdilate(bw_filt, se) .* final_mask);
-final_mask = final_mask > 0;
+binary_mask = final_mask > 0;
 
 % figure(3), imagesc(final_maskk);
 % final_mask = uint8(imdilate(bw_filt,se));
