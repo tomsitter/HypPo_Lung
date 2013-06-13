@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 29-May-2013 20:49:04
+% Last Modified by GUIDE v2.5 09-Jun-2013 11:52:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1106,7 +1106,7 @@ hetero_images = zeros(size(patient.hetero_images));
 wb = waitbar(0, 'Calculating Heterogeneity...');
 for i = 1:size(lungs, 3)
     waitbar(i/size(lungs, 3), wb);
-    hetero = heterogeneity2(lungs(:,:,i), lungmask(:,:,i), noise);
+    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
     
     hetero_images(:,:,i) = hetero;
     
@@ -1124,3 +1124,46 @@ updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
 set(handles.viewleft_hetero, 'Enable', 'on');
 set(handles.viewright_hetero, 'Enable', 'on');
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_heteroscore_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_heteroscore (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+patients = handles.patient;
+pat_index = handles.pat_index;
+
+ids = {patients(:).id};
+
+if isempty(ids) 
+%     file_loadpatient_Callback(hObject, eventdata, handles)
+        msg = sprintf('No patients selected');
+        updateStatusBox(handles, msg, 1);
+else
+    [selection, ok] = listdlg('PromptString', 'Select a patient:', ...
+                              'ListString', ids, 'SelectionMode', 'multiple', ...
+                              'InitialValue', pat_index);
+
+    if ok
+        
+        msg = sprintf('Calculating heterogeneity scores');
+        updateStatusBox(handles, msg, 1);
+        
+        selected = patients(selection);
+            
+        scored_patients = heteroscore(selected);
+        patients(selection) = scored_patients;
+        handles.patient = patients;
+
+        msg = sprintf('Finished Calculating heterogeneity scores');
+        updateStatusBox(handles, msg, 0);
+
+%             updateSliceSlider(hObject, handles);
+
+%             updateViewOptions(handles);
+%             updateMenuOptions(handles);
+
+        guidata(hObject, handles);
+    end
+end

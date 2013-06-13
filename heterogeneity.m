@@ -1,79 +1,156 @@
-function [ hetero ] = heterogeneity( image, mask, thresh )
-%HETEROGENEITY Summary of this function goes here
-%   Detailed explanation goes here
+function hetero_image = heterogeneity(image, mask, noise)
 
-% horz = sum(mask, 1);
-% left = find(horz, 1, 'first');
-% right = find(horz, 1, 'last');
-% 
-% vert = sum(mask, 2)
-% top = find(vert, 1, 'first');
-% bottom = find(vert, 1, 'last');
-% 
-% width = right - left;
-% height = bottom - top;
+% load roi012
+hetero_image = zeros(size(mask));
 
-% bb = regionprops(mask, 'BoundingBox');
+% lungsize = regionprops(mask, 'BoundingBox');
 
-% x = round(bb.BoundingBox(1));
-% y = round(bb.BoundingBox(2));
-% width = round(bb.BoundingBox(3)); 
-% height = round(bb.BoundingBox(4));
-
-% cropped_mask = mask(y:y+height, x:x+width);
-% cropped_img = image(y:y+height, x:x+width);
-
+%clean up holes in lungmask
 mask = imclose(mask, strel('disk', 3));
 
-erode_mask = imerode(mask, strel('ball', 5,5));
-m = max(erode_mask(:));
-mask = erode_mask == m;
+L = bwlabel(mask);
+stats = regionprops(L, 'BoundingBox');
 
-mask_inv = not(mask);
+% if length(stats) < 2
+%     return
+% end;
 
-% avg_signal = sum(image) ./ sum(mask);
+for i = 1:length(stats)
 
-% avg_signal = mean2(double(image) .* mask);
+%     leftL = floor(stats(i).BoundingBox(1));
+%     leftR = ceil(stats(i).BoundingBox(1) + stats(i).BoundingBox(3));
 
-%Make background have intensity of average of lung region
-image_noedge = image;
-image_noedge(mask_inv) = thresh;
+% rightL = floor(stats(2).BoundingBox(1));
+% rightR = ceil(stats(2).BoundingBox(1) + stats(1).BoundingBox(3));
+
+% Lscale = 2 * round((rightL+rightR-leftL-leftR)/40) + 1;
+    Lscale = 4;
+% noise0=mean2(   image(min(hy):max(hy),min(hx):max(hx)));
 
 
+    gxL = [floor(stats(i).BoundingBox(1)); ceil(stats(i).BoundingBox(1)+stats(i).BoundingBox(3))];
+    gyL = [floor(stats(i).BoundingBox(2)+stats(i).BoundingBox(4)); ceil(stats(i).BoundingBox(2))];
 
-% lung_only = uint8(mask) .* image;
+% gxR = [floor(stats(2).BoundingBox(1)); ceil(stats(2).BoundingBox(1)+stats(2).BoundingBox(3))];
+% gyR = [floor(stats(2).BoundingBox(2)); ceil(stats(2).BoundingBox(2)+stats(2).BoundingBox(4))];
 
-% padded_lung = padarray(lung_only, [1 1], 'symmetric', 'both');
+    upL = max(min(gyL), 1);
+    downL = max(gyL);
+    leftL = max(min(gxL), 1);
+    rightL = max(gxL);
+% upR=min(gyR);
+% downR=max(gyR);
+% leftR=min(gxR);
+% rightR=max(gxR);
 
-hetero = stdfilt(image_noedge);
+    % left and right ROIs
+    bwL=mask(upL:downL,leftL:rightL);
+    % bwR=mask(upR:downR,leftR:rightR);
+    LRroi=zeros(size(mask));
+    LRroi(upL:downL,leftL:rightL)=1;
+    % LRroi(upR:downR,leftR:rightR)=1;
 
-hetero = mask .* hetero;
+    ave0L = ones(downL-upL+1, rightL-leftL+1);
+    stdev0L = zeros(downL-upL+1, rightL-leftL+1);
 
-% glcm = graycomatrix(lung_only);
-% stats = graycoprops(glcm, {'Contrast', 'Homogeneity'});
+    % average and standard deviation calculation for each of the 3 image sets
+    for i=1:downL-upL+1
+        for j=1:rightL-leftL+1
+            pixel=zeros(size(image));
+            pixel(i+upL-1,j+leftL-1)=1;
+            inbw=sum(sum(pixel.*im2double(mask)));
+            if inbw==1
+    %             sub0=0;  sub1=0;  sub2=0;
+                ROI=zeros(size(image));
+                ROI(i+ upL -1-round(Lscale):i+ upL -1+round(Lscale),...
+                    j+leftL-1-round(Lscale):j+leftL-1+round(Lscale))=1;
+                overlap=ROI.*im2double(mask);
+                if sum(sum(overlap))==(1+2*round(Lscale))*(1+2*round(Lscale))
+                    rage0=mean2(  image (i+ upL -1-round(Lscale):i+ upL -1+round(Lscale),...
+                                      j+leftL-1-round(Lscale):j+leftL-1+round(Lscale))-noise);
+                    if rage0>noise
+                        ave0L(i,j)=rage0;
+                        stdev0L(i,j)=std2(image(i+ upL -1-round(Lscale):i+ upL -1+round(Lscale),...
+                                             j+leftL-1-round(Lscale):j+leftL-1+round(Lscale)));
+                    else
+                        stdev0L(i,j)=-1;
+                    end
+                else
+                    [iroi,jroi]=find(overlap);
+                    lroi=length(iroi);
+                    valroi0=zeros(1, lroi);
+                    for k=1:lroi
+                        valroi0(k)=image(iroi(k),jroi(k));
+                    end
 
-% hetero = hetero(2:end-1, 2:end-1);
+                    rage0=mean(valroi0); %-noise;
+                    if rage0>noise
+                        ave0L(i,j)=rage0;
+                        stdev0L(i,j)=std(valroi0);
+                    else
+                        stdev0L(i,j)=-1;
+                    end
+                end
+            end
+        end
+    end
 
-% imagesc(hetero);
-
-% regions = bwlabel(cropped_mask);
+% ave0R = ones(downR-upR+1, rightR-leftR+1);
+% stdev0R = zeros(downR-upR+1, rightR-leftR+1);
 % 
-% bb_regions = regionprops(regions, 'BoundingBox');
-% 
-% for i = 1:length(bb_regions)
-%     
-% y = round(bb_regions.BoundingBox(1));
-% x = round(bb_regions.BoundingBox(2));
-% height = round(bb_regions.BoundingBox(3)); 
-% width = round(bb_regions.BoundingBox(4));
-% 
-% roi = image(y:y+height, x:x+width);
-% 
-% hetero = imfilter(f,w, 'corr', 'symmetric', 'same')
-% 
-%     
+% for i=1:downR-upR+1
+%     for j=1:rightR-leftR+1
+%         pixel=zeros(size(image));
+%         pixel(i+upR-1,j+leftR-1)=1;
+%         inbw=sum(sum(pixel.*im2double(mask)));
+%         if inbw==1
+% %             sub0=0;  sub1=0;  sub2=0;
+%             ROI=zeros(size(image));
+%             ROI(i+ upR -1-round(Lscale):i+ upR -1+round(Lscale),...
+%                 j+leftR-1-round(Lscale):j+leftR-1+round(Lscale))=1;
+%             overlap=ROI.*im2double(mask);
+%             if sum(sum(overlap))==(1+2*round(Lscale))*(1+2*round(Lscale))
+%                 rage0=mean2(  image (i+ upR -1-round(Lscale):i+ upR -1+round(Lscale),...
+%                                   j+leftR-1-round(Lscale):j+leftR-1+round(Lscale))-noise);
+%                 if rage0>noise
+%                     ave0R(i,j)=rage0;
+%                     stdev0R(i,j)=std2(image(i+ upR -1-round(Lscale):i+ upR -1+round(Lscale),...
+%                                          j+leftR-1-round(Lscale):j+leftR-1+round(Lscale)));
+%                 else
+%                     stdev0R(i,j)=-0.1;
+%                 end
+%             else
+%                 [iroi,jroi]=find(overlap);
+%                 lroi=length(iroi);
+%                 valroi0=zeros(1, lroi);
+%                 for k=1:lroi
+%                     valroi0(k)=image(iroi(k),jroi(k));
+%                 end
+%                 rage0=mean(valroi0)-noise;
+%                 if rage0>noise
+%                     ave0R(i,j)=rage0;
+%                     stdev0R(i,j)=std(valroi0);
+%                 else
+%                     stdev0R(i,j)=-0.1;
+%                 end
+%             end
+%         end
+%     end
 % end
 
+    ave0(upL:downL,leftL:rightL)=ave0L.*im2double(bwL);
+    % ave0(upR:downR,leftR:rightR)=ave0R.*im2double(bwR);
+    stdev0(upL:downL,leftL:rightL)=stdev0L.*im2double(bwL);
+    % stdev0(upR:downR,leftR:rightR)=stdev0R.*im2double(bwR);
 
+    NDdev0=stdev0./ave0;
+
+    % up=min(upL,upR);
+    % down=max(downL,downR);
+    % left1=min(leftL,leftR);
+    % right=max(rightL,rightR);
+    bwroi=LRroi(upL:downL,leftL:rightL).*im2double(mask(upL:downL,leftL:rightL));
+    hetero=NDdev0(upL:downL,leftL:rightL).*bwroi;
+
+    hetero_image(upL:downL,leftL:rightL) = hetero;
 end
-
