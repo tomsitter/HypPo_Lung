@@ -72,6 +72,7 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+checkAndGetUpdates('tomsitter','HypPo_Lung');
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
