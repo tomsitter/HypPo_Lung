@@ -8,7 +8,7 @@ l = sum(patient.lungs(:)) > 0;
 b = sum(patient.body(:)) > 0;
 lm = sum(patient.lungmask(:)) > 0;
 bm = sum(patient.bodymask(:)) > 0;
-h = sum(patient.hetero_images(:)) > 0;
+h = sum(patient.hetero_images(:)) > 0 || isnan(sum(patient.hetero_images(:)));
 
 if l
     set(handles.analyze_seglungs, 'Enable', 'on');
