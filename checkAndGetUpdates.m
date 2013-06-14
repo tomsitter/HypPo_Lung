@@ -1,4 +1,4 @@
-function checkAndGetUpdates(username, repo)
+function checkAndGetUpdates(username, repo, projectFolderPath)
 	% checkAndGetUpdates() will connect to GitHub and check for/download the
 	% latest version.
 	% 
@@ -18,35 +18,35 @@ function checkAndGetUpdates(username, repo)
 	%			- lastUpdateCheck.txt
 	%		- versionNumber.txt
 	% 
-	if exist('versionNumber.txt','file')==0
+	if exist([projectFolderPath,'/versionNumber.txt'],'file')==0
 		% the current program doesn't have a file with the version number,
 		% so the current version is a development version
 		disp 'Running development version.'
 		return;
 	end
 	%
-	if exist('Updates','dir')==0
+	if exist([projectFolderPath,'/Updates'],'dir')==0
 		% if the 'Updates' folder doesn't exist, create it
-		mkdir('Updates');
+		mkdir([projectFolderPath,'/Updates']);
 	end
 	%
-	if exist('Updates/DONT STORE FILES HERE','file')==0
+	if exist([projectFolderPath,'/Updates/DONT STORE FILES HERE'],'file')==0
 		% if the 'DONT STORE FILES HERE' file doesn't exist, create it
-		fileID = fopen('Updates/DONT STORE FILES HERE','w');
+		fileID = fopen([projectFolderPath,'/Updates/DONT STORE FILES HERE'],'w');
 		fclose(fileID);
 	end
 	%
-	if exist('Updates/lastUpdateCheck.txt','file')==0
+	if exist([projectFolderPath,'/Updates/lastUpdateCheck.txt'],'file')==0
 		% if the 'Updates/lastUpdateCheck.txt' file doesn't exist, create it
-		fileID = fopen('Updates/lastUpdateCheck.txt','w');
+		fileID = fopen([projectFolderPath,'/Updates/lastUpdateCheck.txt'],'w');
 		fclose(fileID);
 	end
 	%
-	fileID = fopen('Updates/lastUpdateCheck.txt','r');
+	fileID = fopen([projectFolderPath,'/Updates/lastUpdateCheck.txt'],'r');
 	lastUpdateCheckDate = fscanf(fileID, '%s');
 	fclose(fileID);
 	%
-	fileID = fopen('Updates/lastUpdateCheck.txt','w');
+	fileID = fopen([projectFolderPath,'/Updates/lastUpdateCheck.txt'],'w');
 	currentDate = date;
 	% date is a MATLAB variable
 	%
@@ -69,22 +69,22 @@ function checkAndGetUpdates(username, repo)
 	fclose(fileID);
 	%
 	if updateCheck
-		fileID = fopen('versionNumber.txt','r');
+		fileID = fopen([projectFolderPath,'/versionNumber.txt'],'r');
 		currentVersionString = fscanf(fileID,'%s');
 		% get the current version
 		fclose(fileID);
 		%
 		downloadedVersionString = '0';
-		latestVersions = dir('Updates/Latest_Version');
+		latestVersions = dir([projectFolderPath,'/Updates/Latest_Version']);
 		% get all files and folders in the directory
 		%
 		for updateFolder=1:size(latestVersions,1)
 			% loop through all files and folders in the 'Latest_Version' directory 
 			if latestVersions(updateFolder).isdir&&strcmp(latestVersions(updateFolder).name,'.')==0&&strcmp(latestVersions(updateFolder).name,'..')==0
 				% if the current object is a folder and not '.' OR '..'
-				if exist(['Updates/Latest_Version/',latestVersions(updateFolder).name,'/versionNumber.txt'],'file')
+				if exist([projectFolderPath,'/Updates/Latest_Version/',latestVersions(updateFolder).name,'/versionNumber.txt'],'file')
 					% if the version number file exists in the folder
-					fileID = fopen(['Updates/Latest_Version/',latestVersions(updateFolder).name,'/versionNumber.txt'],'r');
+					fileID = fopen([projectFolderPath,'/Updates/Latest_Version/',latestVersions(updateFolder).name,'/versionNumber.txt'],'r');
 					downloadedVersionString = fscanf(fileID,'%s');
 					fclose(fileID);
 				end
@@ -119,7 +119,7 @@ function checkAndGetUpdates(username, repo)
 			updatesFigure = downloadingUpdateGUI;
 			% show a GUI so that the user knows the program is downloading
 			% updates
-			newVersionFiles = unzip(latestVersionDownload,'/Updates/Latest_Version');
+			newVersionFiles = unzip(latestVersionDownload,[projectFolderPath,'/Updates/Latest_Version']);
 			% download the latest version from the server and unzip it
 			newVersionPath = '';
 			for a=1:size(newVersionFiles,2)

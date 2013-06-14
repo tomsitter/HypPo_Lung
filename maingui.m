@@ -72,7 +72,13 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-checkAndGetUpdates('tomsitter','HypPo_Lung');
+%
+filePath = mfilename('fullpath');
+directoryLocationsInString = [strfind(filePath,'\'),strfind(filePath,'/')];
+parentDirectoryIndex = max(directoryLocationsInString);
+folderPath = filePath(1:parentDirectoryIndex-1);
+%
+checkAndGetUpdates('tomsitter','HypPo_Lung',folderPath);
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
