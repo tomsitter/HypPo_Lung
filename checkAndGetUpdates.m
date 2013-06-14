@@ -121,6 +121,7 @@ function checkAndGetUpdates(username, repo)
 			% updates
 			newVersionFiles = unzip(latestVersionDownload,'/Updates/Latest_Version');
 			% download the latest version from the server and unzip it
+			newVersionPath = '';
 			for a=1:size(newVersionFiles,2)
 				locations = findstr(newVersionFiles{a},'README.md');
 				% the location of the new folder will be where the README
@@ -131,6 +132,9 @@ function checkAndGetUpdates(username, repo)
 					newVersionPath = newVersionFiles{a}(1:parentDirectoryIndex-1);
 					% get the path to the downloaded folder
 				end
+			end
+			if strcmp(newVersionPath,'')
+				error('A README file was not found in the repo, cannot update without it.');
 			end
 			fileID = fopen([newVersionPath,'/versionNumber.txt'],'w');
 			fprintf(fileID,'%s',latestVersionString);
