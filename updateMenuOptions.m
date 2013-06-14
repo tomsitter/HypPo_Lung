@@ -23,14 +23,18 @@ end
 
 if lm
     set(handles.manual_lungmask, 'Enable', 'on');
+	set(handles.calculate_lung_SNR, 'Enable', 'on');
 else
-    set(handles.manual_lungmask, 'Enable', 'off');    
+    set(handles.manual_lungmask, 'Enable', 'off'); 
+	set(handles.calculate_lung_SNR, 'Enable', 'off');   
 end
 
 if bm
     set(handles.manual_bodymask, 'Enable', 'on');
+	set(handles.calculate_body_SNR, 'Enable', 'on');
 else
     set(handles.manual_bodymask, 'Enable', 'off');
+	set(handles.calculate_body_SNR, 'Enable', 'off');
 end
 
 if lm && bm

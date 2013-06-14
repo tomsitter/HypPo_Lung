@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 16-May-2013 15:17:53
+% Last Modified by GUIDE v2.5 14-Jun-2013 14:43:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -318,7 +318,9 @@ handles = readImages(handles, 'lung');
 
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
-set(handles.analyze_seglungs, 'Enable', 'on');
+updateMenuOptions(handles);
+%set(handles.analyze_seglungs, 'Enable', 'on');
+%set(handles.calculate_lung_SNR, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -335,6 +337,7 @@ handles = readImages(handles, 'body');
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
 set(handles.analyze_segbody, 'Enable', 'on');
+set(handles.calculate_body_SNR, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -474,7 +477,7 @@ if strcmp(state, 'def_noiseregion')
         handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
         handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
-        waitbar(slice/numImages, wb);
+		waitbar(slice/numImages, wb);
     end
     close(wb);
     handles.leftpanel='L';
@@ -1182,3 +1185,41 @@ set(handles.extra_slices_hide, 'Checked', 'On');
 setappdata(handles.extra_slices, 'show', 'false');
 updateSliceSlider(hObject, handles);
 updateImagePanels(handles);
+
+
+% --------------------------------------------------------------------
+function calculate_lung_SNR_Callback(hObject, eventdata, handles)
+% hObject    handle to calculate_lung_SNR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+index = handles.pat_index;
+patient = handles.patient(index);
+%
+lungmask = patient.lungmask;
+lungs = patient.lungs;
+if max(max(max(lungmask)))==0
+	error('Need to segment the lungs first.');
+end
+patient.lung_SNR = calculate_SNR(lungmask,lungs);
+handles.patient = patient;
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function calculate_body_SNR_Callback(hObject, eventdata, handles)
+% hObject    handle to calculate_body_SNR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+index = handles.pat_index;
+patient = handles.patient(index);
+%
+bodymask = patient.bodymask;
+lungs = patient.lungs;
+if max(max(max(bodymask)))==0
+	error('Need to segment the lungs first.');
+end
+patient.body_SNR = calculate_SNR(bodymask,lungs);
+handles.patient = patient;
+guidata(hObject, handles);
