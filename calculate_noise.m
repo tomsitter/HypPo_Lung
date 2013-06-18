@@ -16,7 +16,7 @@ h = hist(noise_roi, x);
     
     % User selects initial parameter for regression
     % (Usual values for beta: 0.1, 0.01, 0.001)
-    beta_value = 0.05; %input('Input initial parameter beta for regression: ');
+    beta_value = 0.01; %input('Input initial parameter beta for regression: ');
     beta = [beta_value, beta_value, beta_value];
     
     % Determines best-fit Rayleigh model
@@ -31,7 +31,7 @@ h = hist(noise_roi, x);
     hold on;
     plot(x,yhat,'r')
     hold off;
-    
+    close(figure(2));
     % Calculates coefficient of determination, r^2, value
     SStot = sum((h-mean(h)).^2);
     SSerr = sum((h-yhat).^2);

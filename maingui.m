@@ -242,17 +242,19 @@ function file_savepatient_Callback(hObject, ~, handles)
 
 %Get current patient
 pat_index = handles.pat_index;
-
-patientID = sprintf('pat_%s', handles.patient(pat_index).id);
 patient = handles.patient(pat_index);
-
-uisave('patient', patientID);
-
+id = patient.id;
+ 
 %Cannot have dashes in matlab variables, replace with underscore and then
 %assign into workspace
-patient_tempID = strrep(patientID, '-', '_');
-assignin('base', patient_tempID, handles.patient(pat_index));
-msg = sprintf('Saving patient %s to workspace', patient_tempID);
+id = sprintf('pat_%s', id);
+id = strrep(id, '-', '_');
+id = strrep(id, ' ', '_');
+
+uisave('patient', id);
+
+assignin('base', id, patient);
+msg = sprintf('Saving patient %s to workspace', id);
 updateStatusBox(handles, msg, 1);
 
 % --------------------------------------------------------------------
@@ -454,7 +456,7 @@ if strcmp(state, 'def_noiseregion')
     
     ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
     
-    if not(ok)
+    if not(strcmp(ok, 'Yes'))
         
         updateImagePanels(handles);
 
@@ -463,9 +465,11 @@ if strcmp(state, 'def_noiseregion')
 
         guidata(hObject, handles);
         updateStatusBox(handles, 'Reselect noise region and try again', 0);
+        close(figure(2));
         return;
     end
     
+    close(figure(2));
     axes(handles.axes2);
     %calculate optimal threshold value and threshold image
     wb = waitbar(0, 'Segmentation in Progress');
@@ -726,6 +730,28 @@ handles.patient(index).lungmask(:,:,slice) = mask;
 updateImagePanels(handles);
 
 guidata(hObject, handles)
+
+% --------------------------------------------------------------------
+function manual_lremoveall_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_lremoveall (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = get(handles.slider_slice, 'Value');
+
+if slice == 0
+    %This must be a blank patient.
+    updateStatusBox(handles, 'No lung images found.', 1);
+    return;
+end
+
+%Get mask and image
+mask = handles.patient(index).lungmask(:,:,slice);
+handles.patient(index).lungmask(:,:,slice) = zeros(size(mask));
+
+updateImagePanels(handles);
+
+guidata(hObject, handles);
 
 % --------------------------------------------------------------------
 function manual_lungmask_Callback(hObject, eventdata, handles)
@@ -1061,6 +1087,10 @@ function analyze_hetero_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_hetero (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+updateStatusBox(handles, 'Beginning heterogeneity calculation', 1);
+
+
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 
@@ -1068,31 +1098,41 @@ patient = handles.patient(index);
 lungs = patient.lungs;
 lungmask = patient.lungmask;
 
-if length(patient.threshold{slice}) < slice
-    threshold = 0;
+if length(patient.mean_noise{slice}) < slice
+%     threshold = 0;
+    noise = 0;
 else
-    threshold = patient.threshold{slice};
+%     threshold = patient.threshold{slice};
+    noise = patient.mean_noise{slice};
 end
 
-if not(threshold)
-    threshold = 0;
+if not(noise)
+    noise = 0;
 end
 
 hetero_images = zeros(size(patient.hetero_images));
+% hetero_score = zeros(size(patient.lungs, 3));
 
+wb = waitbar(0, 'Calculating Heterogeneity...');
 for i = 1:size(lungs, 3)
-    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), threshold);
+    waitbar(i/size(lungs, 3), wb);
+    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
     
     hetero_images(:,:,i) = hetero;
     
-    hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
+%     hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
 end
+close(wb);
 
 %Normalization needs improvement if it is to be compared across patients
-hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
+% hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
 patient.hetero_images = hetero_images;
-patient.hetero_score = hetero_score;
+% patient.hetero_score = hetero_score;
 handles.patient(index) = patient;
+
+updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
+set(handles.viewleft_hetero, 'Enable', 'on');
+set(handles.viewright_hetero, 'Enable', 'on');
 guidata(hObject, handles);
 
 
@@ -1223,3 +1263,46 @@ end
 patient.body_SNR = calculate_SNR(bodymask,lungs);
 handles.patient = patient;
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_heteroscore_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_heteroscore (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+patients = handles.patient;
+pat_index = handles.pat_index;
+
+ids = {patients(:).id};
+
+if isempty(ids) 
+%     file_loadpatient_Callback(hObject, eventdata, handles)
+        msg = sprintf('No patients selected');
+        updateStatusBox(handles, msg, 1);
+else
+    [selection, ok] = listdlg('PromptString', 'Select a patient:', ...
+                              'ListString', ids, 'SelectionMode', 'multiple', ...
+                              'InitialValue', pat_index);
+
+    if ok
+        
+        msg = sprintf('Calculating heterogeneity scores');
+        updateStatusBox(handles, msg, 1);
+        
+        selected = patients(selection);
+            
+        scored_patients = heteroscore(selected);
+        patients(selection) = scored_patients;
+        handles.patient = patients;
+
+        msg = sprintf('Finished Calculating heterogeneity scores');
+        updateStatusBox(handles, msg, 0);
+
+%             updateSliceSlider(hObject, handles);
+
+%             updateViewOptions(handles);
+%             updateMenuOptions(handles);
+
+        guidata(hObject, handles);
+    end
+end

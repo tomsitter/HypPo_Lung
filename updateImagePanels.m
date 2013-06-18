@@ -8,6 +8,10 @@ set(handles.slider_slice,'Value',sliderValue);
 
 slice = max(get(handles.slider_slice, 'Value'), 1);
 
+slice_str = sprintf('Slice: %d', slice);
+
+set(handles.text_slice, 'String', slice_str);
+
 colormap(gray)
 pat_index = handles.pat_index;
 leftpanel = handles.leftpanel;
@@ -122,7 +126,7 @@ switch leftpanel
         numslices = size(handles.patient(pat_index).hetero_images, 3);
         tslice = min(slice, numslices);  
         if not(isempty(handles.patient(pat_index).hetero_images(:, :, tslice)));
-            imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            imshow(handles.patient(pat_index).hetero_images(:, :, tslice));
         else
             updateStatusBox(handles, 'No heterogeneity map', 0);
             imagesc(gray);          
@@ -212,7 +216,16 @@ switch rightpanel
         numslices = size(handles.patient(pat_index).hetero_images, 3);
         tslice = min(slice, numslices);  
         if not(isempty(handles.patient(pat_index).hetero_images(:, :, tslice)));
-            imagesc(handles.patient(pat_index).hetero_images(:, :, tslice));
+            imshow(handles.patient(pat_index).hetero_images(:, :, tslice));
+            bw = 0;
+            if bw==1
+                map = [1 1 1; 0.92 0.92 0.92; 0.84 0.84 0.84; 0.76 0.76 0.76; 0.68 0.68 0.68; 0.6 0.6 0.6; ...
+                       0.52 0.52 0.52; 0.44 0.44 0.44; 0.36 0.36 0.36; 0.28 0.28 0.28; 0.2 0.2 0.2; 0 0 0];
+            else
+                map = [0 0 0; 1/3 0 1/2; 0 0 1; 0 1/2 1; 0 1 1; 0 1 0; ...
+                       2/3 1 0; 1 1 0; 1 3/4 0; 1 1/2 0; 1 0 0; 0.85 0 0];
+            end
+            colormap(map);
         else
             updateStatusBox(handles, 'No heterogeneity map', 0);
             imagesc(gray);          

@@ -1,7 +1,8 @@
-function montage3( images )
+function m = montage3( images )
 
 [x y z] = size(images);
-figure;
-montage(reshape(images, [x y 1 z]));
+
+% figure;
+m = montage(reshape(images, [x y 1 z]));
 
 end
