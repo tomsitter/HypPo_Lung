@@ -468,10 +468,10 @@ if strcmp(state, 'def_noiseregion')
     curImages = images(:,:,:);
     
     rois = curImages(y:y+h, x:x+w, :);
-    
+	
     montageFigure = figure();
-    montage(reshape(rois, [size(rois, 1) size(rois, 2) 1 size(rois, 3)]))
-    
+    montage3(rois);
+	
     ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
     
     if not(strcmp(ok, 'Yes'))
@@ -545,7 +545,7 @@ elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_bod
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	montageFigure = figure();
-    montage(reshape(roi_signal, [size(roi_signal, 1), size(roi_signal, 2), 1, size(roi_signal, 3)]))
+    montage3(roi_signal);
     
     ok = questdlg('Are all the regions of interest only signal?', 'Reselect Signal Region?', 'Yes');
     
@@ -567,7 +567,7 @@ elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_bod
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	montageFigure = figure();
-    montage(reshape(roi_noise, [size(roi_noise, 1), size(roi_noise, 2), 1, size(roi_noise, 3)]))
+    montage3(roi_noise);
     
     ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
     
