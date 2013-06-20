@@ -1,4 +1,4 @@
-function SNR = calculate_SNR(ROI_masks, data)
+function SNR = calculate_SNR(signal_masks, noise_masks, data)
 	%{
 	rect1=round(getrect());
 	xmin=rect1(1);
@@ -38,14 +38,14 @@ function SNR = calculate_SNR(ROI_masks, data)
 	S = [];
 	for a=1:size(data,3)
 		sliceData = data(:,:,a);
-		dataSelected = sliceData(ROI_masks(:,:,a)==1);
+		dataSelected = sliceData(signal_masks(:,:,a)==1);
 		S(a) = mean(dataSelected);
 	end
 	%
 	Noise = [];
 	for a=1:size(data,3)
 		sliceData = data(:,:,a);
-		dataSelected = sliceData(ROI_masks(:,:,a)==0);
+		dataSelected = sliceData(noise_masks(:,:,a)==1);
 		Noise(a) = std(dataSelected);
 	end
 	%

@@ -80,6 +80,9 @@ set(handles.slice_offset_end, 'Checked', 'Off');
 setappdata(handles.extra_slices, 'show', 'true');
 set(handles.extra_slices_show, 'Checked', 'On');
 set(handles.extra_slices_hide, 'Checked', 'Off');
+updateSliceSlider(hObject, handles);
+updateMenuOptions(handles);
+updateViewOptions(handles);
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -338,8 +341,8 @@ handles = readImages(handles, 'body');
 
 updateSliceSlider(hObject, handles);
 updateViewOptions(handles);
+updateMenuOptions(handles);
 set(handles.analyze_segbody, 'Enable', 'on');
-set(handles.calculate_body_SNR, 'Enable', 'on');
 % Update handles structure
 guidata(hObject, handles)
 
@@ -349,6 +352,20 @@ function analyze_seglungs_Callback(hObject, ~, handles)
 % hObject    handle to analyze_seglungs (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+%
+if handles.leftpanel == 'L'
+	lungAxes = handles.axes1;
+elseif handles.rightpanel == 'L'
+	lungAxes = handles.axes2;
+else
+	handles.leftpanel = 'L';
+	lungAxes = handles.axes1;
+end
+%
+guidata(hObject, handles);
+%
+updateImagePanels(handles);
+%
 updateStatusBox(handles, 'Preparing to segment lungs', 1);
 
 updateStatusBox(handles, 'Select a region of noise', 0);
@@ -356,13 +373,14 @@ updateStatusBox(handles, 'Select a region of noise', 0);
 handles.state = 'def_noiseregion';
 
 %Get middle of xaxis to place region of interest
-xaxis = floor(get(handles.axes1, 'XLim'));
+xaxis = floor(get(lungAxes, 'XLim'));
+yaxis = floor(get(lungAxes, 'YLim'));
 mid_x = round(xaxis(2) / 2);
 size_box = xaxis(2) / 4;
 
 %Create an place region of interest, constrain to axis
-region = imrect(handles.axes1, [(mid_x-10) 0 size_box size_box] );
-fcn = makeConstrainToRectFcn('imrect', xaxis, get(handles.axes1, 'YLim'));
+region = imrect(lungAxes, [(mid_x-size_box/2), 10, size_box, size_box,] );
+fcn = makeConstrainToRectFcn('imrect',[xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
 setPositionConstraintFcn(region,fcn)
 handles.noise_region = region;
 
@@ -446,30 +464,31 @@ if strcmp(state, 'def_noiseregion')
     [x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
                      max(1, dims(3)), max(1, dims(4)));
     images = patient.lungs;
-      
+    
     curImages = images(:,:,:);
     
     rois = curImages(y:y+h, x:x+w, :);
     
-    figure(2);
+    montageFigure = figure();
     montage(reshape(rois, [size(rois, 1) size(rois, 2) 1 size(rois, 3)]))
     
     ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
     
     if not(strcmp(ok, 'Yes'))
         
-        updateImagePanels(handles);
+        %updateImagePanels(handles);
 
         %Finished with current task
-        handles.state = 'idle';
+        %handles.state = 'idle';
+		handles.state = state;
 
         guidata(hObject, handles);
         updateStatusBox(handles, 'Reselect noise region and try again', 0);
-        close(figure(2));
+        close(montageFigure);
         return;
     end
     
-    close(figure(2));
+    close(montageFigure);
     axes(handles.axes2);
     %calculate optimal threshold value and threshold image
     wb = waitbar(0, 'Segmentation in Progress');
@@ -489,6 +508,96 @@ if strcmp(state, 'def_noiseregion')
     updateStatusBox(handles, 'Images thresholded', 0);
     
     %set(handles.analyze_threshold, 'Enable', 'on');
+elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_body_signal_and_noise_region')
+	if strcmp(state, 'def_lung_signal_and_noise_region')
+		images = patient.lungs;
+	elseif strcmp(state, 'def_body_signal_and_noise_region')
+		images = patient.body;
+	end
+	
+	dims_one = handles.region_one;
+    [xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
+                     max(1, dims_one(3)), max(1, dims_one(4)));
+	
+    roi_one = images(yOne:yOne+hOne, xOne:xOne+wOne, :);
+	
+	dims_two = handles.region_two;
+    [xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
+                     max(1, dims_two(3)), max(1, dims_two(4)));
+	
+    roi_two = images(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo, :);
+	
+	mask_signal = zeros([size(images,1), size(images,2), size(images,3)]);
+	mask_noise = zeros([size(images,1), size(images,2), size(images,3)]);
+	
+	if mean(roi_one(:))>mean(roi_two(:))
+		mask_signal(yOne:yOne+hOne, xOne:xOne+wOne, :) = 1;
+		mask_noise(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo, :) = 1;
+		roi_signal = roi_one;
+		roi_noise = roi_two;
+	else
+		mask_signal(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo, :) = 1;
+		mask_noise(yOne:yOne+hOne, xOne:xOne+wOne, :) = 1;
+		roi_signal = roi_two;
+		roi_noise = roi_one;
+	end
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	montageFigure = figure();
+    montage(reshape(roi_signal, [size(roi_signal, 1), size(roi_signal, 2), 1, size(roi_signal, 3)]))
+    
+    ok = questdlg('Are all the regions of interest only signal?', 'Reselect Signal Region?', 'Yes');
+    
+    if not(strcmp(ok, 'Yes'))
+        %updateImagePanels(handles);
+
+        %Finished with current task
+        %handles.state = 'idle';
+		handles.state = state;
+
+        guidata(hObject, handles);
+        updateStatusBox(handles, 'Reselect signal region and try again', 0);
+        close(montageFigure);
+        return;
+	end
+	
+    close(montageFigure);
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	montageFigure = figure();
+    montage(reshape(roi_noise, [size(roi_noise, 1), size(roi_noise, 2), 1, size(roi_noise, 3)]))
+    
+    ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
+    
+    if not(strcmp(ok, 'Yes'))
+        %updateImagePanels(handles);
+
+        %Finished with current task
+        %handles.state = 'idle';
+		handles.state = state;
+
+        guidata(hObject, handles);
+        updateStatusBox(handles, 'Reselect noise region and try again', 0);
+        close(montageFigure);
+        return;
+	end
+	
+    close(montageFigure);
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	updateStatusBox(handles, 'SNR is stored in the patient data', 0);
+    
+	if strcmp(state, 'def_lung_signal_and_noise_region')
+		patient.lung_SNR = calculate_SNR(mask_signal,mask_noise,images);
+	elseif strcmp(state, 'def_body_signal_and_noise_region')
+		patient.body_SNR = calculate_SNR(mask_signal,mask_noise,images);
+	end
+	
+	handles.patient = patient;
+	guidata(hObject, handles);
 end
 
 updateImagePanels(handles);
@@ -533,6 +642,50 @@ if strcmp(state, 'def_noiseregion')
     updateStatusBox(handles, 'Image thresholded', 0);
     
     %set(handles.analyze_threshold, 'Enable', 'on');
+elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_body_signal_and_noise_region')
+	if strcmp(state, 'def_lung_signal_and_noise_region')
+		curImage = patient.lungs(:,:,slice);
+	elseif strcmp(state, 'def_body_signal_and_noise_region')
+		curImage = patient.body(:,:,slice);
+	end
+	
+	dims_one = handles.region_one;
+    [xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
+                     max(1, dims_one(3)), max(1, dims_one(4)));
+	
+    roi_one = curImage(yOne:yOne+hOne, xOne:xOne+wOne);
+	
+	dims_two = handles.region_two;
+    [xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
+                     max(1, dims_two(3)), max(1, dims_two(4)));
+	
+    roi_two = curImage(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo);
+	
+	mask_signal = zeros([size(curImage,1), size(curImage,2)]);
+	mask_noise = zeros([size(curImage,1), size(curImage,2)]);
+	
+	if mean(roi_one(:))>mean(roi_two(:))
+		mask_signal(yOne:yOne+hOne, xOne:xOne+wOne) = 1;
+		mask_noise(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo) = 1;
+	else
+		mask_signal(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo) = 1;
+		mask_noise(yOne:yOne+hOne, xOne:xOne+wOne) = 1;
+	end
+	
+	updateStatusBox(handles, 'SNR is stored in the patient data', 0);
+    
+	if strcmp(state, 'def_lung_signal_and_noise_region')
+		patient.lung_SNR = zeros([size(patient.lungs,3),1]);
+		patient.lung_SNR(slice) = calculate_SNR(mask_signal,mask_noise,curImage);
+		updateStatusBox(handles, ['The SNR of the slice was: ',num2str(patient.lung_SNR(slice))], 0);
+	elseif strcmp(state, 'def_body_signal_and_noise_region')
+		patient.body_SNR = zeros([size(patient.body,3),1]);
+		patient.body_SNR(slice) = calculate_SNR(mask_signal,mask_noise,curImage);
+		updateStatusBox(handles, ['The SNR of the slice was: ',num2str(patient.body_SNR(slice))], 0);
+	end
+	
+	handles.patient = patient;
+	guidata(hObject, handles);
 end
 
 updateImagePanels(handles);
@@ -861,6 +1014,9 @@ function analyze_segbody_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_segbody (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+%
+updateImagePanels(handles);
+%
 index = handles.pat_index;
 patient = handles.patient(index);
 body_images = patient.body;
@@ -1228,7 +1384,7 @@ updateImagePanels(handles);
 
 
 % --------------------------------------------------------------------
-function calculate_lung_SNR_Callback(hObject, eventdata, handles)
+function calculate_lung_SNR_segmentation_Callback(hObject, eventdata, handles)
 % hObject    handle to calculate_lung_SNR (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1241,13 +1397,13 @@ lungs = patient.lungs;
 if max(max(max(lungmask)))==0
 	error('Need to segment the lungs first.');
 end
-patient.lung_SNR = calculate_SNR(lungmask,lungs);
+patient.lung_SNR = calculate_SNR(lungmask,1-lungmask,lungs);
 handles.patient = patient;
 guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
-function calculate_body_SNR_Callback(hObject, eventdata, handles)
+function calculate_body_SNR_segmentation_Callback(hObject, eventdata, handles)
 % hObject    handle to calculate_body_SNR (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1260,9 +1416,109 @@ lungs = patient.lungs;
 if max(max(max(bodymask)))==0
 	error('Need to segment the lungs first.');
 end
-patient.body_SNR = calculate_SNR(bodymask,lungs);
+patient.body_SNR = calculate_SNR(bodymask,1-bodymask,lungs);
 handles.patient = patient;
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function calculate_lung_SNR_bounding_box_Callback(hObject, eventdata, handles)
+% hObject    handle to calculate_lung_SNR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+if handles.leftpanel == 'L'
+	lungAxes = handles.axes1;
+elseif handles.rightpanel == 'L'
+	lungAxes = handles.axes2;
+else
+	handles.leftpanel = 'L';
+	lungAxes = handles.axes1;
+end
+%
+guidata(hObject, handles);
+%
+updateImagePanels(handles);
+%
+xaxis = floor(get(lungAxes, 'XLim'));
+yaxis = floor(get(lungAxes, 'YLim'));
+mid_x = round(xaxis(2)/2);
+size_box = xaxis(2)/4;
+%
+regionOne = imrect(lungAxes, [(mid_x-size_box/2) 10 size_box size_box]);
+regionTwo = imrect(lungAxes, [(mid_x-size_box/2) size_box*2 size_box size_box]);
+fcn = makeConstrainToRectFcn('imrect', [xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
+setPositionConstraintFcn(regionOne,fcn);
+setPositionConstraintFcn(regionTwo,fcn);
+%
+handles.state = 'def_lung_signal_and_noise_region';
+%
+while strcmp(handles.state, 'def_lung_signal_and_noise_region')
+	try
+		handles.region_one = round(regionOne.getPosition);
+		handles.region_two = round(regionTwo.getPosition);
+		guidata(hObject, handles);
+	catch err
+		if strcmp(err.message, 'Invalid or deleted object.')
+			%This is a known event. It happens when the user finishes
+			%selecting noise region. Not sure how to fix it but the algorithm
+			%runs fine.
+			break;
+		end
+	end
+	pause(0.3);
+end
+%
+
+
+% --------------------------------------------------------------------
+function calculate_body_SNR_bounding_box_Callback(hObject, eventdata, handles)
+% hObject    handle to calculate_body_SNR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+if handles.leftpanel == 'B'
+	bodyAxes = handles.axes1;
+elseif handles.rightpanel == 'B'
+	bodyAxes = handles.axes2;
+else
+	handles.leftpanel = 'B';
+	bodyAxes = handles.axes1;
+end
+%
+guidata(hObject, handles);
+%
+updateImagePanels(handles);
+%
+xaxis = floor(get(bodyAxes, 'XLim'));
+yaxis = floor(get(bodyAxes, 'YLim'));
+mid_x = round(xaxis(2)/2);
+size_box = xaxis(2)/4;
+%
+regionOne = imrect(bodyAxes, [(mid_x-size_box/2) 10 size_box size_box]);
+regionTwo = imrect(bodyAxes, [(mid_x-size_box/2) size_box*2 size_box size_box]);
+fcn = makeConstrainToRectFcn('imrect', [xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
+setPositionConstraintFcn(regionOne,fcn);
+setPositionConstraintFcn(regionTwo,fcn);
+%
+handles.state = 'def_body_signal_and_noise_region';
+%
+while strcmp(handles.state, 'def_body_signal_and_noise_region')
+	try
+		handles.region_one = round(regionOne.getPosition);
+		handles.region_two = round(regionTwo.getPosition);
+		guidata(hObject, handles);
+	catch err
+		if strcmp(err.message, 'Invalid or deleted object.')
+			%This is a known event. It happens when the user finishes
+			%selecting noise region. Not sure how to fix it but the algorithm
+			%runs fine.
+			break;
+		end
+	end
+	pause(0.3);
+end
+%
 
 
 % --------------------------------------------------------------------

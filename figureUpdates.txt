@@ -1,0 +1,11 @@
+* Removed "Calculate Lung SNR" menu button under "Analyze"
+* Removed "Calculate Body SNR" menu button under "Analyze"
+* Created "SNR" menu button under "Analyze"
+* Created "Calculate Lung SNR From Segmentation" menu button under "SNR"
+* Created "Calculate Body SNR From Segmentation" menu button under "SNR"
+* Created "Calculate Lung SNR From Bounding Box" menu button under "SNR"
+* Created "Calculate Body SNR From Bounding Box" menu button under "SNR"
+* Changed "Calculate Lung SNR From Segmentation" tag to "calculate_lung_SNR_segmentation" and set the default callback
+* Changed "Calculate Body SNR From Segmentation" tag to "calculate_body_SNR_segmentation" and set the default callback
+* Changed "Calculate Lung SNR From Bounding Box" tag to "calculate_lung_SNR_bounding_box" and set the default callback
+* Changed "Calculate Body SNR From Bounding Box" tag to "calculate_body_SNR_bounding_box" and set the default callback

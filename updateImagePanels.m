@@ -12,7 +12,7 @@ slice_str = sprintf('Slice: %d', slice);
 
 set(handles.text_slice, 'String', slice_str);
 
-colormap(gray)
+colormap(gray);
 pat_index = handles.pat_index;
 leftpanel = handles.leftpanel;
 rightpanel = handles.rightpanel;
