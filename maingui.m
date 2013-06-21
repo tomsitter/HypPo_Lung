@@ -9,7 +9,7 @@ function varargout = maingui(varargin)
 %      MAINGUI('CALLBACK',hObject,eventData,handles,...) calls the local
 %      function named CALLBACK in MAINGUI.M with the given input arguments.
 %
-%      MAINGUI('Property','Value',...) creates a new MAINGUI or raises the
+%      MAINGUI('Property','Value',...) creates a new MAINGUI or raises the5
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before maingui_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -85,7 +85,7 @@ checkAndGetUpdates('tomsitter','HypPo_Lung',folderPath);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = maingui_OutputFcn(~, ~, handles) 
+function varargout = maingui_OutputFcn(~, ~, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB

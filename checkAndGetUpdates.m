@@ -114,6 +114,12 @@ function checkAndGetUpdates(username, repo, projectFolderPath)
 			% there was an error while checking for updates
 			disp 'Could not check for updates (connection to server timed out or GitHub API limit reached).';
 		end
+		if updateAvailable==0
+			if cmpVersions(downloadedVersionString,currentVersionString)==1
+				disp 'You have downloaded the latest version, but haven''t installed it yet.';
+				disp 'You are currently running an old version.';
+			end
+		end
 		if updateAvailable==1
 			% if there is an update available
 			updatesFigure = downloadingUpdateGUI;

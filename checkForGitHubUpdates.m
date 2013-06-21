@@ -17,7 +17,7 @@ function [updateAvailable,latestVersionString,latestVersionTagName,latestVersion
 	%
 	if useAPI
 		try
-			tagVersions_HTTP = urlread(['https://api.github.com/repos/',username,'/',repo,'/tags']);
+			tagVersions_HTTP = urlread2(['https://api.github.com/repos/',username,'/',repo,'/tags']);
 		catch err
 			% set values to error and return
 			updateAvailable = -1;
@@ -47,7 +47,7 @@ function [updateAvailable,latestVersionString,latestVersionTagName,latestVersion
 		latestVersionString = '';
 		if printQuota
 			try
-				urlread('https://api.github.com/rate_limit')
+				urlread2('https://api.github.com/rate_limit')
 			catch err
 				% set values to error and return
 				updateAvailable = -1;
@@ -65,7 +65,7 @@ function [updateAvailable,latestVersionString,latestVersionTagName,latestVersion
 	%
 	if useAPI
 		try
-			tagSHA_URL_HTTP = urlread(['https://api.github.com/repos/',username,'/',repo,'/git/refs/tags','/',latestVersionTagName]);
+			tagSHA_URL_HTTP = urlread2(['https://api.github.com/repos/',username,'/',repo,'/git/refs/tags','/',latestVersionTagName]);
 		catch err
 			% set values to error and return
 			updateAvailable = -1;
@@ -81,7 +81,7 @@ function [updateAvailable,latestVersionString,latestVersionTagName,latestVersion
 	%
 	if useAPI
 		try
-			tagMessage_HTTP = urlread(latestVersionURL);
+			tagMessage_HTTP = urlread2(latestVersionURL);
 		catch err
 			% set values to error and return
 			updateAvailable = -1;
@@ -97,7 +97,7 @@ function [updateAvailable,latestVersionString,latestVersionTagName,latestVersion
 	%
 	if printQuota
 		try
-			urlread('https://api.github.com/rate_limit')
+			urlread2('https://api.github.com/rate_limit')
 		catch err
 			% set values to error and return
 			updateAvailable = -1;
