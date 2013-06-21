@@ -34,7 +34,10 @@ if not(isreal(norm_signal))
 end
 
 % [center,member] = fcm(norm_signal,5);
+s = warning('off','stats:kmeans:EmptyCluster');
 [c, m] = kmeans(norm_segmented(:), 5, 'EmptyAction', 'singleton', 'Replicates', 5);
+warning(s);
+%restore state
 
 % temp_mask = reshape(c, size(image));
 
@@ -56,7 +59,10 @@ cluster1 = first_mask == 1;
 
 second_signal = norm_signal(cluster1);
 
+s = warning('off','stats:kmeans:EmptyCluster');
 [c2, m2] = kmeans(second_signal, 4, 'EmptyAction', 'singleton', 'Replicates', 5);
+warning(s);
+%restore state
 
 % tmask = reshape(c2, size(image));
 

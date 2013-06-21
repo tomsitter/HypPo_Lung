@@ -1,10 +1,9 @@
-function updateImagePanels(handles)
+function handles = updateImagePanels(handles)
 
 %correct slider to integer number
 sliderValue = get(handles.slider_slice,'Value');
 sliderValue = round(sliderValue);
 set(handles.slider_slice,'Value',sliderValue);
-
 
 slice = max(get(handles.slider_slice, 'Value'), 1);
 
@@ -14,14 +13,12 @@ set(handles.text_slice, 'String', slice_str);
 
 colormap(gray);
 pat_index = handles.pat_index;
-leftpanel = handles.leftpanel;
-rightpanel = handles.rightpanel;
 
 lungSliceOffset = 0;
 bodySliceOffset = 0;
 bothSliceOffset = 0;
 
-if size(handles.patient,1)>=pat_index
+if isempty(handles.patient)==0
 	if strcmp(getappdata(handles.slice_offset, 'position'),'beginning')
 		if size(handles.patient(pat_index).lungs, 3)>size(handles.patient(pat_index).bodymask, 3)
 			lungSliceOffset = 0;
@@ -48,8 +45,84 @@ if isempty(handles.patient)
     return;
 end
 
+patient = handles.patient(pat_index);
+
+% the following code keeps the same panel if it exists in the patient data,
+% if not, it sets the panel to empty
+switch handles.leftpanel
+	case 'L'
+		if sum(patient.lungs(:))<=0
+			handles.leftpanel = '';
+		end
+	case 'LM'
+		if sum(patient.lungmask(:))<=0
+			handles.leftpanel = '';
+		end
+	case 'B'
+		if sum(patient.body(:))<=0
+			handles.leftpanel = '';
+		end
+	case 'BM'
+		if sum(patient.bodymask(:))<=0
+			handles.leftpanel = '';
+		end
+	case 'C'
+		if sum(patient.lungmask(:))<=0&&sum(patient.bodymask(:))<=0
+			handles.leftpanel = '';
+		end
+	case 'H'
+		if sum(patient.hetero_images(:))<=0||isnan(sum(patient.hetero_images(:)))==1
+			handles.leftpanel = '';
+		end
+	case ''
+		if sum(patient.lungs(:))>0
+			handles.leftpanel = 'L';
+		end
+	otherwise
+		error('Unknown image state for left panel: %s', handles.leftpanel);
+end
+
+switch handles.rightpanel
+	case 'L'
+		if sum(patient.lungs(:))<=0
+			handles.rightpanel = '';
+		end
+	case 'LM'
+		if sum(patient.lungmask(:))<=0
+			handles.rightpanel = '';
+		end
+	case 'B'
+		if sum(patient.body(:))<=0
+			handles.rightpanel = '';
+		end
+	case 'BM'
+		if sum(patient.bodymask(:))<=0
+			handles.rightpanel = '';
+		end
+	case 'C'
+		if sum(patient.lungmask(:))<=0&&sum(patient.bodymask(:))<=0
+			handles.rightpanel = '';
+		end
+	case 'H'
+		if sum(patient.hetero_images(:))<=0||isnan(sum(patient.hetero_images(:)))==1
+			handles.rightpanel = '';
+		end
+	case ''
+		if sum(patient.body(:))>0
+			handles.rightpanel = 'B';
+		end
+	otherwise
+		error('Unknown image state for right panel: %s', handles.rightpanel);
+end
+
+leftpanel = handles.leftpanel;
+rightpanel = handles.rightpanel;
+
 axes(handles.axes1);
 switch leftpanel
+	case ''
+		imagesc(gray);
+		title('');
     case 'L'
         numslices = size(handles.patient(pat_index).lungs, 3);
 		tslice = slice-lungSliceOffset+bothSliceOffset;
@@ -134,12 +207,15 @@ switch leftpanel
         title('Heterogeneity');
     otherwise
         msg = sprintf('Unknown image state for left panel: %s', leftpanel);
-        updateStatusBox(handes,msg, 1);
+        updateStatusBox(handles,msg, 1);
         title('');
 end
 
 axes(handles.axes2);
 switch rightpanel
+	case ''
+		imagesc(gray);
+		title('');
     case 'L'
         numslices = size(handles.patient(pat_index).lungs, 3);
         tslice = slice-lungSliceOffset+bothSliceOffset;
@@ -233,6 +309,6 @@ switch rightpanel
         title('Heterogeneity');
     otherwise
         msg = sprintf('Unknown image state for right panel: %s', rightpanel);
-        updateStatusBox(handes,msg, 1);
+        updateStatusBox(handles,msg, 1);
         title('');
 end

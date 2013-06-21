@@ -27,19 +27,19 @@ function varargout = maingui(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @maingui_OpeningFcn, ...
-                   'gui_OutputFcn',  @maingui_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+				   'gui_Singleton',  gui_Singleton, ...
+				   'gui_OpeningFcn', @maingui_OpeningFcn, ...
+				   'gui_OutputFcn',  @maingui_OutputFcn, ...
+				   'gui_LayoutFcn',  [] , ...
+				   'gui_Callback',   []);
 if nargin && ischar(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
+	gui_State.gui_Callback = str2func(varargin{1});
 end
 
 if nargout
-    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+	[varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
 else
-    gui_mainfcn(gui_State, varargin{:});
+	gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
 
@@ -59,19 +59,18 @@ handles.curdir = cd;
 handles.patient = newPatient();
 handles.pat_index = 1;
 
-handles.leftpanel = 'L';
-handles.rightpanel = 'B';
+%handles.leftpanel = 'L';
+%handles.rightpanel = 'B';
+handles.leftpanel = '';
+handles.rightpanel = '';
 
 % handles.slice_index = 1;
 handles.state = 'idle';
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 % Choose default command line output for maingui
 handles.output = hObject;
-
-% Update handles structure
-guidata(hObject, handles);
 
 setappdata(handles.slice_offset, 'position', 'beginning');
 set(handles.slice_offset_beginning, 'Checked', 'On');
@@ -80,9 +79,12 @@ set(handles.slice_offset_end, 'Checked', 'Off');
 setappdata(handles.extra_slices, 'show', 'true');
 set(handles.extra_slices_show, 'Checked', 'On');
 set(handles.extra_slices_hide, 'Checked', 'Off');
-updateSliceSlider(hObject, handles);
+handles = updateSliceSlider(handles);
 updateMenuOptions(handles);
 updateViewOptions(handles);
+
+% Update handles structure
+guidata(hObject, handles);
 
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -118,7 +120,7 @@ function statusbox_CreateFcn(hObject, ~, handles)
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+	set(hObject,'BackgroundColor','white');
 end
 
 
@@ -135,7 +137,8 @@ function slider_slice_Callback(hObject, ~, handles)
 %pat_index = handles.pat_index;
 
 %val = get(hObject, 'Value');
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -146,7 +149,7 @@ function slider_slice_CreateFcn(hObject, ~, ~)
 
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
+	set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
 
@@ -187,13 +190,15 @@ pat_index = length(handles.patient) + 1;
 p = newPatient();
 p(1).id = 'newPatient';
 handles.patient(pat_index) = p;
+handles.leftpanel = '';
+handles.rightpanel = '';
 
 % handles.patient(pat_index).id = 'NoData';
 
 handles.pat_index = pat_index;
 
 updateStatusBox(handles, 'Created new patient', 1);
-updateSliceSlider(hObject, handles);
+handles = updateSliceSlider(handles);
 updateMenuOptions(handles);
 updateViewOptions(handles);
 
@@ -210,29 +215,29 @@ pat_index = handles.pat_index;
 ids = {patients(:).id};
 
 if isempty(ids) 
-    file_loadpatient_Callback(hObject, eventdata, handles)
+	file_loadpatient_Callback(hObject, eventdata, handles)
 else
-    [selection, ok] = listdlg('PromptString', 'Select a patient:', ...
-                              'ListString', ids, 'SelectionMode', 'single', ...
-                              'InitialValue', pat_index);
+	[selection, ok] = listdlg('PromptString', 'Select a patient:', ...
+							  'ListString', ids, 'SelectionMode', 'single', ...
+							  'InitialValue', pat_index);
 
-    if ok
-        if pat_index == selection
-            updateStatusBox(handles, 'Current patient selected', 0);
-        else
-            handles.pat_index = selection;
+	if ok
+		if pat_index == selection
+			updateStatusBox(handles, 'Current patient selected', 0);
+		else
+			handles.pat_index = selection;
 
-            msg = sprintf('Changed to patient %s', ids{selection});
-            updateStatusBox(handles, msg, 1);
+			msg = sprintf('Changed to patient %s', ids{selection});
+			updateStatusBox(handles, msg, 1);
 
-            updateSliceSlider(hObject, handles);
-            
-            updateViewOptions(handles);
-            updateMenuOptions(handles);
+			handles = updateSliceSlider(handles);
 
-            guidata(hObject, handles);
-        end
-    end
+			updateViewOptions(handles);
+			updateMenuOptions(handles);
+
+			guidata(hObject, handles);
+		end
+	end
 end
 
 
@@ -243,22 +248,26 @@ function file_savepatient_Callback(hObject, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%Get current patient
-pat_index = handles.pat_index;
-patient = handles.patient(pat_index);
-id = patient.id;
- 
-%Cannot have dashes in matlab variables, replace with underscore and then
-%assign into workspace
-id = sprintf('pat_%s', id);
-id = strrep(id, '-', '_');
-id = strrep(id, ' ', '_');
+if size(handles.patient,2)~=0
+	%Get current patient
+	pat_index = handles.pat_index;
+	patient = handles.patient(pat_index);
+	id = patient.id;
 
-uisave('patient', id);
+	%Cannot have dashes in matlab variables, replace with underscore and then
+	%assign into workspace
+	id = sprintf('pat_%s', id);
+	id = strrep(id, '-', '_');
+	id = strrep(id, ' ', '_');
 
-assignin('base', id, patient);
-msg = sprintf('Saving patient %s to workspace', id);
-updateStatusBox(handles, msg, 1);
+	uisave('patient', id);
+
+	assignin('base', id, patient);
+	msg = sprintf('Saving patient %s to workspace', id);
+	updateStatusBox(handles, msg, 1);
+else
+	errordlg('Cannot save patient: there is no patient loaded', 'Cannot Save Patient', 'modal');
+end
 
 % --------------------------------------------------------------------
 function file_loadpatient_Callback(hObject, ~, handles)
@@ -271,11 +280,11 @@ pat_index = handles.pat_index;
 [fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
 
 if isequal(fname,0) || isequal(pname,0)
-   updateStatusBox(handles, 'Cancelled by user', 0)
-   return;
+	updateStatusBox(handles, 'Cancelled by user', 0)
+	return;
 else
-   updateStatusBox(handles, ['User selected ', fullfile(pname, fname)], 1)
-   %return;
+	updateStatusBox(handles, ['User selected ', fullfile(pname, fname)], 1)
+	%return;
 end
 
 filename=[pname fname];
@@ -284,24 +293,25 @@ new_experiment = load(filename);
 new_patient = new_experiment.patient;
 
 if isempty(handles.patient)
-    cur_patient = handles.patient;
+	cur_patient = handles.patient;
 else
-    cur_patient = handles.patient(pat_index);
-    pat_index = pat_index + 1;
-    handles.pat_index = pat_index;
+	cur_patient = handles.patient(pat_index);
+	pat_index = pat_index + 1;
+	handles.pat_index = pat_index;
 end
 
 fn = fieldnames(new_patient);
 for i = 1:numel(fn)
-    if isfield(cur_patient, fn{i})
-        handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
-    else
-        msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
-        updateStatusBox(handles, msg, 0);
-    end
+	if isfield(cur_patient, fn{i})
+		handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
+	else
+		msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
+		updateStatusBox(handles, msg, 0);
+	end
 end
 
 updateViewOptions(handles);
+handles = updateSliceSlider(handles);
 
 % Update handles structure
 guidata(hObject, handles)
@@ -309,7 +319,6 @@ guidata(hObject, handles)
 msg = sprintf('Loaded patient %s', new_patient.id);
 updateStatusBox(handles, msg, 1);
 updateMenuOptions(handles);
-updateSliceSlider(hObject, handles);
 
 % --------------------------------------------------------------------
 function file_loadlung_Callback(hObject, ~, handles)
@@ -321,7 +330,7 @@ function file_loadlung_Callback(hObject, ~, handles)
 %under the currect patient
 handles = readImages(handles, 'lung');
 
-updateSliceSlider(hObject, handles);
+handles = updateSliceSlider(handles);
 updateViewOptions(handles);
 updateMenuOptions(handles);
 %set(handles.analyze_seglungs, 'Enable', 'on');
@@ -339,7 +348,7 @@ function file_loadbody_Callback(hObject, ~, handles)
 %under the currect patient
 handles = readImages(handles, 'body');
 
-updateSliceSlider(hObject, handles);
+handles = updateSliceSlider(handles);
 updateViewOptions(handles);
 updateMenuOptions(handles);
 set(handles.analyze_segbody, 'Enable', 'on');
@@ -362,9 +371,9 @@ else
 	lungAxes = handles.axes1;
 end
 %
-guidata(hObject, handles);
+handles = updateImagePanels(handles);
 %
-updateImagePanels(handles);
+guidata(hObject, handles);
 %
 updateStatusBox(handles, 'Preparing to segment lungs', 1);
 
@@ -385,23 +394,29 @@ setPositionConstraintFcn(region,fcn)
 handles.noise_region = region;
 
 while strcmp(handles.state, 'def_noiseregion')
-    %h = guidata(handles);
-    try
-        handles.noise_region = round(region.getPosition);
-        guidata(hObject, handles);
-        %disp('looping');
-        pause(0.5)
-    catch err
-        if strcmp(err.message, 'Invalid or deleted object.')
-            %This is a known event. It happens when the user finishes
-            %selecting noise region. Not sure how to fix it but the algorithm
-            %runs fine.
-            break;
-        end
-    end
+	%h = guidata(handles);
+	try
+		handles.noise_region = round(region.getPosition);
+		guidata(hObject, handles);
+		%disp('looping');
+		pause(0.5)
+	catch err
+		if strcmp(err.message, 'Invalid or deleted object.')
+			%This is a known event. It happens when the user finishes
+			%selecting noise region. Not sure how to fix it but the algorithm
+			%runs fine.
+			break;
+		end
+	end
 end
 
-set(handles.analyze_hetero, 'Enable', 'on');
+try
+	set(handles.analyze_hetero, 'Enable', 'on');
+catch err
+	if strcmp(err.message, 'Invalid or deleted object.')==0
+		rethrow(err);
+	end
+end
 
 % --------------------------------------------------------------------
 function analyze_coreglm_Callback(hObject, eventdata, handles)
@@ -430,18 +445,18 @@ viewCoregistration(reg_body, reg_bodymask, lungmask);
 
 applyall = questdlg('Do you want to apply this transform to all images?');
 if strcmpi(applyall, 'Yes')
-    body = patient.body;
-    bodymask = patient.bodymask;
-    height = size(body,1);
-    width = size(body,2);
-    for i = 1:size(body, 3)
+	body = patient.body;
+	bodymask = patient.bodymask;
+	height = size(body,1);
+	width = size(body,2);
+	for i = 1:size(body, 3)
 %         reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
 %         reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
-        patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-        patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-    end
+		patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+		patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+	end
 end
-    
+
 updateStatusBox(handles, 'Finished Coregistration', 1);
 
 guidata(hObject, handles);
@@ -460,76 +475,76 @@ index = handles.pat_index;
 patient = handles.patient(index);
 
 if strcmp(state, 'def_noiseregion')
-    dims = handles.noise_region;
-    [x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
-                     max(1, dims(3)), max(1, dims(4)));
-    images = patient.lungs;
-    
-    curImages = images(:,:,:);
-    
-    rois = curImages(y:y+h, x:x+w, :);
-	
-    montageFigure = figure();
-    montage3(rois);
-	
-    ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
-    
-    if not(strcmp(ok, 'Yes'))
-        
-        %updateImagePanels(handles);
+	dims = handles.noise_region;
+	[x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
+					 max(1, dims(3)), max(1, dims(4)));
+	images = patient.lungs;
 
-        %Finished with current task
-        %handles.state = 'idle';
+	curImages = images(:,:,:);
+
+	rois = curImages(y:y+h, x:x+w, :);
+
+	montageFigure = figure();
+	montage3(rois);
+
+	ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
+
+	if not(strcmp(ok, 'Yes'))
+
+		%handles = updateImagePanels(handles);
+
+		%Finished with current task
+		%handles.state = 'idle';
 		handles.state = state;
 
-        guidata(hObject, handles);
-        updateStatusBox(handles, 'Reselect noise region and try again', 0);
-        close(montageFigure);
-        return;
-    end
-    
-    close(montageFigure);
-    axes(handles.axes2);
-    %calculate optimal threshold value and threshold image
-    wb = waitbar(0, 'Segmentation in Progress');
-    numImages = size(curImages, 3);
-    for slice = 1:numImages
-        roi = curImages(y:y+h, x:x+w, slice);
-        [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
-        handles.patient(index).threshold{slice} = threshold;
-        handles.patient(index).mean_noise{slice} = mean_noise;
+		guidata(hObject, handles);
+		updateStatusBox(handles, 'Reselect noise region and try again', 0);
+		close(montageFigure);
+		return;
+	end
+
+	close(montageFigure);
+	axes(handles.axes2);
+	%calculate optimal threshold value and threshold image
+	wb = waitbar(0, 'Segmentation in Progress');
+	numImages = size(curImages, 3);
+	for slice = 1:numImages
+		roi = curImages(y:y+h, x:x+w, slice);
+		[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
+		handles.patient(index).threshold{slice} = threshold;
+		handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-        handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+		handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
 		waitbar(slice/numImages, wb);
-    end
-    close(wb);
-    handles.leftpanel='L';
-    handles.rightpanel='LM';
-    updateStatusBox(handles, 'Images thresholded', 0);
-    
-    %set(handles.analyze_threshold, 'Enable', 'on');
+	end
+	close(wb);
+	handles.leftpanel='L';
+	handles.rightpanel='LM';
+	updateStatusBox(handles, 'Images thresholded', 0);
+
+	%set(handles.analyze_threshold, 'Enable', 'on');
 elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_body_signal_and_noise_region')
 	if strcmp(state, 'def_lung_signal_and_noise_region')
 		images = patient.lungs;
 	elseif strcmp(state, 'def_body_signal_and_noise_region')
 		images = patient.body;
 	end
-	
+
 	dims_one = handles.region_one;
-    [xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
-                     max(1, dims_one(3)), max(1, dims_one(4)));
-	
-    roi_one = images(yOne:yOne+hOne, xOne:xOne+wOne, :);
-	
+	[xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
+					 max(1, dims_one(3)), max(1, dims_one(4)));
+
+	roi_one = images(yOne:yOne+hOne, xOne:xOne+wOne, :);
+
 	dims_two = handles.region_two;
-    [xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
-                     max(1, dims_two(3)), max(1, dims_two(4)));
-	
-    roi_two = images(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo, :);
-	
+	[xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
+					 max(1, dims_two(3)), max(1, dims_two(4)));
+
+	roi_two = images(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo, :);
+
 	mask_signal = zeros([size(images,1), size(images,2), size(images,3)]);
 	mask_noise = zeros([size(images,1), size(images,2), size(images,3)]);
-	
+
 	if mean(roi_one(:))>mean(roi_two(:))
 		mask_signal(yOne:yOne+hOne, xOne:xOne+wOne, :) = 1;
 		mask_noise(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo, :) = 1;
@@ -541,66 +556,66 @@ elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_bod
 		roi_signal = roi_two;
 		roi_noise = roi_one;
 	end
-	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
-	montageFigure = figure();
-    montage3(roi_signal);
-    
-    ok = questdlg('Are all the regions of interest only signal?', 'Reselect Signal Region?', 'Yes');
-    
-    if not(strcmp(ok, 'Yes'))
-        %updateImagePanels(handles);
 
-        %Finished with current task
-        %handles.state = 'idle';
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	montageFigure = figure();
+	montage3(roi_signal);
+
+	ok = questdlg('Are all the regions of interest only signal?', 'Reselect Signal Region?', 'Yes');
+
+	if not(strcmp(ok, 'Yes'))
+		%handles = updateImagePanels(handles);
+
+		%Finished with current task
+		%handles.state = 'idle';
 		handles.state = state;
 
-        guidata(hObject, handles);
-        updateStatusBox(handles, 'Reselect signal region and try again', 0);
-        close(montageFigure);
-        return;
+		guidata(hObject, handles);
+		updateStatusBox(handles, 'Reselect signal region and try again', 0);
+		close(montageFigure);
+		return;
 	end
-	
-    close(montageFigure);
-	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
-	montageFigure = figure();
-    montage3(roi_noise);
-    
-    ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
-    
-    if not(strcmp(ok, 'Yes'))
-        %updateImagePanels(handles);
 
-        %Finished with current task
-        %handles.state = 'idle';
+	close(montageFigure);
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	montageFigure = figure();
+	montage3(roi_noise);
+
+	ok = questdlg('Are all the regions of interest only noise?', 'Reselect Noise Region?', 'Yes');
+
+	if not(strcmp(ok, 'Yes'))
+		%handles = updateImagePanels(handles);
+
+		%Finished with current task
+		%handles.state = 'idle';
 		handles.state = state;
 
-        guidata(hObject, handles);
-        updateStatusBox(handles, 'Reselect noise region and try again', 0);
-        close(montageFigure);
-        return;
+		guidata(hObject, handles);
+		updateStatusBox(handles, 'Reselect noise region and try again', 0);
+		close(montageFigure);
+		return;
 	end
-	
-    close(montageFigure);
-	
+
+	close(montageFigure);
+
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
+
 	updateStatusBox(handles, 'SNR is stored in the patient data', 0);
-    
+
 	if strcmp(state, 'def_lung_signal_and_noise_region')
 		patient.lung_SNR = calculate_SNR(mask_signal,mask_noise,images);
 	elseif strcmp(state, 'def_body_signal_and_noise_region')
 		patient.body_SNR = calculate_SNR(mask_signal,mask_noise,images);
 	end
-	
+
 	handles.patient = patient;
 	guidata(hObject, handles);
 end
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 updateMenuOptions(handles);
 
@@ -622,48 +637,48 @@ slice = get(handles.slider_slice, 'Value');
 patient = handles.patient(index);
 
 if strcmp(state, 'def_noiseregion')
-    dims = handles.noise_region;
-    [x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
-                     max(1, dims(3)), max(1, dims(4)));
-    images = patient.lungs;
-      
-    curImage = images(:,:,slice);
-    
-    roi = curImage(y:y+h, x:x+w);
-    
-    axes(handles.axes2);
-    %calculate optimal threshold value and threshold image
-    [threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
-    handles.patient(index).threshold{slice} = threshold;
-    handles.patient(index).mean_noise{slice} = mean_noise;
+	dims = handles.noise_region;
+	[x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
+					 max(1, dims(3)), max(1, dims(4)));
+	images = patient.lungs;
+
+	curImage = images(:,:,slice);
+
+	roi = curImage(y:y+h, x:x+w);
+
+	axes(handles.axes2);
+	%calculate optimal threshold value and threshold image
+	[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
+	handles.patient(index).threshold{slice} = threshold;
+	handles.patient(index).mean_noise{slice} = mean_noise;
 %         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-    handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImage, threshold, mean_noise);
-    
-    updateStatusBox(handles, 'Image thresholded', 0);
-    
-    %set(handles.analyze_threshold, 'Enable', 'on');
+	handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImage, threshold, mean_noise);
+
+	updateStatusBox(handles, 'Image thresholded', 0);
+
+	%set(handles.analyze_threshold, 'Enable', 'on');
 elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_body_signal_and_noise_region')
 	if strcmp(state, 'def_lung_signal_and_noise_region')
 		curImage = patient.lungs(:,:,slice);
 	elseif strcmp(state, 'def_body_signal_and_noise_region')
 		curImage = patient.body(:,:,slice);
 	end
-	
+
 	dims_one = handles.region_one;
-    [xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
-                     max(1, dims_one(3)), max(1, dims_one(4)));
-	
-    roi_one = curImage(yOne:yOne+hOne, xOne:xOne+wOne);
-	
+	[xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
+					 max(1, dims_one(3)), max(1, dims_one(4)));
+
+	roi_one = curImage(yOne:yOne+hOne, xOne:xOne+wOne);
+
 	dims_two = handles.region_two;
-    [xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
-                     max(1, dims_two(3)), max(1, dims_two(4)));
-	
-    roi_two = curImage(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo);
-	
+	[xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
+					 max(1, dims_two(3)), max(1, dims_two(4)));
+
+	roi_two = curImage(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo);
+
 	mask_signal = zeros([size(curImage,1), size(curImage,2)]);
 	mask_noise = zeros([size(curImage,1), size(curImage,2)]);
-	
+
 	if mean(roi_one(:))>mean(roi_two(:))
 		mask_signal(yOne:yOne+hOne, xOne:xOne+wOne) = 1;
 		mask_noise(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo) = 1;
@@ -671,9 +686,9 @@ elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_bod
 		mask_signal(yTwo:yTwo+hTwo, xTwo:xTwo+wTwo) = 1;
 		mask_noise(yOne:yOne+hOne, xOne:xOne+wOne) = 1;
 	end
-	
+
 	updateStatusBox(handles, 'SNR is stored in the patient data', 0);
-    
+
 	if strcmp(state, 'def_lung_signal_and_noise_region')
 		patient.lung_SNR = zeros([size(patient.lungs,3),1]);
 		patient.lung_SNR(slice) = calculate_SNR(mask_signal,mask_noise,curImage);
@@ -683,12 +698,12 @@ elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_bod
 		patient.body_SNR(slice) = calculate_SNR(mask_signal,mask_noise,curImage);
 		updateStatusBox(handles, ['The SNR of the slice was: ',num2str(patient.body_SNR(slice))], 0);
 	end
-	
+
 	handles.patient = patient;
 	guidata(hObject, handles);
 end
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 %Finished with current task
 handles.state = 'idle';
@@ -722,7 +737,7 @@ function viewright_lungs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'L';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -731,7 +746,7 @@ function viewright_lungmask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'LM';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -740,7 +755,7 @@ function viewright_body_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'B';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -749,7 +764,7 @@ function viewright_bodymask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'BM';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -758,7 +773,7 @@ function viewleft_lungs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'L';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -767,7 +782,7 @@ function viewleft_lungmask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'LM';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -776,7 +791,7 @@ function viewleft_body_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'B';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -785,7 +800,7 @@ function viewleft_bodymask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'BM';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
@@ -806,9 +821,9 @@ slice = get(handles.slider_slice, 'Value');
 handles.leftpanel = 'LM';
 
 if slice == 0
-    %This must be a blank patient.
-    updateStatusBox(handles, 'No lung images found.', 1);
-    return;
+	%This must be a blank patient.
+	updateStatusBox(handles, 'No lung images found.', 1);
+	return;
 end
 
 %Get mask and image
@@ -830,13 +845,13 @@ maskOverlay(image, mask);
 roi = roipoly();
 
 if isempty(roi)
-    return;
+	return;
 end
 
 mask = mask | roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -850,9 +865,9 @@ slice = get(handles.slider_slice, 'Value');
 handles.leftpanel = 'LM';
 
 if slice == 0
-    %This must be a blank patient.
-    updateStatusBox(handles, 'No lung images found.', 1);
-    return;
+	%This must be a blank patient.
+	updateStatusBox(handles, 'No lung images found.', 1);
+	return;
 end
 
 %Get mask and image
@@ -874,13 +889,13 @@ maskOverlay(image, mask);
 roi = roipoly();
 
 if isempty(roi)
-    return;
+	return;
 end
 
 mask = mask & ~roi;
 handles.patient(index).lungmask(:,:,slice) = mask;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -893,16 +908,16 @@ index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 
 if slice == 0
-    %This must be a blank patient.
-    updateStatusBox(handles, 'No lung images found.', 1);
-    return;
+	%This must be a blank patient.
+	updateStatusBox(handles, 'No lung images found.', 1);
+	return;
 end
 
 %Get mask and image
 mask = handles.patient(index).lungmask(:,:,slice);
 handles.patient(index).lungmask(:,:,slice) = zeros(size(mask));
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles);
 
@@ -930,9 +945,9 @@ slice = get(handles.slider_slice, 'Value');
 handles.leftpanel = 'BM';
 
 if slice == 0
-    %This must be a blank patient.
-    updateStatusBox(handles, 'No body images found.', 1);
-    return;
+	%This must be a blank patient.
+	updateStatusBox(handles, 'No body images found.', 1);
+	return;
 end
 
 %Get mask and image
@@ -954,13 +969,13 @@ maskOverlay(image, mask);
 roi = roipoly();
 
 if isempty(roi)
-    return;
+	return;
 end
 
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -974,9 +989,9 @@ slice = get(handles.slider_slice, 'Value');
 handles.leftpanel = 'BM';
 
 if slice == 0
-    %This must be a blank patient.
-    updateStatusBox(handles, 'No body images found.', 1);
-    return;
+	%This must be a blank patient.
+	updateStatusBox(handles, 'No body images found.', 1);
+	return;
 end
 
 %Get mask and image
@@ -998,13 +1013,13 @@ maskOverlay(image, mask);
 roi = roipoly();
 
 if isempty(roi)
-    return;
+	return;
 end
 
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -1015,7 +1030,7 @@ function analyze_segbody_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 %
 index = handles.pat_index;
 patient = handles.patient(index);
@@ -1030,8 +1045,8 @@ axes(handles.axes2);
 numImages = size(body_images, 3);
 wb = waitbar(0, 'Segmenting Lung Cavities');
 for slice = 1:numImages
-    waitbar(slice/numImages, wb);
-    patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+	waitbar(slice/numImages, wb);
+	patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
 end
 close(wb);
 
@@ -1039,7 +1054,7 @@ handles.patient(index) = patient;
 handles.leftpanel = 'B';
 handles.rightpanel = 'BM';
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 updateMenuOptions(handles);
 
 guidata(hObject, handles);
@@ -1052,7 +1067,8 @@ function push_cancel_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %untested
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
 
 
 % --- Executes on button press in push_up.
@@ -1089,7 +1105,7 @@ function viewright_coreg_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1099,7 +1115,7 @@ function viewleft_coreg_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple, Body: Green', 1);
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
@@ -1110,7 +1126,7 @@ function viewright_hetero_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1120,7 +1136,7 @@ function viewleft_hetero_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
@@ -1145,7 +1161,7 @@ bodyimg = patient(pat_index).body(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
 
 handles.leftpanel='BM';
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
 
@@ -1158,10 +1174,10 @@ y = uint16(y);
 set(handles.push_undoseed, 'UserData', bodymask);
 
 for i = 1:length(x)
-    newbodymask = segmentRegion(tolerance, bodyimg, y(i), x(i));
+	newbodymask = segmentRegion(tolerance, bodyimg, y(i), x(i));
 %     newbodymask2 = BWregionGrowing(bodyimg, x(i), y(i));
 
-    bodymask = bodymask | newbodymask;
+	bodymask = bodymask | newbodymask;
 end
 
 handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
@@ -1189,7 +1205,7 @@ function edit_tolerance_CreateFcn(hObject, eventdata, handles)
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+	set(hObject,'BackgroundColor','white');
 end
 
 
@@ -1209,7 +1225,7 @@ set(hObject, 'UserData', handles.patient(index).bodymask(:,:,slice));
 
 handles.patient(index).bodymask(:,:,slice) = saved_mask;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles);
 
@@ -1256,14 +1272,14 @@ lungmask = patient.lungmask;
 
 if length(patient.mean_noise{slice}) < slice
 %     threshold = 0;
-    noise = 0;
+	noise = 0;
 else
 %     threshold = patient.threshold{slice};
-    noise = patient.mean_noise{slice};
+	noise = patient.mean_noise{slice};
 end
 
 if not(noise)
-    noise = 0;
+	noise = 0;
 end
 
 hetero_images = zeros(size(patient.hetero_images));
@@ -1271,11 +1287,11 @@ hetero_images = zeros(size(patient.hetero_images));
 
 wb = waitbar(0, 'Calculating Heterogeneity...');
 for i = 1:size(lungs, 3)
-    waitbar(i/size(lungs, 3), wb);
-    hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
-    
-    hetero_images(:,:,i) = hetero;
-    
+	waitbar(i/size(lungs, 3), wb);
+	hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
+
+	hetero_images(:,:,i) = hetero;
+
 %     hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
 end
 close(wb);
@@ -1322,7 +1338,9 @@ function slice_offset_beginning_Callback(hObject, eventdata, handles)
 set(handles.slice_offset_beginning, 'Checked', 'On');
 set(handles.slice_offset_end, 'Checked', 'Off');
 setappdata(handles.slice_offset, 'position', 'beginning');
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
+
 
 
 
@@ -1334,7 +1352,8 @@ function slice_offset_end_Callback(hObject, eventdata, handles)
 set(handles.slice_offset_beginning, 'Checked', 'Off');
 set(handles.slice_offset_end, 'Checked', 'On');
 setappdata(handles.slice_offset, 'position', 'end');
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
 
 
 
@@ -1367,8 +1386,9 @@ function extra_slices_show_Callback(hObject, eventdata, handles)
 set(handles.extra_slices_show, 'Checked', 'On');
 set(handles.extra_slices_hide, 'Checked', 'Off');
 setappdata(handles.extra_slices, 'show', 'true');
-updateSliceSlider(hObject, handles);
-updateImagePanels(handles);
+handles = updateSliceSlider(handles);
+guidata(hObject, handles);
+
 
 
 % --------------------------------------------------------------------
@@ -1379,8 +1399,8 @@ function extra_slices_hide_Callback(hObject, eventdata, handles)
 set(handles.extra_slices_show, 'Checked', 'Off');
 set(handles.extra_slices_hide, 'Checked', 'On');
 setappdata(handles.extra_slices, 'show', 'false');
-updateSliceSlider(hObject, handles);
-updateImagePanels(handles);
+handles = updateSliceSlider(handles);
+guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
@@ -1436,9 +1456,7 @@ else
 	lungAxes = handles.axes1;
 end
 %
-guidata(hObject, handles);
-%
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 %
 xaxis = floor(get(lungAxes, 'XLim'));
 yaxis = floor(get(lungAxes, 'YLim'));
@@ -1469,6 +1487,8 @@ while strcmp(handles.state, 'def_lung_signal_and_noise_region')
 	pause(0.3);
 end
 %
+guidata(hObject, handles);
+%
 
 
 % --------------------------------------------------------------------
@@ -1486,9 +1506,9 @@ else
 	bodyAxes = handles.axes1;
 end
 %
-guidata(hObject, handles);
+handles = updateImagePanels(handles);
 %
-updateImagePanels(handles);
+guidata(hObject, handles);
 %
 xaxis = floor(get(bodyAxes, 'XLim'));
 yaxis = floor(get(bodyAxes, 'YLim'));
@@ -1533,32 +1553,32 @@ ids = {patients(:).id};
 
 if isempty(ids) 
 %     file_loadpatient_Callback(hObject, eventdata, handles)
-        msg = sprintf('No patients selected');
-        updateStatusBox(handles, msg, 1);
+		msg = sprintf('No patients selected');
+		updateStatusBox(handles, msg, 1);
 else
-    [selection, ok] = listdlg('PromptString', 'Select a patient:', ...
-                              'ListString', ids, 'SelectionMode', 'multiple', ...
-                              'InitialValue', pat_index);
+	[selection, ok] = listdlg('PromptString', 'Select a patient:', ...
+							  'ListString', ids, 'SelectionMode', 'multiple', ...
+							  'InitialValue', pat_index);
 
-    if ok
-        
-        msg = sprintf('Calculating heterogeneity scores');
-        updateStatusBox(handles, msg, 1);
-        
-        selected = patients(selection);
-            
-        scored_patients = heteroscore(selected);
-        patients(selection) = scored_patients;
-        handles.patient = patients;
+	if ok
 
-        msg = sprintf('Finished Calculating heterogeneity scores');
-        updateStatusBox(handles, msg, 0);
+		msg = sprintf('Calculating heterogeneity scores');
+		updateStatusBox(handles, msg, 1);
 
-%             updateSliceSlider(hObject, handles);
+		selected = patients(selection);
+
+		scored_patients = heteroscore(selected);
+		patients(selection) = scored_patients;
+		handles.patient = patients;
+
+		msg = sprintf('Finished Calculating heterogeneity scores');
+		updateStatusBox(handles, msg, 0);
+
+%             handles = updateSliceSlider(handles);
 
 %             updateViewOptions(handles);
 %             updateMenuOptions(handles);
 
-        guidata(hObject, handles);
-    end
+		guidata(hObject, handles);
+	end
 end

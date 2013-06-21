@@ -1,4 +1,4 @@
-function updateSliceSlider(hObject, handles)
+function handles = updateSliceSlider(handles)
 
 %Get current patient
 pat_index = handles.pat_index;
@@ -43,7 +43,7 @@ end
 %set(handles.slider_slice, 'val', 1);
 %val = 1;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 curSlice = max(1, get(handles.slider_slice, 'Value'));
 curSlice = min(curSlice, numSlices);
@@ -66,4 +66,4 @@ end
 % handles.slice_index = currentSlice;
 
 % Update handles structure
-guidata(hObject, handles)
+%guidata(hObject, handles)
