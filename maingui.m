@@ -375,6 +375,7 @@ end
 
 set(handles.analyze_hetero, 'Enable', 'on');
 
+
 % --------------------------------------------------------------------
 function analyze_coreglm_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_coreglm (see GCBO)
@@ -399,24 +400,33 @@ lungmask = patient.lungmask(:,:,slice);
 axes(handles.axes2);
 % maskOverlay(reg_body, lungmask);
 viewCoregistration(reg_body, reg_bodymask, lungmask);
-
-applyall = questdlg('Do you want to apply this transform to all images?');
-if strcmpi(applyall, 'Yes')
-    body = patient.body;
-    bodymask = patient.bodymask;
-    height = size(body,1);
-    width = size(body,2);
-    for i = 1:size(body, 3)
-%         reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
-%         reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
-        patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-        patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-    end
-end
+apply = questdlg('Do you want to apply this transform?');
+if strcmpi(apply, 'Yes')
     
+    applyall = questdlg('Do you want to apply this transform to all images?');
+    if strcmpi(applyall, 'Yes')
+        body = patient.body;
+        bodymask = patient.bodymask;
+        height = size(body,1);
+        width = size(body,2);
+        for i = 1:size(body, 3)
+    %         reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
+    %         reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
+            patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+            patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+        end
+    else
+        patient.body(:,:,slice) = reg_body;
+        patient.bodymask(:,:,slice) = reg_bodymask;
+%         patient.body_tform(slice) = tform;
+    end
+    handles.patient(index) = patient;
+    
+    guidata(hObject, handles);
+end
+
 updateStatusBox(handles, 'Finished Coregistration', 1);
 
-guidata(hObject, handles);
 
 
 % --- Executes on button press in push_applyall.

@@ -1,4 +1,6 @@
-function Phi = segmentRegion(tolerance,Igray,x,y)
+function Phi = segmentRegion(tolerance,image,x,y)
+%% segmentRegion performs a seeded region growing with a given tolerance and set of intial seeds
+    
 
 %Initial parameters
 sigma = 2;
@@ -32,24 +34,24 @@ lowerBorder = height-minSeedlength-floor(0.10 * height);
 %Gaussian filter
 gauss = fspecial('gaussian', blockSize, sigma);
 %Smooth image
-Igray = imfilter(Igray,gauss,'replicate');
+image = imfilter(image,gauss,'replicate');
 
 
 if(x == 0 || y == 0)
-    imshow(Igray,[0 255]);
+    imshow(image,[0 255]);
     [x,y] = ginput(1);
 end
-Phi = false(size(Igray,1),size(Igray,2));
-ref = true(size(Igray,1),size(Igray,2));
+Phi = false(size(image,1),size(image,2));
+ref = true(size(image,1),size(image,2));
 PhiOld = Phi;
 Phi(x,y) = 1;
 while(sum(Phi(:)) ~= sum(PhiOld(:)))
     PhiOld = Phi;
-    segm_val = Igray(Phi);
+    segm_val = image(Phi);
     meanSeg = mean(segm_val);
     posVoisinsPhi = imdilate(Phi,strel('disk',1,0)) - Phi;
     voisins = find(posVoisinsPhi);
-    valeursVoisins = Igray(voisins);
+    valeursVoisins = image(voisins);
     Phi(voisins(valeursVoisins > meanSeg - tolerance & valeursVoisins < meanSeg + tolerance)) = 1;
 end
 

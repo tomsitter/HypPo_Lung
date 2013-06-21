@@ -47,12 +47,12 @@ while(1)
 
     % ---------------> reading mouse clicks
     axes(handles.axes1);
-    disp('Select landmarks in target (Helium) image. Press ENTER key when done.');  % chose features that are easy to identify
+    updateStatusBox(handles, 'Select landmarks in target (Helium) image. Press ENTER key when done.');  % chose features that are easy to identify
     [jt, it] = ginput;
     hold on; plot(jt, it, 'y+'); hold off
 
     axes(handles.axes2);
-    disp('Select landmarks in source (Proton) image. Press ENTER key when done.');
+    updateStatusBox(handles, 'Select landmarks in source (Proton) image. Press ENTER key when done.');
     [js, is] = ginput;
     hold on; plot(js, is, 'y+'); hold off
 
@@ -99,7 +99,7 @@ while(1)
     reg_body = reg_body / max(reg_body(:));
     
     he = lungs;
-    % Nov 30 2011
+    % Nov 30 2011 awheat changes
 %     he = round(((he - min(he(:)))/max(he(:)))*256);
     he = double(he);
     he = he - min(he(:));
@@ -110,7 +110,7 @@ while(1)
 %     imshow(green);
 %     hold off;
 %     he = uint8(he);
-%      green = cat(3, reg_body+he, reg_body, reg_body+he );
+     green = cat(3, reg_body+he, reg_body, reg_body+he );
 %     green = cat(3, zeros(size(registeredProton)), ones(size(registeredProton)), zeros(size(registeredProton)));
 %     hold on
     % Nov 30 2011
