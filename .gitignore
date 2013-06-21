@@ -23,3 +23,8 @@
 *.SPAR
 *.dcm
 *.IMA
+
+# Version Information and Downloads #
+#####################################
+Updates/
+versionNumber.txt
