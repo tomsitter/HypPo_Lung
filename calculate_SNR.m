@@ -1,39 +1,4 @@
 function SNR = calculate_SNR(signal_masks, noise_masks, data)
-	%{
-	rect1=round(getrect());
-	xmin=rect1(1);
-	xmax=xmin + rect1(3);
-	ymin=rect1(2);
-	ymax=ymin + rect1(4);
-
-	dataSelected=data([ymin:ymax],[xmin:xmax]);
-
-	N=rows(dataSelected);
-	M=cols(dataSelected);
-
-	dataSelectedReshaped=reshape(dataSelected,N*M,1);
-
-	S=mean(dataSelectedReshaped)
-	STD=std(dataSelectedReshaped)
-
-	%Get Noise
-	rect2=round(getrect());
-	xmin=rect2(1);
-	xmax=xmin + rect2(3);
-	ymin=rect2(2);
-	ymax=ymin + rect2(4);
-
-	dataSelected=data([ymin:ymax],[xmin:xmax]);
-
-	N=rows(dataSelected);
-	M=cols(dataSelected);
-
-	dataSelectedReshaped=reshape(dataSelected,N*M,1);
-
-	Noise=std(dataSelectedReshaped)
-
-	SNR=S/Noise
-	%}
 	data = im2double(data);
 	S = [];
 	for a=1:size(data,3)
@@ -41,6 +6,7 @@ function SNR = calculate_SNR(signal_masks, noise_masks, data)
 		dataSelected = sliceData(signal_masks(:,:,a)==1);
 		S(a) = mean(dataSelected);
 	end
+	S
 	%
 	Noise = [];
 	for a=1:size(data,3)
@@ -48,6 +14,7 @@ function SNR = calculate_SNR(signal_masks, noise_masks, data)
 		dataSelected = sliceData(noise_masks(:,:,a)==1);
 		Noise(a) = std(dataSelected);
 	end
+	Noise
 	%
 	SNR=S./Noise;
 end

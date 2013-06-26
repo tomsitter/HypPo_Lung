@@ -284,9 +284,9 @@ pat_index = maingui.pat_index;
 
 panel = handles.panel;
 if strcmp(panel, 'left')
-    imgtype = maingui.leftpanel
+    imgtype = maingui.leftpanel;
 else
-    imgtype = maingui.rightpanel
+    imgtype = maingui.rightpanel;
 end
 
 switch imgtype
