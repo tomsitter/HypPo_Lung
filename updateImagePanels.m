@@ -83,7 +83,7 @@ switch handles.rightpanel
 			handles.rightpanel = '';
 		end
 	case 'H'
-		if sum(patient.hetero_images(:))<=0||isnan(sum(patient.hetero_images(:)))==1
+		if nansum(patient.hetero_images(:))<=0
 			handles.rightpanel = '';
 		end
 	case ''
