@@ -66,7 +66,7 @@ for a=1:size(panels,2)
 				panels{a}{1} = '';
 			end
 		case 'H'
-			if sum(patient.hetero_images(:))<=0||isnan(sum(patient.hetero_images(:)))==1
+			if nansum(patient.hetero_images(:))<=0
 				panels{a}{1} = '';
 			end
 		case ''

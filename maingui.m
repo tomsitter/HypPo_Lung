@@ -286,7 +286,9 @@ if size(handles.patient,2)~=0
 	id = strrep(id, '-', '_');
 	id = strrep(id, ' ', '_');
 
-	uisave('patient', id);
+    eval(sprintf('%s = patient', id));
+    
+	uisave(sprintf('%s', id), id);
 
 	assignin('base', id, patient);
 	msg = sprintf('Saving patient %s to workspace', id);
