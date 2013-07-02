@@ -65,11 +65,29 @@ handles.rightpanel = '';
 % handles.slice_index = 1;
 handles.state = 'idle';
 
-handles = updateImagePanels(handles);
+set(handles.figure1, 'visible', 'on');
+% needs to be visible for the slider moving callback to work (not sure why)
+%
+sliderUpdatePntr = libpointer('uint32');
+sliderUpdatePntr.Value = 0;
+% The purpose of the pointer is to make sure that the slices are not
+% overwritten. When the slider is moving, the callback is sometimes called
+% before the previous callback has finished. This causes the first callback
+% to stop, the second callback to run, and the first callback to then
+% finish after the second callback finishes. Since the first callback
+% finishes after the second callback does, it overwrites the changes made
+% by the second callback. The pointer is modified in the
+% updateImageSlices.m script so that each callback knows if it should
+% update the image slices or not.
+%
+jvscroll = findjobj(handles.slider_slice);
+jvscroll.MouseDraggedCallback = {@scrollCallback, hObject, sliderUpdatePntr};
+handles.sliderLastUpdated = clock;
 
 % Choose default command line output for maingui
 handles.output = hObject;
 
+handles = updateImagePanels(handles);
 handles = updateSliceSlider(handles);
 updateMenuOptions(handles);
 updateViewOptions(handles);
@@ -83,9 +101,19 @@ parentDirectoryIndex = max(directoryLocationsInString);
 folderPath = filePath(1:parentDirectoryIndex-1);
 %
 checkAndGetUpdates('tomsitter','HypPo_Lung',folderPath);
-
+%
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
+
+
+function scrollCallback(~, ~, mainFigure, sliderUpdatePntr)
+handles = guidata(mainFigure);
+if etime(clock,handles.sliderLastUpdated)>0.04%0.05
+	handles.sliderLastUpdated = clock;
+	guidata(mainFigure, handles);
+	handles = updateImagePanels(handles, sliderUpdatePntr);
+	guidata(mainFigure, handles);
+end
 
 
 % --- Outputs from this function are returned to the command line.
@@ -135,7 +163,7 @@ function slider_slice_Callback(hObject, ~, handles)
 %pat_index = handles.pat_index;
 
 %val = get(hObject, 'Value');
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 
@@ -413,6 +441,8 @@ while strcmp(handles.state, 'def_noiseregion')
 	end
 	pause(0.3);
 end
+
+delete(region);
 
 try
 	set(handles.analyze_hetero, 'Enable', 'on');
@@ -736,7 +766,7 @@ function viewright_lungs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'L';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -745,7 +775,7 @@ function viewright_lungmask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'LM';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -754,7 +784,7 @@ function viewright_body_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'B';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -763,7 +793,7 @@ function viewright_bodymask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'BM';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -772,7 +802,7 @@ function viewleft_lungs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'L';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -781,7 +811,7 @@ function viewleft_lungmask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'LM';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -790,7 +820,7 @@ function viewleft_body_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'B';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -799,7 +829,7 @@ function viewleft_bodymask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'BM';
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 
@@ -974,7 +1004,7 @@ end
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 
 guidata(hObject, handles)
 
@@ -1018,7 +1048,7 @@ end
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 
 guidata(hObject, handles)
 
@@ -1053,7 +1083,7 @@ handles.patient(index) = patient;
 handles.leftpanel = 'B';
 handles.rightpanel = 'BM';
 
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 updateMenuOptions(handles);
 
 guidata(hObject, handles);
@@ -1104,7 +1134,7 @@ function viewright_coreg_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1125,7 +1155,7 @@ function viewright_hetero_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1135,7 +1165,7 @@ function viewleft_hetero_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
-handles = updateImagePanels(handles);
+handles = updateSliceSlider(handles);
 guidata(hObject, handles);
 
 
@@ -1414,6 +1444,8 @@ while strcmp(handles.state, 'def_lung_signal_and_noise_region')
 	end
 	pause(0.3);
 end
+delete(regionOne);
+delete(regionTwo);
 %
 
 
@@ -1471,6 +1503,8 @@ while strcmp(handles.state, 'def_body_signal_and_noise_region')
 	end
 	pause(0.3);
 end
+delete(regionOne);
+delete(regionTwo);
 %
 
 
