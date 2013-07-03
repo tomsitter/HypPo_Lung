@@ -570,7 +570,7 @@ if size(handles.patient,2)~=0
 			[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
 			handles.patient(index).threshold{slice} = threshold;
 			handles.patient(index).mean_noise{slice} = mean_noise;
-	%         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
+			%handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
 			handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
 			waitbar(slice/numImages, wb);
 		end

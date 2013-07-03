@@ -10,7 +10,11 @@ binary_mask = zeros(size(image));
 %%%%%%%%%%%%%%%%%%%%% Corrects hypex image by mask %%%%%%%%%%%%%%%%%%%%%
     
 % Subtracts noise from signal image
-noise_subtracted = sqrt(image.^2-2/pi*mean_noise^2);
+if mean_noise~=0
+	noise_subtracted = sqrt(image.^2-2/pi*mean_noise^2);
+else
+	noise_subtracted = image;
+end
 
 % Multiplies mask to MR image
 segmented = noise_subtracted .* mask;
@@ -18,7 +22,11 @@ segmented = noise_subtracted .* mask;
 % Normalizes images and segmented image
 signal = segmented(:);
 % norm_images = image/max(max_intensity);
-norm_segmented = segmented/max(signal);
+if max(signal)~=0
+	norm_segmented = segmented/max(signal);
+else
+	norm_segmented = segmented;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%% FCM Clustering Refinement %%%%%%%%%%%%%%%%%%%%%%
 
@@ -26,7 +34,11 @@ norm_segmented = segmented/max(signal);
 se = strel('disk',1);
 
 % Applies FCM clustering
-norm_signal = signal./max(signal);
+if max(signal)~=0
+	norm_signal = signal./max(signal);
+else
+	norm_signal = signal;
+end
 
 if not(isreal(norm_signal))
     final_mask = zeros(size(image));

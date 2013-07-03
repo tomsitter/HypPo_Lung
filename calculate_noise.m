@@ -1,5 +1,11 @@
 function [threshold, mean_noise] = calculate_noise(noise_roi)
 
+if sum(noise_roi(:))==0
+	threshold = 0;
+	mean_noise = 0;
+	return;
+end
+
 % Initialize parameters
 gf_array = [];      % Distribution of nonbackground pixels
 rf_array = [];      % Distribution of best-fit Rayleigh model
