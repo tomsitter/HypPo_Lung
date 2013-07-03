@@ -329,7 +329,17 @@ end
 filename=[pname fname];
 
 new_experiment = load(filename);
-new_patient = new_experiment.patient;
+%new_patient = new_experiment.patient;
+
+new_patients = fieldnames(new_experiment);
+
+if size(new_patients,1)~=1
+	msg = sprintf('The file had multiple fields, are you sure this is a patient file? Check the structure and try again.');
+	updateStatusBox(handles, msg, 0);
+	return;
+end
+
+new_patient = new_experiment.(new_patients{1});
 
 if isempty(handles.patient)
 	cur_patient = handles.patient;
