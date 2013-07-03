@@ -31,12 +31,15 @@ h = hist(noise_roi, x);
     yhat = rayleigh_model(betahat,x);
        
     % Plots the distribution
+	%{
     figure(2);
     plot(x,h,'o')
     hold on;
     plot(x,yhat,'r')
     hold off;
     close(figure(2));
+	%}
+	
     % Calculates coefficient of determination, r^2, value
     SStot = sum((h-mean(h)).^2);
     SSerr = sum((h-yhat).^2);
