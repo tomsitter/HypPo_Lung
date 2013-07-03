@@ -71,6 +71,10 @@ function checkAndGetUpdates(username, repo, projectFolderPath)
 	if updateCheck
 		fileID = fopen([projectFolderPath,'/versionNumber.txt'],'r');
 		currentVersionString = fscanf(fileID,'%s');
+		if currentVersionString(1)=='v'
+			% remove the 'v' from the beginning if there is one
+			currentVersionString = currentVersionString(2:end);
+		end
 		% get the current version
 		fclose(fileID);
 		%
@@ -86,6 +90,10 @@ function checkAndGetUpdates(username, repo, projectFolderPath)
 					% if the version number file exists in the folder
 					fileID = fopen([projectFolderPath,'/Updates/Latest_Version/',latestVersions(updateFolder).name,'/versionNumber.txt'],'r');
 					downloadedVersionString = fscanf(fileID,'%s');
+					if downloadedVersionString(1)=='v'
+						% remove the 'v' from the beginning if there is one
+						downloadedVersionString = downloadedVersionString(2:end);
+					end
 					fclose(fileID);
 				end
 			end
@@ -116,8 +124,7 @@ function checkAndGetUpdates(username, repo, projectFolderPath)
 		end
 		if updateAvailable==0
 			if cmpVersions(downloadedVersionString,currentVersionString)==1
-				disp 'You have downloaded the latest version, but haven''t installed it yet.';
-				disp 'You are currently running an old version.';
+				msgbox('You have downloaded the latest version, but haven''t installed it yet. You are currently running an old version.','','warn')
 			end
 		end
 		if updateAvailable==1
@@ -125,6 +132,10 @@ function checkAndGetUpdates(username, repo, projectFolderPath)
 			updatesFigure = downloadingUpdateGUI;
 			% show a GUI so that the user knows the program is downloading
 			% updates
+			if exist([projectFolderPath,'/Updates/Latest_Version'],'dir')
+				% remove any existing versions
+				rmdir([projectFolderPath,'/Updates/Latest_Version'], 's');
+			end
 			newVersionFiles = unzip(latestVersionDownload,[projectFolderPath,'/Updates/Latest_Version']);
 			% download the latest version from the server and unzip it
 			newVersionPath = '';
@@ -145,7 +156,7 @@ function checkAndGetUpdates(username, repo, projectFolderPath)
 			fileID = fopen([newVersionPath,'/versionNumber.txt'],'w');
 			fprintf(fileID,'%s',latestVersionString);
 			% write the latest version to the downloaded folder because the
-			% version number was not downloaded with the ZIP
+			% version number might not have been downloaded with the ZIP
 			fclose(fileID);
 			close(updatesFigure);
 			%

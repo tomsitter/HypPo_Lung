@@ -82,11 +82,22 @@ directoryLocationsInString = [strfind(filePath,'\'),strfind(filePath,'/')];
 parentDirectoryIndex = max(directoryLocationsInString);
 folderPath = filePath(1:parentDirectoryIndex-1);
 %
-checkAndGetUpdates('tomsitter','HypPo_Lung',folderPath);
-
+%checkAndGetUpdates('tomsitter','HypPo_Lung',folderPath);
+updateTimer = timer('TimerFcn',{@checkAndGetUpdatesTimer,'tomsitter','HypPo_Lung',folderPath}, 'StartDelay', 1.0);
+start(updateTimer);
+% checkAndGetUpdates is in a timer because the maingui window automatically brings
+% itself to the front once the opening function is finished. This causes
+% the update window to be hidden behind the maingui window. The timer fixes
+% this problem. The timer also allows the program to continue if the
+% checkAndGetUpdates crashes.
+%
 % UIWAIT makes maingui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
+function checkAndGetUpdatesTimer(hObject, ~, username, repo, projectFolderPath)
+stop(hObject);
+delete(hObject);
+checkAndGetUpdates(username, repo, projectFolderPath);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = maingui_OutputFcn(~, ~, handles)
