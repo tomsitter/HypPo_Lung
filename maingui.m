@@ -488,7 +488,7 @@ updateStatusBox(handles, 'Preparing to coregister images', 1);
 %
 
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
+slice = round(get(handles.slider_slice, 'Value'));
 patient = handles.patient(index);
 
 lungmask = patient.lungmask(:,:,slice);
@@ -892,7 +892,7 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-maskOverlay(image, mask);
+imagesc(maskOverlay(image, mask));
 
 roi = roipoly();
 
@@ -936,7 +936,7 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to remove.',1);
 
-maskOverlay(image, mask);
+imagesc(maskOverlay(image, mask));
 
 roi = roipoly();
 
@@ -1016,7 +1016,7 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-maskOverlay(image, mask);
+imagesc(maskOverlay(image, mask));
 
 roi = roipoly();
 
@@ -1060,7 +1060,7 @@ axes(handles.axes1);
 
 updateStatusBox(handles, 'Select the area you want to remove.',1);
 
-maskOverlay(image, mask);
+imagesc(maskOverlay(image, mask));
 
 roi = roipoly();
 
@@ -1234,7 +1234,7 @@ end
 
 handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
 
-maskOverlay(bodyimg, bodymask);
+imagesc(maskOverlay(bodyimg, bodymask));
 
 guidata(hObject, handles);
 

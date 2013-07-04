@@ -305,7 +305,7 @@ switch imgtype
         if not(isempty(maingui.patient(pat_index).lungmask))
             lungs = maingui.patient(pat_index).lungs(:, :, tslice);
             lungmask = maingui.patient(pat_index).lungmask(:, :, tslice);
-            maskOverlay(lungs, lungmask);
+            imagesc(maskOverlay(lungs, lungmask));
             %imagesc(maingui.patient(pat_index).lungmask(:, :, val));
         else
 %             updateStatusBox(maingui, 'No lung mask found', 0);
@@ -327,7 +327,7 @@ switch imgtype
 %             imagesc(maingui.patient(pat_index).bodymask(:, :, val));
             body = maingui.patient(pat_index).body(:, :, tslice);
             bodymask = maingui.patient(pat_index).bodymask(:, :, tslice);
-            maskOverlay(body, bodymask);
+            imagesc(maskOverlay(body, bodymask));
         else
 %             updateStatusBox(maingui, 'No body mask found', 0);
             imagesc(gray);

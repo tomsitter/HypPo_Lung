@@ -32,7 +32,7 @@ switch imgtype
         if not(isempty(handles.patient(pat_index).lungmask))
             lungs = handles.patient(pat_index).lungs(:, :, tslice);
             lungmask = handles.patient(pat_index).lungmask(:, :, tslice);
-            maskOverlay(lungs, lungmask);
+            imagesc(maskOverlay(lungs, lungmask));
             %imagesc(handles.patient(pat_index).lungmask(:, :, val));
         else
             updateStatusBox(handles, 'No lung mask found', 0);
@@ -54,7 +54,7 @@ switch imgtype
 %             imagesc(handles.patient(pat_index).bodymask(:, :, val));
             body = handles.patient(pat_index).body(:, :, tslice);
             bodymask = handles.patient(pat_index).bodymask(:, :, tslice);
-            maskOverlay(body, bodymask);
+            imagesc(maskOverlay(body, bodymask));
         else
             updateStatusBox(handles, 'No body mask found', 0);
             imagesc(gray);

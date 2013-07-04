@@ -24,7 +24,7 @@ function [reg_bodymask, reg_body, tform] = coregister_landmarks(handles)
 % Incorporated into HypPo_Lung GUI
 
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
+slice = round(get(handles.slider_slice, 'Value'));
 patient = handles.patient(index);
 
 % lungmask = patient.lungmask(:,:,slice);
@@ -47,12 +47,12 @@ while(1)
 
     % ---------------> reading mouse clicks
     axes(handles.axes1);
-    disp('Select landmarks in target (Helium) image. Press ENTER key when done.');  % chose features that are easy to identify
-    [jt, it] = ginput;
+    updateStatusBox(handles, 'Select landmarks in target (Helium) image. Press ENTER key when done.');  % chose features that are easy to identify
+	[jt, it] = ginput;
     hold on; plot(jt, it, 'y+'); hold off
 
     axes(handles.axes2);
-    disp('Select landmarks in source (Proton) image. Press ENTER key when done.');
+	updateStatusBox(handles, 'Select landmarks in source (Proton) image. Press ENTER key when done.');
     [js, is] = ginput;
     hold on; plot(js, is, 'y+'); hold off
 
