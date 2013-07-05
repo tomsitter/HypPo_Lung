@@ -297,8 +297,8 @@ if size(handles.patient,2)~=0
 	id = strrep(id, '-', '_');
 	id = strrep(id, ' ', '_');
 
-    eval(sprintf('%s = patient', id));
-    
+	eval(sprintf('%s = patient', id));
+
 	uisave(sprintf('%s', id), id);
 
 	assignin('base', id, patient);
@@ -450,26 +450,26 @@ viewCoregistration(reg_body, reg_bodymask, lungmask);
 
 apply = questdlg('Do you want to apply this transform?');
 if strcmpi(apply, 'Yes')
-    applyall = questdlg('Do you want to apply this transform to all images?');
-    if strcmpi(applyall, 'Yes')
-        body = patient.body;
-        bodymask = patient.bodymask;
-        height = size(body,1);
-        width = size(body,2);
-        for i = 1:size(body, 3)
+	applyall = questdlg('Do you want to apply this transform to all images?');
+	if strcmpi(applyall, 'Yes')
+		body = patient.body;
+		bodymask = patient.bodymask;
+		height = size(body,1);
+		width = size(body,2);
+		for i = 1:size(body, 3)
 			%reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
 			%reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
-            patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-            patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-        end
-    else
-        patient.body(:,:,slice) = reg_body;
-        patient.bodymask(:,:,slice) = reg_bodymask;
+			patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+			patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
+		end
+	else
+		patient.body(:,:,slice) = reg_body;
+		patient.bodymask(:,:,slice) = reg_bodymask;
 		%patient.body_tform(slice) = tform;
-    end
-    handles.patient(index) = patient;
-    
-    guidata(hObject, handles);
+	end
+	handles.patient(index) = patient;
+
+	guidata(hObject, handles);
 end
 
 updateStatusBox(handles, 'Finished Coregistration', 1);
@@ -549,7 +549,7 @@ if size(handles.patient,2)~=0
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			dims_one = round(handles.panelOverlayData.SNR_body_rectOne.getPosition);
 		end
-		
+
 		[xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
 						 max(1, dims_one(3)), max(1, dims_one(4)));
 
@@ -560,7 +560,7 @@ if size(handles.patient,2)~=0
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			dims_two = round(handles.panelOverlayData.SNR_body_rectTwo.getPosition);
 		end
-		
+
 		[xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
 						 max(1, dims_two(3)), max(1, dims_two(4)));
 
@@ -655,7 +655,7 @@ if size(handles.patient,2)~=0
 	index = handles.pat_index;
 	slice = get(handles.slider_slice, 'Value');
 	patient = handles.patient(index);
-	
+
 	if strcmp(state, 'def_noiseregion')
 		dims = round(handles.panelOverlayData.seg_lung_rect.getPosition);
 		[x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
@@ -683,13 +683,13 @@ if size(handles.patient,2)~=0
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			curImage = patient.body(:,:,slice);
 		end
-		
+
 		if strcmp(state, 'def_lung_signal_and_noise_region')
 			dims_one = round(handles.panelOverlayData.SNR_lung_rectOne.getPosition);
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			dims_one = round(handles.panelOverlayData.SNR_body_rectOne.getPosition);
 		end
-		
+
 		[xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
 						 max(1, dims_one(3)), max(1, dims_one(4)));
 
@@ -700,7 +700,7 @@ if size(handles.patient,2)~=0
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			dims_two = round(handles.panelOverlayData.SNR_body_rectTwo.getPosition);
 		end
-		
+
 		[xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
 						 max(1, dims_two(3)), max(1, dims_two(4)));
 
