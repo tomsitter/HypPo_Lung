@@ -1,4 +1,4 @@
-function updateSliceSlider(hObject, handles)
+function handles = updateSliceSlider(handles)
 
 %Get current patient
 pat_index = handles.pat_index;
@@ -23,10 +23,7 @@ if num_lungSlices == num_bodySlices
 %     msg = sprintf('Found %d slices', numSlices);
 %    updateStatusBox(handles, msg, 0);
 else
-    if not(isnan(num_bodySlices)) && not(isnan(num_lungSlices))
-        updateStatusBox(handles, 'Error: different number of lung and body slices', 0);
-    end
-    numSlices = min(num_lungSlices, num_bodySlices);
+	numSlices = max(num_lungSlices, num_bodySlices);
     if isnan(numSlices)
         numSlices = 0;
     end
@@ -39,7 +36,7 @@ end
 %set(handles.slider_slice, 'val', 1);
 %val = 1;
 
-updateImagePanels(handles);
+handles = updateImagePanels(handles);
 
 curSlice = max(1, get(handles.slider_slice, 'Value'));
 curSlice = min(curSlice, numSlices);
@@ -62,4 +59,4 @@ end
 % handles.slice_index = currentSlice;
 
 % Update handles structure
-guidata(hObject, handles)
+%guidata(hObject, handles)

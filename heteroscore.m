@@ -127,7 +127,12 @@ for n=1:n_slices
     figure(ceil(n/6)*2+2)
     hold on;
     subplot(4,3,mod(n-1,3)+1+mod(floor((n-1)/3),2)*6)
-    axis([-1 0 0 ceil(logmax*10)/10])
+    if logmax == 0
+        ymax = 1;
+    else
+        ymax = ceil(logmax*10)/10;
+    end
+    axis([-1 0 0 ymax])
     if mod(n,6)==0 || n==n_slices
         figure(ceil(n/6)*2+1)
         hold on;

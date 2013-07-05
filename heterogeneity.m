@@ -73,7 +73,7 @@ for i = 1:length(stats)
                         stdev0L(i,j)=std2(image(i+ upL -1-round(Lscale):i+ upL -1+round(Lscale),...
                                              j+leftL-1-round(Lscale):j+leftL-1+round(Lscale)));
                     else
-                        stdev0L(i,j)=-1;
+                        stdev0L(i,j)=NaN;
                     end
                 else
                     [iroi,jroi]=find(overlap);
@@ -88,7 +88,7 @@ for i = 1:length(stats)
                         ave0L(i,j)=rage0;
                         stdev0L(i,j)=std(valroi0);
                     else
-                        stdev0L(i,j)=-1;
+                        stdev0L(i,j)=NaN;
                     end
                 end
             end

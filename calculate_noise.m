@@ -20,7 +20,12 @@ h = hist(noise_roi, x);
     beta = [beta_value, beta_value, beta_value];
     
     % Determines best-fit Rayleigh model
+	
+	s1 = warning('off','stats:nlinfit:IllConditionedJacobian');
+	s2 = warning('off','stats:nlinfit:IterationLimitExceeded');
     betahat = nlinfit(x',h','rayleigh_model',beta);
+	warning(s1);
+	warning(s2);
 
     % Calculate predicted values from best-fit Rayleigh model
     yhat = rayleigh_model(betahat,x);

@@ -1,0 +1,83 @@
+* Removed "Calculate Lung SNR" menu button under "Analyze"
+* Removed "Calculate Body SNR" menu button under "Analyze"
+* Created "SNR" menu button under "Analyze"
+* Created "Calculate Lung SNR From Segmentation" menu button under "SNR"
+* Created "Calculate Body SNR From Segmentation" menu button under "SNR"
+* Created "Calculate Lung SNR From Bounding Box" menu button under "SNR"
+* Created "Calculate Body SNR From Bounding Box" menu button under "SNR"
+* Changed "Calculate Lung SNR From Segmentation" tag to "calculate_lung_SNR_segmentation" and set the default callback
+* Changed "Calculate Body SNR From Segmentation" tag to "calculate_body_SNR_segmentation" and set the default callback
+* Changed "Calculate Lung SNR From Bounding Box" tag to "calculate_lung_SNR_bounding_box" and set the default callback
+* Changed "Calculate Body SNR From Bounding Box" tag to "calculate_body_SNR_bounding_box" and set the default callback
+
+* Changed "Tools>GUI Options" to generate FIG and MATLAB file, then checked the first box, unchecked the second, and checked the third
+* Changed "Tools>GUI Options" resize behaviour to "proportional"
+
+* Created "Slice Correction" menu button under "Analyze"
+	* Changed callback to empty
+* Created "Lung" menu button under "Slice Correction"
+	* Changed callback to empty
+* Created "Body" menu button under "Slice Correction"
+	* Changed callback to empty
+* Created "Add Slice" menu button under "Slice Correction>Lung"
+	* Changed callback to empty
+* Created "Remove Slice" menu button under "Slice Correction>Lung"
+	* Changed callback to empty
+* Created "Add Slice" menu button under "Slice Correction>Body"
+	* Changed callback to empty
+* Created "Remove Slice" menu button under "Slice Correction>Body"
+	* Changed callback to empty
+
+* Created "To Beginning" menu button under "Slice Correction>Lung>Add Slice"
+	* Changed tag to "slice_lung_add_beginning"
+	* Changed callback to default
+* Created "From Beginning" menu button under "Slice Correction>Lung>Remove Slice"
+	* Changed tag to "slice_lung_remove_beginning"
+	* Changed callback to default
+* Created "To Beginning" menu button under "Slice Correction>Body>Add Slice"
+	* Changed tag to "slice_body_add_beginning"
+	* Changed callback to default
+* Created "From Beginning" menu button under "Slice Correction>Body>Remove Slice"
+	* Changed tag to "slice_body_remove_beginning"
+	* Changed callback to default
+
+* Created "To End" menu button under "Slice Correction>Lung>Add Slice"
+	* Changed tag to "slice_lung_add_end"
+	* Changed callback to default
+* Created "From End" menu button under "Slice Correction>Lung>Remove Slice"
+	* Changed tag to "slice_lung_remove_end"
+	* Changed callback to default
+* Created "To End" menu button under "Slice Correction>Body>Add Slice"
+	* Changed tag to "slice_body_add_end"
+	* Changed callback to default
+* Created "From End" menu button under "Slice Correction>Body>Remove Slice"
+	* Changed tag to "slice_body_remove_end"
+	* Changed callback to default
+
+* Removed "Show" menu button under "Analyze>Show/Hide Extra Slices"
+* Removed "Hide" menu button under "Analyze>Show/Hide Extra Slices"
+* Removed "Beginning" menu button under "Analyze>Offset Slices"
+* Removed "End" menu button under "Analyze>Offset Slices"
+* Removed "Show/Hide Extra Slices" menu button under "Analyze"
+* Removed "Offset Slices" menu button under "Analyze"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
