@@ -46,16 +46,31 @@ while(1)
     title( 'Proton Image', 'fontweight', 'bold', 'fontsize', 12 )
 
     % ---------------> reading mouse clicks
-    axes(handles.axes1);
-    updateStatusBox(handles, 'Select landmarks in target (Helium) image. Press ENTER key when done.');  % chose features that are easy to identify
-	[jt, it] = ginput;
-    hold on; plot(jt, it, 'y+'); hold off
-
-    axes(handles.axes2);
-	updateStatusBox(handles, 'Select landmarks in source (Proton) image. Press ENTER key when done.');
-    [js, is] = ginput;
-    hold on; plot(js, is, 'y+'); hold off
-
+	
+	jt = [];
+	it = [];
+	js = [];
+	is = [];
+	
+	newJ = 1;
+	newI = 1;
+	
+	updateStatusBox(handles, 'Select landmarks in both images. Press ENTER key when done.');  % chose features that are easy to identify
+	
+	while size(newJ,1)~=0
+		[newJ, newI] = ginput(1);
+		hold on; plot(newJ, newI, 'y+'); hold off
+		if get(handles.figure1,'CurrentAxes')==handles.axes1
+			text(newJ, newI, num2str(size(jt,1)+1), 'VerticalAlignment','bottom','HorizontalAlignment','right','color',[0,1,0]);
+			jt = [jt; newJ];
+			it = [it; newI];
+		elseif get(handles.figure1,'CurrentAxes')==handles.axes2
+			text(newJ, newI, num2str(size(js,1)+1), 'VerticalAlignment','bottom','HorizontalAlignment','right','color',[0,1,0]);
+			js = [js; newJ];
+			is = [is; newI];
+		end
+	end
+	
     % Set up the matrix B and the vector k
     N = length( js );
     Sj = sum(js);

@@ -9,7 +9,7 @@ function varargout = maingui(varargin)
 %      MAINGUI('CALLBACK',hObject,eventData,handles,...) calls the local
 %      function named CALLBACK in MAINGUI.M with the given input arguments.
 %
-%      MAINGUI('Property','Value',...) creates a new MAINGUI or raises the5
+%      MAINGUI('Property','Value',...) creates a new MAINGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before maingui_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -411,69 +411,16 @@ function analyze_seglungs_Callback(hObject, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %
-if handles.leftpanel == 'L'
-	lungAxes = handles.axes1;
-elseif handles.rightpanel == 'L'
-	lungAxes = handles.axes2;
-else
-	handles.leftpanel = 'L';
-	lungAxes = handles.axes1;
-end
-%
-if get(handles.slider_slice, 'value')>size(handles.patient(handles.pat_index).lungs,3)
-	set(handles.slider_slice, 'value', round(size(handles.patient(handles.pat_index).lungs,3)/2));
-end
-%
-handles = updateSliceSlider(handles);
-%
-guidata(hObject, handles);
 %
 updateStatusBox(handles, 'Preparing to segment lungs', 1);
-
+%
 updateStatusBox(handles, 'Select a region of noise', 0);
-
+%
 handles.state = 'def_noiseregion';
-
-%Get middle of xaxis to place region of interest
-xaxis = floor(get(lungAxes, 'XLim'));
-yaxis = floor(get(lungAxes, 'YLim'));
-mid_x = round(xaxis(2) / 2);
-size_box = xaxis(2) / 4;
-
-%Create an place region of interest, constrain to axis
-region = imrect(lungAxes, [(mid_x-size_box/2), 10, size_box, size_box,] );
-fcn = makeConstrainToRectFcn('imrect',[xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
-setPositionConstraintFcn(region,fcn)
-handles.noise_region = region;
-
 guidata(hObject, handles);
+initUpdatePanelOverlay(hObject);
+%
 
-while strcmp(handles.state, 'def_noiseregion')
-	try
-		handles = guidata(hObject);
-		handles.noise_region = round(region.getPosition);
-		guidata(hObject, handles);
-		%disp('looping');
-	catch err
-		if strcmp(err.message, 'Invalid or deleted object.')
-			%This is a known event. It happens when the user finishes
-			%selecting noise region. Not sure how to fix it but the algorithm
-			%runs fine.
-			break;
-		end
-	end
-	pause(0.3);
-end
-
-delete(region);
-
-try
-	set(handles.analyze_hetero, 'Enable', 'on');
-catch err
-	if strcmp(err.message, 'Invalid or deleted object.')==0
-		rethrow(err);
-	end
-end
 
 % --------------------------------------------------------------------
 function analyze_coreglm_Callback(hObject, eventdata, handles)
@@ -532,7 +479,7 @@ if size(handles.patient,2)~=0
 	patient = handles.patient(index);
 
 	if strcmp(state, 'def_noiseregion')
-		dims = handles.noise_region;
+		dims = round(handles.panelOverlayData.seg_lung_rect.getPosition);
 		[x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
 						 max(1, dims(3)), max(1, dims(4)));
 		images = patient.lungs;
@@ -587,13 +534,23 @@ if size(handles.patient,2)~=0
 			images = patient.body;
 		end
 
-		dims_one = handles.region_one;
+		if strcmp(state, 'def_lung_signal_and_noise_region')
+			dims_one = round(handles.panelOverlayData.SNR_lung_rectOne.getPosition);
+		elseif strcmp(state, 'def_body_signal_and_noise_region')
+			dims_one = round(handles.panelOverlayData.SNR_body_rectOne.getPosition);
+		end
+		
 		[xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
 						 max(1, dims_one(3)), max(1, dims_one(4)));
 
 		roi_one = images(yOne:yOne+hOne, xOne:xOne+wOne, :);
 
-		dims_two = handles.region_two;
+		if strcmp(state, 'def_lung_signal_and_noise_region')
+			dims_two = round(handles.panelOverlayData.SNR_lung_rectTwo.getPosition);
+		elseif strcmp(state, 'def_body_signal_and_noise_region')
+			dims_two = round(handles.panelOverlayData.SNR_body_rectTwo.getPosition);
+		end
+		
 		[xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
 						 max(1, dims_two(3)), max(1, dims_two(4)));
 
@@ -690,7 +647,7 @@ if size(handles.patient,2)~=0
 	patient = handles.patient(index);
 	
 	if strcmp(state, 'def_noiseregion')
-		dims = handles.noise_region;
+		dims = round(handles.panelOverlayData.seg_lung_rect.getPosition);
 		[x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
 						 max(1, dims(3)), max(1, dims(4)));
 		images = patient.lungs;
@@ -716,14 +673,24 @@ if size(handles.patient,2)~=0
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			curImage = patient.body(:,:,slice);
 		end
-
-		dims_one = handles.region_one;
+		
+		if strcmp(state, 'def_lung_signal_and_noise_region')
+			dims_one = round(handles.panelOverlayData.SNR_lung_rectOne.getPosition);
+		elseif strcmp(state, 'def_body_signal_and_noise_region')
+			dims_one = round(handles.panelOverlayData.SNR_body_rectOne.getPosition);
+		end
+		
 		[xOne yOne wOne hOne] = deal(max(1, dims_one(1)), max(1, dims_one(2)), ...
 						 max(1, dims_one(3)), max(1, dims_one(4)));
 
 		roi_one = curImage(yOne:yOne+hOne, xOne:xOne+wOne);
 
-		dims_two = handles.region_two;
+		if strcmp(state, 'def_lung_signal_and_noise_region')
+			dims_two = round(handles.panelOverlayData.SNR_lung_rectTwo.getPosition);
+		elseif strcmp(state, 'def_body_signal_and_noise_region')
+			dims_two = round(handles.panelOverlayData.SNR_body_rectTwo.getPosition);
+		end
+		
 		[xTwo yTwo wTwo hTwo] = deal(max(1, dims_two(1)), max(1, dims_two(2)), ...
 						 max(1, dims_two(3)), max(1, dims_two(4)));
 
@@ -868,9 +835,19 @@ function manual_ladd_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_ladd (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if strcmp(handles.leftpanel, 'LM')
+	lungMaskAxes = handles.axes1;
+elseif strcmp(handles.rightpanel, 'LM')
+	lungMaskAxes = handles.axes2;
+else
+	handles.rightpanel = 'LM';
+	lungMaskAxes = handles.axes2;
+	handles = updateSliceSlider(handles);
+	guidata(hObject, handles);
+end
+
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
-handles.leftpanel = 'LM';
+slice = round(get(handles.slider_slice, 'Value'));
 
 if slice == 0
 	%This must be a blank patient.
@@ -878,21 +855,11 @@ if slice == 0
 	return;
 end
 
-%Get mask and image
 mask = handles.patient(index).lungmask(:,:,slice);
-image = handles.patient(index).lungs(:,:,slice);
 
-axes(handles.axes1);
+updateStatusBox(handles, 'Select the area you want to add.', 1);
 
-% %Check if mask is defined
-% if sum(sum(mask)) == 0
-%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
-%     return;
-% end
-
-updateStatusBox(handles, 'Select the area you want to add.',1);
-
-imagesc(maskOverlay(image, mask));
+set(handles.figure1, 'currentaxes', lungMaskAxes);
 
 roi = roipoly();
 
@@ -905,16 +872,26 @@ handles.patient(index).lungmask(:,:,slice) = mask;
 
 handles = updateImagePanels(handles);
 
-guidata(hObject, handles)
+guidata(hObject, handles);
 
 % --------------------------------------------------------------------
 function manual_lremove_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_lremove (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if strcmp(handles.leftpanel, 'LM')
+	lungMaskAxes = handles.axes1;
+elseif strcmp(handles.rightpanel, 'LM')
+	lungMaskAxes = handles.axes2;
+else
+	handles.rightpanel = 'LM';
+	lungMaskAxes = handles.axes2;
+	handles = updateSliceSlider(handles);
+	guidata(hObject, handles);
+end
+
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
-handles.leftpanel = 'LM';
+slice = round(get(handles.slider_slice, 'Value'));
 
 if slice == 0
 	%This must be a blank patient.
@@ -922,21 +899,11 @@ if slice == 0
 	return;
 end
 
-%Get mask and image
 mask = handles.patient(index).lungmask(:,:,slice);
-image = handles.patient(index).lungs(:,:,slice);
-
-axes(handles.axes1);
-
-% %Check if mask is defined
-% if sum(sum(mask)) == 0
-%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
-%     return;
-% end
 
 updateStatusBox(handles, 'Select the area you want to remove.',1);
 
-imagesc(maskOverlay(image, mask));
+set(handles.figure1, 'currentaxes', lungMaskAxes);
 
 roi = roipoly();
 
@@ -957,7 +924,7 @@ function manual_lremoveall_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
+slice = round(get(handles.slider_slice, 'Value'));
 
 if slice == 0
 	%This must be a blank patient.
@@ -965,9 +932,7 @@ if slice == 0
 	return;
 end
 
-%Get mask and image
-mask = handles.patient(index).lungmask(:,:,slice);
-handles.patient(index).lungmask(:,:,slice) = zeros(size(mask));
+handles.patient(index).lungmask(:,:,slice) = zeros(size(handles.patient(index).lungmask(:,:,slice)));
 
 handles = updateImagePanels(handles);
 
@@ -992,9 +957,19 @@ function manual_badd_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_badd (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if strcmp(handles.leftpanel, 'BM')
+	bodyMaskAxes = handles.axes1;
+elseif strcmp(handles.rightpanel, 'BM')
+	bodyMaskAxes = handles.axes2;
+else
+	handles.rightpanel = 'BM';
+	bodyMaskAxes = handles.axes2;
+	handles = updateSliceSlider(handles);
+	guidata(hObject, handles);
+end
+
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
-handles.leftpanel = 'BM';
+slice = round(get(handles.slider_slice, 'Value'));
 
 if slice == 0
 	%This must be a blank patient.
@@ -1002,21 +977,11 @@ if slice == 0
 	return;
 end
 
-%Get mask and image
 mask = handles.patient(index).bodymask(:,:,slice);
-image = handles.patient(index).body(:,:,slice);
-
-axes(handles.axes1);
-
-% %Check if mask is defined
-% if sum(sum(mask)) == 0
-%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
-%     return;
-% end
 
 updateStatusBox(handles, 'Select the area you want to add.',1);
 
-imagesc(maskOverlay(image, mask));
+set(handles.figure1, 'currentaxes', bodyMaskAxes);
 
 roi = roipoly();
 
@@ -1027,18 +992,29 @@ end
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-handles = updateSliceSlider(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
+
 
 % --------------------------------------------------------------------
 function manual_bremove_Callback(hObject, eventdata, handles)
 % hObject    handle to manual_bremove (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if strcmp(handles.leftpanel, 'BM')
+	bodyMaskAxes = handles.axes1;
+elseif strcmp(handles.rightpanel, 'BM')
+	bodyMaskAxes = handles.axes2;
+else
+	handles.rightpanel = 'BM';
+	bodyMaskAxes = handles.axes2;
+	handles = updateSliceSlider(handles);
+	guidata(hObject, handles);
+end
+
 index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
-handles.leftpanel = 'BM';
+slice = round(get(handles.slider_slice, 'Value'));
 
 if slice == 0
 	%This must be a blank patient.
@@ -1046,24 +1022,14 @@ if slice == 0
 	return;
 end
 
-%Get mask and image
 mask = handles.patient(index).bodymask(:,:,slice);
-image = handles.patient(index).body(:,:,slice);
-
-axes(handles.axes1);
-
-% %Check if mask is defined
-% if sum(sum(mask)) == 0
-%     updateStatusBox(handles, 'No mask found. Have you segmented this image yet?',1);
-%     return;
-% end
 
 updateStatusBox(handles, 'Select the area you want to remove.',1);
 
-imagesc(maskOverlay(image, mask));
+set(handles.figure1, 'currentaxes', bodyMaskAxes);
 
 roi = roipoly();
-
+size(roi)
 if isempty(roi)
 	return;
 end
@@ -1071,7 +1037,7 @@ end
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
-handles = updateSliceSlider(handles);
+handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
 
@@ -1118,8 +1084,8 @@ function push_cancel_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%untested
-handles = updateImagePanels(handles);
+%handles = updateImagePanels(handles);
+handles.state = 'idle';
 guidata(hObject, handles);
 
 
@@ -1421,54 +1387,9 @@ function calculate_lung_SNR_bounding_box_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %
-if handles.leftpanel == 'L'
-	lungAxes = handles.axes1;
-elseif handles.rightpanel == 'L'
-	lungAxes = handles.axes2;
-else
-	handles.leftpanel = 'L';
-	lungAxes = handles.axes1;
-end
-%
-if get(handles.slider_slice, 'value')>size(handles.patient(handles.pat_index).lungs,3)
-	set(handles.slider_slice, 'value', round(size(handles.patient(handles.pat_index).lungs,3)/2));
-end
-%
-handles = updateSliceSlider(handles);
-%
-xaxis = floor(get(lungAxes, 'XLim'));
-yaxis = floor(get(lungAxes, 'YLim'));
-mid_x = round(xaxis(2)/2);
-size_box = xaxis(2)/4;
-%
-regionOne = imrect(lungAxes, [(mid_x-size_box/2) 10 size_box size_box]);
-regionTwo = imrect(lungAxes, [(mid_x-size_box/2) size_box*2 size_box size_box]);
-fcn = makeConstrainToRectFcn('imrect', [xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
-setPositionConstraintFcn(regionOne,fcn);
-setPositionConstraintFcn(regionTwo,fcn);
-%
 handles.state = 'def_lung_signal_and_noise_region';
-%
 guidata(hObject, handles);
-%
-while strcmp(handles.state, 'def_lung_signal_and_noise_region')
-	try
-		handles = guidata(hObject);
-		handles.region_one = round(regionOne.getPosition);
-		handles.region_two = round(regionTwo.getPosition);
-		guidata(hObject, handles);
-	catch err
-		if strcmp(err.message, 'Invalid or deleted object.')
-			%This is a known event. It happens when the user finishes
-			%selecting noise region. Not sure how to fix it but the algorithm
-			%runs fine.
-			break;
-		end
-	end
-	pause(0.3);
-end
-delete(regionOne);
-delete(regionTwo);
+initUpdatePanelOverlay(hObject);
 %
 
 
@@ -1478,56 +1399,9 @@ function calculate_body_SNR_bounding_box_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %
-if handles.leftpanel == 'B'
-	bodyAxes = handles.axes1;
-elseif handles.rightpanel == 'B'
-	bodyAxes = handles.axes2;
-else
-	handles.leftpanel = 'B';
-	bodyAxes = handles.axes1;
-end
-%
-if get(handles.slider_slice, 'value')>size(handles.patient(handles.pat_index).body,3)
-	set(handles.slider_slice, 'value', round(size(handles.patient(handles.pat_index).body,3)/2));
-end
-%
-handles = updateImagePanels(handles);
-%
-guidata(hObject, handles);
-%
-xaxis = floor(get(bodyAxes, 'XLim'));
-yaxis = floor(get(bodyAxes, 'YLim'));
-mid_x = round(xaxis(2)/2);
-size_box = xaxis(2)/4;
-%
-regionOne = imrect(bodyAxes, [(mid_x-size_box/2) 10 size_box size_box]);
-regionTwo = imrect(bodyAxes, [(mid_x-size_box/2) size_box*2 size_box size_box]);
-fcn = makeConstrainToRectFcn('imrect', [xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
-setPositionConstraintFcn(regionOne,fcn);
-setPositionConstraintFcn(regionTwo,fcn);
-%
 handles.state = 'def_body_signal_and_noise_region';
-%
 guidata(hObject, handles);
-%
-while strcmp(handles.state, 'def_body_signal_and_noise_region')
-	try
-		handles = guidata(hObject);
-		handles.region_one = round(regionOne.getPosition);
-		handles.region_two = round(regionTwo.getPosition);
-		guidata(hObject, handles);
-	catch err
-		if strcmp(err.message, 'Invalid or deleted object.')
-			%This is a known event. It happens when the user finishes
-			%selecting noise region. Not sure how to fix it but the algorithm
-			%runs fine.
-			break;
-		end
-	end
-	pause(0.3);
-end
-delete(regionOne);
-delete(regionTwo);
+initUpdatePanelOverlay(hObject);
 %
 
 

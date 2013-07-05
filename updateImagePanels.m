@@ -20,8 +20,6 @@ set(handles.text_slice, 'String', slice_str);
 set(handles.figure1, 'HandleVisibility', 'on');
 % need this line for axes to work while dragging the slider (not sure why)
 
-colormap(gray);
-
 pat_index = handles.pat_index;
 
 %Check if there are are any patients
@@ -29,8 +27,10 @@ pat_index = handles.pat_index;
 if isempty(handles.patient)
     axes(handles.axes1);
     imagesc(gray);
+	colormap(gray);
     axes(handles.axes2);
     imagesc(gray);
+	colormap(gray);
     return;
 end
 
@@ -87,8 +87,11 @@ panels = cell(1,1);
 panels{1} = {leftpanel,handles.axes1};
 panels{2} = {rightpanel,handles.axes2};
 
+axesChanged = 0;
+
 for a=1:size(panels,2)
 	axes(panels{a}{2});
+	initData = get(imhandles(panels{a}{2}),'CData');
 	switch panels{a}{1}
 		case ''
 			imagesc(gray);
@@ -336,4 +339,15 @@ for a=1:size(panels,2)
 			updateStatusBox(handles,msg, 1);
 			title('');
 	end
+	%
+	finalData = get(imhandles(panels{a}{2}),'CData');
+	if ~isequal(initData, finalData)
+		axesChanged = 1;
+	end
+end
+%
+if axesChanged
+	%handles = updatePanelOverlay(handles);
+	% this will cause the double imrect boxes to appear sometimes if it is
+	% enabled
 end

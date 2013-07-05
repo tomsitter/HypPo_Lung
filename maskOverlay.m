@@ -7,7 +7,7 @@ end
 
 %imagesc(image);
 
-if sum(image(:)) == 0
+if (sum(image(:)) == 0)||(sum(mask(:)) == 0)
 	outputImage = image;
     return;
 end
