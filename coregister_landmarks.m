@@ -114,7 +114,7 @@ while(1)
     reg_body = reg_body / max(reg_body(:));
     
     he = lungs;
-    % Nov 30 2011
+    % Nov 30 2011 awheat changes
 %     he = round(((he - min(he(:)))/max(he(:)))*256);
     he = double(he);
     he = he - min(he(:));
@@ -125,7 +125,7 @@ while(1)
 %     imshow(green);
 %     hold off;
 %     he = uint8(he);
-%      green = cat(3, reg_body+he, reg_body, reg_body+he );
+     green = cat(3, reg_body+he, reg_body, reg_body+he );
 %     green = cat(3, zeros(size(registeredProton)), ones(size(registeredProton)), zeros(size(registeredProton)));
 %     hold on
     % Nov 30 2011
