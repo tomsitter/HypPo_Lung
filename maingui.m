@@ -720,6 +720,7 @@ handles = updateImagePanels(handles);
 updateMenuOptions(handles);
 %Finished with current task
 handles.state = 'idle';
+set(handles.slider_slice, 'enable', 'on');
 guidata(hObject, handles);
 
 % --- Executes on button press in push_apply.
@@ -891,6 +892,7 @@ handles = updateImagePanels(handles);
 updateMenuOptions(handles);
 %Finished with current task
 handles.state = 'idle';
+set(handles.slider_slice, 'enable', 'on');
 guidata(hObject, handles);
 
 
@@ -1266,6 +1268,7 @@ if strcmp(handles.state,'def_coreg_landmarks')
 	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_x');
 	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
 end
+set(handles.slider_slice, 'enable', 'on');
 handles.state = 'idle';
 guidata(hObject, handles);
 

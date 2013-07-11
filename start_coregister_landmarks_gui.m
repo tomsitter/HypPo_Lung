@@ -104,6 +104,9 @@ function start_coregister_landmarks_gui(hObject)
 			end
 		end
 		handles = guidata(hObject);
+		if ~isempty(newX)
+			set(handles.slider_slice, 'enable', 'off');
+		end
 		if isequal(newX,[])
 			break;
 		end
