@@ -430,11 +430,14 @@ function analyze_coreglm_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 updateStatusBox(handles, 'Preparing to coregister images', 1);
 
-%updateStatusBox(handles, 'Select a region of noise', 0);
+handles.state = 'def_coreg_landmarks';
+guidata(hObject, handles);
 
+start_coregister_landmarks_gui(hObject);
+
+%{
 [reg_bodymask, reg_body, tform] = coregister_landmarks(handles);
 %
-
 index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 patient = handles.patient(index);
@@ -473,6 +476,7 @@ if strcmpi(apply, 'Yes')
 end
 
 updateStatusBox(handles, 'Finished Coregistration', 1);
+%}
 
 
 
@@ -634,6 +638,59 @@ if size(handles.patient,2)~=0
 		elseif strcmp(state, 'def_body_signal_and_noise_region')
 			handles.patient(index).body_SNR = calculate_SNR(mask_signal,mask_noise,images);
 		end
+	elseif strcmp(state, 'def_coreg_landmarks')
+		if any(size(handles.panelOverlayData.coreg_landmarks_lungs_x)~=size(handles.panelOverlayData.coreg_landmarks_body_x))
+			handles.state = state;
+			guidata(hObject, handles);
+			errordlg('You must select the same number of points on both the lung image and body image!', '', 'modal');
+			return;
+		end
+		%
+		handles.panelOverlayData.coreg_landmarks_escape_pointer.Value = 1;
+		%
+		tform = coregister_landmarks(handles.panelOverlayData.coreg_landmarks_lungs_x, handles.panelOverlayData.coreg_landmarks_lungs_y, handles.panelOverlayData.coreg_landmarks_body_x, handles.panelOverlayData.coreg_landmarks_body_y);
+		%
+		index = handles.pat_index;
+		slice = round(get(handles.slider_slice, 'Value'));
+		patient = handles.patient(index);
+		
+		lungmask = patient.lungmask(:,:,slice);
+		bodymask = patient.bodymask(:,:,slice);
+		body = patient.body(:,:,slice);
+		
+		height = size(body,1);
+		width = size(body,2);
+		reg_body = imtransform(body, tform, 'xdata', [1, width], 'ydata', [1, height]);
+		reg_bodymask = imtransform(bodymask, tform, 'xdata', [1, width], 'ydata', [1, height]);
+		
+		resultFigure = figure;
+		viewCoregistration(reg_body, reg_bodymask, lungmask);
+		apply = questdlg('Do you want to apply this transform to all slices?');
+		close(resultFigure);
+		if strcmpi(apply, 'Yes')
+			for a=1:size(patient.body,3)
+				patient.body(:,:,a) = imtransform(patient.body(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
+				patient.bodymask(:,:,a) = imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
+			end
+			%
+			handles.patient(index) = patient;
+		end
+		%
+		delete(handles.panelOverlayData.coreg_landmarks_lung_plot);
+		delete(handles.panelOverlayData.coreg_landmarks_body_plot);
+		delete(handles.panelOverlayData.coreg_landmarks_lung_text);
+		delete(handles.panelOverlayData.coreg_landmarks_body_text);
+		%
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lung_plot');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_plot');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lung_text');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_text');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lungs_x');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lungs_y');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_x');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
+		%
+		updateStatusBox(handles, 'Finished Coregistration', 1);
 	end
 end
 
@@ -730,6 +787,59 @@ if size(handles.patient,2)~=0
 		end
 		handles.patient(index) = patient;
 		guidata(hObject, handles);
+	elseif strcmp(state, 'def_coreg_landmarks')
+		if any(size(handles.panelOverlayData.coreg_landmarks_lungs_x)~=size(handles.panelOverlayData.coreg_landmarks_body_x))
+			handles.state = state;
+			guidata(hObject, handles);
+			errordlg('You must select the same number of points on both the lung image and body image!', '', 'modal');
+			return;
+		end
+		%
+		handles.panelOverlayData.coreg_landmarks_escape_pointer.Value = 1;
+		%
+		tform = coregister_landmarks(handles.panelOverlayData.coreg_landmarks_lungs_x, handles.panelOverlayData.coreg_landmarks_lungs_y, handles.panelOverlayData.coreg_landmarks_body_x, handles.panelOverlayData.coreg_landmarks_body_y);
+		%
+		index = handles.pat_index;
+		slice = round(get(handles.slider_slice, 'Value'));
+		patient = handles.patient(index);
+		
+		lungmask = patient.lungmask(:,:,slice);
+		bodymask = patient.bodymask(:,:,slice);
+		body = patient.body(:,:,slice);
+		
+		height = size(body,1);
+		width = size(body,2);
+		reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
+		reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
+		
+		resultFigure = figure;
+		viewCoregistration(reg_body, reg_bodymask, lungmask);
+		apply = questdlg('Do you want to apply this transform to this slice?');
+		close(resultFigure);
+		if strcmpi(apply, 'Yes')
+			patient.body(:,:,slice) = reg_body;
+			patient.bodymask(:,:,slice) = reg_bodymask;
+			%
+			handles.patient(index) = patient;
+			%
+			guidata(hObject, handles);
+		end
+		%
+		delete(handles.panelOverlayData.coreg_landmarks_lung_plot);
+		delete(handles.panelOverlayData.coreg_landmarks_body_plot);
+		delete(handles.panelOverlayData.coreg_landmarks_lung_text);
+		delete(handles.panelOverlayData.coreg_landmarks_body_text);
+		%
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lung_plot');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_plot');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lung_text');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_text');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lungs_x');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lungs_y');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_x');
+		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
+		%
+		updateStatusBox(handles, 'Finished Coregistration', 1);
 	end
 end
 
@@ -1039,7 +1149,7 @@ updateStatusBox(handles, 'Select the area you want to remove.',1);
 set(handles.figure1, 'currentaxes', bodyMaskAxes);
 
 roi = roipoly();
-size(roi)
+
 if isempty(roi)
 	return;
 end
@@ -1095,6 +1205,23 @@ function push_cancel_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %handles = updateImagePanels(handles);
+if strcmp(handles.state,'def_coreg_landmarks')
+	handles.panelOverlayData.coreg_landmarks_escape_pointer.Value = 1;
+	%
+	delete(handles.panelOverlayData.coreg_landmarks_lung_plot);
+	delete(handles.panelOverlayData.coreg_landmarks_body_plot);
+	delete(handles.panelOverlayData.coreg_landmarks_lung_text);
+	delete(handles.panelOverlayData.coreg_landmarks_body_text);
+	%
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lung_plot');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_plot');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lung_text');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_text');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lungs_x');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_lungs_y');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_x');
+	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
+end
 handles.state = 'idle';
 guidata(hObject, handles);
 
