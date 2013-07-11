@@ -664,7 +664,29 @@ if size(handles.patient,2)~=0
 		reg_bodymask = imtransform(bodymask, tform, 'xdata', [1, width], 'ydata', [1, height]);
 		
 		resultFigure = figure;
+		screenSize = get(0, 'ScreenSize');
+		set(resultFigure, 'position', [screenSize(3)*0.1,screenSize(4)*0.2,screenSize(3)*0.8,screenSize(4)*0.6])
+		subplotAxes = tight_subplot(1,3,[.01 .03],[.1 .01],[.01 .01]);
+		%
+		axes(subplotAxes(1));
+		imshow(maskOverlay(patient.lungs(:,:,slice),patient.lungmask(:,:,slice)));
+		hold on;
+		for a=1:size(handles.panelOverlayData.coreg_landmarks_lungs_x)
+			plot(handles.panelOverlayData.coreg_landmarks_lungs_x, handles.panelOverlayData.coreg_landmarks_lungs_y, 'y+');
+		end
+		hold off;
+		%
+		axes(subplotAxes(2));
+		imshow(maskOverlay(patient.body(:,:,slice),patient.bodymask(:,:,slice)));
+		hold on;
+		for a=1:size(handles.panelOverlayData.coreg_landmarks_body_x)
+			plot(handles.panelOverlayData.coreg_landmarks_body_x, handles.panelOverlayData.coreg_landmarks_body_y, 'y+');
+		end
+		hold off;
+		%
+		axes(subplotAxes(3));
 		viewCoregistration(reg_body, reg_bodymask, lungmask);
+		%
 		apply = questdlg('Do you want to apply this transform to all slices?');
 		close(resultFigure);
 		if strcmpi(apply, 'Yes')
@@ -813,7 +835,29 @@ if size(handles.patient,2)~=0
 		reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
 		
 		resultFigure = figure;
+		screenSize = get(0, 'ScreenSize');
+		set(resultFigure, 'position', [screenSize(3)*0.1,screenSize(4)*0.2,screenSize(3)*0.8,screenSize(4)*0.6])
+		subplotAxes = tight_subplot(1,3,[.01 .03],[.1 .01],[.01 .01]);
+		%
+		axes(subplotAxes(1));
+		imshow(maskOverlay(patient.lungs(:,:,slice),patient.lungmask(:,:,slice)));
+		hold on;
+		for a=1:size(handles.panelOverlayData.coreg_landmarks_lungs_x)
+			plot(handles.panelOverlayData.coreg_landmarks_lungs_x, handles.panelOverlayData.coreg_landmarks_lungs_y, 'y+');
+		end
+		hold off;
+		%
+		axes(subplotAxes(2));
+		imshow(maskOverlay(patient.body(:,:,slice),patient.bodymask(:,:,slice)));
+		hold on;
+		for a=1:size(handles.panelOverlayData.coreg_landmarks_body_x)
+			plot(handles.panelOverlayData.coreg_landmarks_body_x, handles.panelOverlayData.coreg_landmarks_body_y, 'y+');
+		end
+		hold off;
+		%
+		axes(subplotAxes(3));
 		viewCoregistration(reg_body, reg_bodymask, lungmask);
+		%
 		apply = questdlg('Do you want to apply this transform to this slice?');
 		close(resultFigure);
 		if strcmpi(apply, 'Yes')
