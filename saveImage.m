@@ -63,7 +63,7 @@ switch imgtype
         body = handles.patient(pat_index).body(:, :, slice);
         bodymask = handles.patient(pat_index).bodymask(:, :, slice);
         lungmask = handles.patient(pat_index).lungmask(:, :, slice);
-        viewCoregistration(body, bodymask, lungmask);
+        imagesc(viewCoregistration(body, bodymask, lungmask));
     otherwise
         msg = sprintf('Unknown image state for left panel: %s', leftpanel);
         updateStatusBox(handes,msg, 1);

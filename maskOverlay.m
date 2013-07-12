@@ -26,7 +26,7 @@ maskOutline(maskOutline>=imgAverage-imgAverage*0.3&maskOutline<=imgAverage+imgAv
 outputImage = repmat(image,[1 1 3]);
 outputImage = double(outputImage);
 outputImage = (outputImage-min(outputImage(:)))/(max(outputImage(:))-min(outputImage(:)));
-outputImage(logical([zeros(size(maskOutline)),maskOutline==1,zeros(size(maskOutline))])) = 1;
+outputImage = overlayColorOnImageByMask(outputImage, maskOutline, [NaN,1,NaN], 1);
 
 %imagesc(outputImg);
 

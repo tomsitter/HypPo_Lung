@@ -271,16 +271,38 @@ for a=1:size(panels,2)
 				if slice>size(handles.patient(pat_index).lungmask, 3) || slice<=0
 					imagesc(gray);
 				else
-					%if isequal(imSlice,get(imhandles(panels{a}{2}),'CData'))~=1
-						body = handles.patient(pat_index).body(:, :, slice);
-						bodymask = handles.patient(pat_index).bodymask(:, :, slice);
-						lungmask = handles.patient(pat_index).lungmask(:, :, slice);
-						viewCoregistration(body, bodymask, lungmask);
-					%end
-					%NOTE: This is the only case where the image will be
-					%redrawn even if it's the same (this could cause the
-					%performance to decrease while the slider is being
-					%dragged)
+					% if there are body mask and lung mask images
+					body = handles.patient(pat_index).body(:, :, slice);
+					bodymask = handles.patient(pat_index).bodymask(:, :, slice);
+					lungmask = handles.patient(pat_index).lungmask(:, :, slice);
+					currentSlice = viewCoregistration(body, bodymask, lungmask);
+					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
+						% if the data has changed
+						if ~isempty(sliderUpdatePntr)
+							% if the pointer was given as a parameter
+							if sliderUpdatePntr.Value==thisPntrValue
+								% if the pointer value was not changed
+								updateSlice = 1;
+							else
+								% if the pointer value was changed, don't
+								% update the image or you'll overwite the
+								% change
+								updateSlice = 0;
+							end
+						else
+							% the pointer was not given, so always update
+							% the image slice
+							updateSlice = 1;
+						end
+						if updateSlice
+							% if the above is true
+							imagesc(currentSlice);
+							if sum(currentSlice(:))==0
+								% if the slice is completely black
+								set(panels{a}{2}, 'clim', [0,1]);
+							end
+						end
+					end
 				end
 			end
 			title('Coregistration');

@@ -422,7 +422,6 @@ initUpdatePanelOverlay(hObject);
 %
 
 
-
 % --------------------------------------------------------------------
 function analyze_coreglm_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_coreglm (see GCBO)
@@ -434,50 +433,6 @@ handles.state = 'def_coreg_landmarks';
 guidata(hObject, handles);
 
 start_coregister_landmarks_gui(hObject);
-
-%{
-[reg_bodymask, reg_body, tform] = coregister_landmarks(handles);
-%
-index = handles.pat_index;
-slice = round(get(handles.slider_slice, 'Value'));
-patient = handles.patient(index);
-
-lungmask = patient.lungmask(:,:,slice);
-
-% axes(handles.axes1);
-% imagesc(patient.lungs(:,:,slice));
-
-axes(handles.axes2);
-% maskOverlay(reg_body, lungmask);
-viewCoregistration(reg_body, reg_bodymask, lungmask);
-
-apply = questdlg('Do you want to apply this transform?');
-if strcmpi(apply, 'Yes')
-	applyall = questdlg('Do you want to apply this transform to all images?');
-	if strcmpi(applyall, 'Yes')
-		body = patient.body;
-		bodymask = patient.bodymask;
-		height = size(body,1);
-		width = size(body,2);
-		for i = 1:size(body, 3)
-			%reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
-			%reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
-			patient.body(:,:,i) = imtransform(body(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-			patient.bodymask(:,:,i) = imtransform(bodymask(:,:,i), tform, 'xdata', [1 width], 'ydata', [1, height]);
-		end
-	else
-		patient.body(:,:,slice) = reg_body;
-		patient.bodymask(:,:,slice) = reg_bodymask;
-		%patient.body_tform(slice) = tform;
-	end
-	handles.patient(index) = patient;
-
-	guidata(hObject, handles);
-end
-
-updateStatusBox(handles, 'Finished Coregistration', 1);
-%}
-
 
 
 % --- Executes on button press in push_applyall.
@@ -685,7 +640,7 @@ if size(handles.patient,2)~=0
 		hold off;
 		%
 		axes(subplotAxes(3));
-		viewCoregistration(reg_body, reg_bodymask, lungmask);
+		imshow(viewCoregistration(reg_body, reg_bodymask, lungmask));
 		%
 		apply = questdlg('Do you want to apply this transform to all slices?');
 		close(resultFigure);
@@ -857,7 +812,7 @@ if size(handles.patient,2)~=0
 		hold off;
 		%
 		axes(subplotAxes(3));
-		viewCoregistration(reg_body, reg_bodymask, lungmask);
+		imshow(viewCoregistration(reg_body, reg_bodymask, lungmask));
 		%
 		apply = questdlg('Do you want to apply this transform to this slice?');
 		close(resultFigure);
