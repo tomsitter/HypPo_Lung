@@ -616,7 +616,7 @@ if size(handles.patient,2)~=0
 		height = size(body,1);
 		width = size(body,2);
 		reg_body = imtransform(body, tform, 'xdata', [1, width], 'ydata', [1, height]);
-		reg_bodymask = imtransform(bodymask, tform, 'xdata', [1, width], 'ydata', [1, height]);
+		reg_bodymask = round(imtransform(bodymask, tform, 'xdata', [1, width], 'ydata', [1, height]));
 		
 		resultFigure = figure;
 		screenSize = get(0, 'ScreenSize');
@@ -647,7 +647,7 @@ if size(handles.patient,2)~=0
 		if strcmpi(apply, 'Yes')
 			for a=1:size(patient.body,3)
 				patient.body(:,:,a) = imtransform(patient.body(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
-				patient.bodymask(:,:,a) = imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
+				patient.bodymask(:,:,a) = round(imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]));
 			end
 			%
 			handles.patient(index) = patient;
@@ -788,7 +788,7 @@ if size(handles.patient,2)~=0
 		height = size(body,1);
 		width = size(body,2);
 		reg_body = imtransform(body, tform, 'xdata', [1 width], 'ydata', [1, height]);
-		reg_bodymask = imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]);
+		reg_bodymask = round(imtransform(bodymask, tform, 'xdata', [1 width], 'ydata', [1, height]));
 		
 		resultFigure = figure;
 		screenSize = get(0, 'ScreenSize');
@@ -1186,6 +1186,7 @@ wb = waitbar(0, 'Segmenting Lung Cavities');
 for slice = 1:numImages
 	waitbar(slice/numImages, wb);
 	patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+	% NOTE: bodymask is still a double, even though it was set to uint8 in regiongrow_mask
 end
 close(wb);
 

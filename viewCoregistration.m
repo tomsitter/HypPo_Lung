@@ -1,4 +1,4 @@
-function outputImage = viewCoregistration( body, bodymask, lungmask )
+function outputImage = viewCoregistration(body, bodymask, lungmask)
 %VIEWCOREGISTRATION Displays overlap of lung and proton mask on proton image
 
 outputImage = body;
