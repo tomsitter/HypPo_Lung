@@ -44,6 +44,10 @@ for a=1:size(panels,2)
 			if sum(patient.hetero_images(:))>0||isnan(sum(patient.hetero_images(:)))==0
 				panels{a}{2} = size(patient.hetero_images, 3);
 			end
+		case 'O'
+			if sum(patient.lungmask(:))>0||sum(patient.bodymask(:))>0
+				panels{a}{2} = min(size(patient.lungmask, 3),size(patient.bodymask, 3));
+			end
 		case ''
 		otherwise
 			error('Unknown image state for panel: %s', handles.leftpanel);

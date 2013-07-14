@@ -61,8 +61,13 @@
 * Removed "Show/Hide Extra Slices" menu button under "Analyze"
 * Removed "Offset Slices" menu button under "Analyze"
 
+* Created "Overlay" menu button under "Right Panel"
+	* Changed tag to "viewright_overlay"
+	* Changed callback to default
 
-
+* Created "Overlay" menu button under "Left Panel"
+	* Changed tag to "viewleft_overlay"
+	* Changed callback to default
 
 
 

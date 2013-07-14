@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 25-Jun-2013 23:18:30
+% Last Modified by GUIDE v2.5 12-Jul-2013 16:27:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -1304,6 +1304,28 @@ function analyze_coreg_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+patient = handles.patient;
+pat_index = handles.pat_index;
+slice = round(get(handles.slider_slice, 'Value'));
+
+lungmask = patient(pat_index).lungmask(:,:,slice);
+bodymask = patient(pat_index).bodymask(:,:,slice);
+
+tform = coregister_steven(lungmask, bodymask);
+
+for a=1:size(patient(pat_index).lungmask,3)
+	height = size(patient(pat_index).lungmask(:,:,a),1);
+	width = size(patient(pat_index).lungmask(:,:,a),2);
+	
+	patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
+	patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+end
+
+handles.patient = patient;
+
+handles = updateImagePanels(handles);
+
+guidata(hObject, handles);
 
 % --------------------------------------------------------------------
 function manual_addseed_Callback(hObject, eventdata, handles)
@@ -1313,7 +1335,7 @@ function manual_addseed_Callback(hObject, eventdata, handles)
 
 patient = handles.patient;
 pat_index = handles.pat_index;
-slice = get(handles.slider_slice, 'Value');
+slice = round(get(handles.slider_slice, 'Value'));
 
 bodyimg = patient(pat_index).body(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
@@ -1757,4 +1779,43 @@ end
 handles = updateSliceSlider(handles);
 %
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function viewright_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to viewright_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanel = 'O';
+handles = updateSliceSlider(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function viewleft_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to viewleft_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanel = 'O';
+handles = updateSliceSlider(handles);
+guidata(hObject, handles);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -69,6 +69,10 @@ for a=1:size(panels,2)
 			if nansum(patient.hetero_images(:))<=0
 				panels{a}{1} = '';
 			end
+		case 'O'
+			if sum(patient.lungmask(:))<=0&&sum(patient.bodymask(:))<=0
+				panels{a}{1} = '';
+			end
 		case ''
 			if sum(patient.lungs(:))>0
 				panels{a}{1} = panels{a}{2};
@@ -356,6 +360,55 @@ for a=1:size(panels,2)
 				end
 			end
 			title('Heterogeneity');
+		case 'O'
+			if isempty(handles.patient(pat_index).lungs)
+				imagesc(gray);
+			else
+				if isempty(handles.patient(pat_index).body)
+					imagesc(gray);
+				else
+					if slice>size(handles.patient(pat_index).body, 3) || slice<=0
+						imagesc(gray);
+					else
+						if slice>size(handles.patient(pat_index).lungs, 3) || slice<=0
+							imagesc(gray);
+						else
+							% if there are body and lung images
+							body = handles.patient(pat_index).body(:, :, slice);
+							lungs = handles.patient(pat_index).lungs(:, :, slice);
+							currentSlice = viewOverlay(body, lungs);
+							if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
+								% if the data has changed
+								if ~isempty(sliderUpdatePntr)
+									% if the pointer was given as a parameter
+									if sliderUpdatePntr.Value==thisPntrValue
+										% if the pointer value was not changed
+										updateSlice = 1;
+									else
+										% if the pointer value was changed, don't
+										% update the image or you'll overwite the
+										% change
+										updateSlice = 0;
+									end
+								else
+									% the pointer was not given, so always update
+									% the image slice
+									updateSlice = 1;
+								end
+								if updateSlice
+									% if the above is true
+									imagesc(currentSlice);
+									if sum(currentSlice(:))==0
+										% if the slice is completely black
+										set(panels{a}{2}, 'clim', [0,1]);
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+			title('Overlay');
 		otherwise
 			msg = sprintf('Unknown image state for panel: %s', panels(a,1));
 			updateStatusBox(handles,msg, 1);

@@ -64,10 +64,14 @@ if lm && bm
     set(handles.analyze_coreglm, 'Enable', 'on');
     set(handles.viewleft_coreg, 'Enable', 'on');
     set(handles.viewright_coreg, 'Enable', 'on');
+    set(handles.viewleft_overlay, 'Enable', 'on');
+    set(handles.viewright_overlay, 'Enable', 'on');
 else
     set(handles.analyze_coreglm, 'Enable', 'off');
     set(handles.viewleft_coreg, 'Enable', 'off');
     set(handles.viewright_coreg, 'Enable', 'off');
+    set(handles.viewleft_overlay, 'Enable', 'off');
+    set(handles.viewright_overlay, 'Enable', 'off');
 end
 
 if h
