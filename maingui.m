@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 25-Jun-2013 23:18:30
+% Last Modified by GUIDE v2.5 05-Jul-2013 14:45:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -290,7 +290,17 @@ end
 filename=[pname fname];
 
 new_experiment = load(filename);
-new_patient = new_experiment.patient;
+%new_patient = new_experiment.patient;
+
+new_patients = fieldnames(new_experiment);
+
+if size(new_patients, 1)~=1
+    msg = sprintf('The file had multiple fields, are you sure this is a patient file? Check the structure and try again.');
+    updateStatusBox(handles, msg, 0);
+    return;
+end
+
+new_patient = new_experiment.(new_patients{1});
 
 if isempty(handles.patient)
 	cur_patient = handles.patient;
@@ -1319,16 +1329,6 @@ set(handles.viewright_hetero, 'Enable', 'on');
 guidata(hObject, handles);
 
 
-% --------------------------------------------------------------------
-function file_button_Callback(hObject, eventdata, handles)
-newFig = box;
-%set(newFig, 'MenuBar', 'none');
-
-% hObject    handle to file_button (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 % --- Executes during object creation, after setting all properties.
 function figure1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
@@ -1699,3 +1699,26 @@ handles = updateSliceSlider(handles);
 %
 guidata(hObject, handles);
 
+
+
+% --------------------------------------------------------------------
+function view_lungparams_Callback(hObject, eventdata, handles)
+% hObject    handle to view_lungparams (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+
+if length(handles.patient) < index
+    updateStatusBox(handles, 'Cannot find patient, are you sure one is loaded?', 1);
+    return;
+end
+
+patient = handles.patient(index);
+params = patient.lung_function;
+
+params = LungParameters(params);
+
+patient.lung_function = params;
+handles.patient(index) = patient;
+
+guidata(hObject, handles);
