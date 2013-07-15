@@ -1,3 +1,7 @@
+* Created "Lung Parameters" menu button under "View" -- Tom July 15/2013
+	* Calls LungParameter.fig
+* Removed textbox to display data from box.fig (Also removed box.fig and box.m) -- Tom July 15/2013
+
 * Removed "Calculate Lung SNR" menu button under "Analyze"
 * Removed "Calculate Body SNR" menu button under "Analyze"
 * Created "SNR" menu button under "Analyze"
