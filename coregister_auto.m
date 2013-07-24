@@ -1,29 +1,32 @@
-function [volume, uplo_stat] = coregister_auto(lungs, lungmask, body, bodymask, fov, thk)
+%function [volume, uplo_stat] = coregister_auto(lungs, lungmask, body, bodymask, fov, thk)
+function tform = coregister_auto(lungmask, bodymask)
 
-xdim = size(lungs, 1);
-ydim = size(lungs, 2);
+%%%%%%%%%%%%xdim = size(lungs, 1);
+%%%%%%%%%%%%ydim = size(lungs, 2);
+xdim = size(lungmask, 1);
+ydim = size(lungmask, 2);
 
-pixeldim = fov/xdim; % mm
-voxelvol = pixeldim^2*thk*1e-6; %[L]
+%%%%%%%%%%%%pixeldim = fov/xdim; % mm
+%%%%%%%%%%%%voxelvol = pixeldim^2*thk*1e-6; %[L]
 
 %Set limits for maximum shift in image registration;
 yrange = 128;
 xrange = 128;
 
 % Initialize empty arrays
-UL_array = {[], []};
-LL_array = {[], []};
-UR_array = {[], []};
-LR_array = {[], []};
+%%%%%%%%%%%%UL_array = {[], []};
+%%%%%%%%%%%%LL_array = {[], []};
+%%%%%%%%%%%%UR_array = {[], []};
+%%%%%%%%%%%%LR_array = {[], []};
 
 % Final images bound by binary mask
-lungs = double(lungs).*lungmask;
-body = double(body).*bodymask;
+%%%%%%%%%%%%lungs = double(lungs).*lungmask;
+%%%%%%%%%%%%body = double(body).*bodymask;
 
 % Initialize volume array
-volume = {'Slice','Pre Volume','Post Volume'};
+%%%%%%%%%%%%volume = {'Slice','Pre Volume','Post Volume'};
 
-slices = size(lungs, 3);
+slices = size(lungmask, 3);
 
 % Perform Slice-by-Slice Image Registration
 for n = 1:slices
@@ -33,8 +36,8 @@ for n = 1:slices
     maskpost = bodymask(:,:,n);
     
     % Get the current images
-    imgpre = lungs(:,:,n);
-    imgpost = body(:,:,n);
+    %%%%%%%%%%%%imgpre = lungs(:,:,n);
+    %%%%%%%%%%%%imgpost = body(:,:,n);
     
     % Perform cross-correlation
     reg01 = xcorr2(maskpre,maskpost);
@@ -54,7 +57,11 @@ for n = 1:slices
     xshift01(n) = (xrange+1) - idx_x01;
     ymove01 = yshift01(n);
     xmove01 = xshift01(n);
+	
+	tform = maketform('affine',[1 0 0; 0 1 0; -xmove01 -ymove01 1]);
     
+	%{
+	
     % Apply translation to mask
     mod0_01 = zeros(ydim+abs(ymove01),xdim+abs(xmove01));
     mod0_01(1+(abs(ymove01)+ymove01)/2:ydim+(abs(ymove01)+ymove01)/2,...
@@ -85,7 +92,7 @@ for n = 1:slices
     modimg1_01 = zeros(ydim+abs(ymove01),xdim+abs(xmove01));
     modimg1_01(1+(abs(ymove01)-ymove01)/2:ydim+(abs(ymove01)-ymove01)/2,...
         1+(abs(xmove01)-xmove01)/2:xdim+(abs(xmove01)-xmove01)/2) = imgpost;
-    
+	
     % Find the intersection of the pre and post masks
     combined = modimg1_01 ~= 0 | modimg0_01 ~= 0;
     [x0,y0] = find(combined);
@@ -143,55 +150,57 @@ for n = 1:slices
     end
 
 
-% Calculate total ventilated volume
-pre_volume = sum(volumes(:,1));
-post_volume = sum(volumes(:,2));
-volume{slices+2,1} = 'Total';
-volume{slices+2,2} = pre_volume;
-volume{slices+2,3} = post_volume;
+	% Calculate total ventilated volume
+	pre_volume = sum(volumes(:,1));
+	post_volume = sum(volumes(:,2));
+	volume{slices+2,1} = 'Total';
+	volume{slices+2,2} = pre_volume;
+	volume{slices+2,3} = post_volume;
 
-% Calculate mean and std dev in each distribution
-uplo_stat = {'','UL Mean','UL STD','LL Mean','LL STD','UR Mean','UR STD',...
-    'LR Mean','LR STD','Whole Mean','Whole STD','Norm Factor'};
-uplo_stat{2,1} = 'Pre'; uplo_stat{3,1} = 'Post';
-for jj = 1:2
-    
-    uplo_stat{jj+1,2} = mean(UL_array{jj});
-    uplo_stat{jj+1,3} = std(UL_array{jj});
-    uplo_stat{jj+1,4} = mean(LL_array{jj});
-    uplo_stat{jj+1,5} = std(LL_array{jj});
-    uplo_stat{jj+1,6} = mean(UR_array{jj});
-    uplo_stat{jj+1,7} = std(UR_array{jj});
-    uplo_stat{jj+1,8} = mean(LR_array{jj});
-    uplo_stat{jj+1,9} = std(LR_array{jj});
-    
-    % Compile whole lung data
-    whole_lung{jj} = vertcat(UL_array{jj},LL_array{jj},UR_array{jj},LR_array{jj});
-    uplo_stat{jj+1,10} = mean(whole_lung{jj});
-    uplo_stat{jj+1,11} = std(whole_lung{jj});
-    
-    % Calculates histogram
-    minxdata = 0;
-    if isempty(whole_lung{jj})
-        maxxdata(jj) = 0;
-    else
-        maxxdata(jj) = max(whole_lung{jj});
-    end
-    xx = [minxdata-10*eps + (0:maxxdata(jj)-1), maxxdata(jj)];
-    x{jj} = xx(1:length(xx)-1) + 1/2;
-    whole_dist{jj} = hist(whole_lung{jj},x{jj});
-    if isempty(whole_dist{jj})
-        max_whole_dist(jj) = 0;
-    else
-        max_whole_dist(jj) = max(whole_dist{jj});
-    end
-end
+	% Calculate mean and std dev in each distribution
+	uplo_stat = {'','UL Mean','UL STD','LL Mean','LL STD','UR Mean','UR STD',...
+		'LR Mean','LR STD','Whole Mean','Whole STD','Norm Factor'};
+	uplo_stat{2,1} = 'Pre'; uplo_stat{3,1} = 'Post';
+	for jj = 1:2
 
-% Add normalization factor to array
-% uplo_stat{2,12} = norm_factor(1);
-% uplo_stat{3,12} = norm_factor(2);
+		uplo_stat{jj+1,2} = mean(UL_array{jj});
+		uplo_stat{jj+1,3} = std(UL_array{jj});
+		uplo_stat{jj+1,4} = mean(LL_array{jj});
+		uplo_stat{jj+1,5} = std(LL_array{jj});
+		uplo_stat{jj+1,6} = mean(UR_array{jj});
+		uplo_stat{jj+1,7} = std(UR_array{jj});
+		uplo_stat{jj+1,8} = mean(LR_array{jj});
+		uplo_stat{jj+1,9} = std(LR_array{jj});
 
-uplo_stat
+		% Compile whole lung data
+		whole_lung{jj} = vertcat(UL_array{jj},LL_array{jj},UR_array{jj},LR_array{jj});
+		uplo_stat{jj+1,10} = mean(whole_lung{jj});
+		uplo_stat{jj+1,11} = std(whole_lung{jj});
+
+		% Calculates histogram
+		minxdata = 0;
+		if isempty(whole_lung{jj})
+			maxxdata(jj) = 0;
+		else
+			maxxdata(jj) = max(whole_lung{jj});
+		end
+		xx = [minxdata-10*eps + (0:maxxdata(jj)-1), maxxdata(jj)];
+		x{jj} = xx(1:length(xx)-1) + 1/2;
+		whole_dist{jj} = hist(whole_lung{jj},x{jj});
+		if isempty(whole_dist{jj})
+			max_whole_dist(jj) = 0;
+		else
+			max_whole_dist(jj) = max(whole_dist{jj});
+		end
+	end
+
+	% Add normalization factor to array
+	% uplo_stat{2,12} = norm_factor(1);
+	% uplo_stat{3,12} = norm_factor(2);
+
+	uplo_stat
+	
+	%}
 
 end
 % % Display histograms

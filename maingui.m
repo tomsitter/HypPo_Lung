@@ -1308,10 +1308,13 @@ patient = handles.patient;
 pat_index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 
+lungs = patient(pat_index).lungs(:,:,slice);
+body = patient(pat_index).body(:,:,slice);
 lungmask = patient(pat_index).lungmask(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
 
-tform = coregister_steven(lungmask, bodymask);
+tform = coregister_auto(lungmask, bodymask);
+%tform = coregister_steven(lungmask, bodymask);
 
 for a=1:size(patient(pat_index).lungmask,3)
 	height = size(patient(pat_index).lungmask(:,:,a),1);
