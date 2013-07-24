@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 12-Jul-2013 16:27:45
+% Last Modified by GUIDE v2.5 24-Jul-2013 14:57:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -423,8 +423,8 @@ initUpdatePanelOverlay(hObject);
 
 
 % --------------------------------------------------------------------
-function analyze_coreglm_Callback(hObject, eventdata, handles)
-% hObject    handle to analyze_coreglm (see GCBO)
+function analyze_coreg_lm_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg_lm (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 updateStatusBox(handles, 'Preparing to coregister images', 1);
@@ -1299,8 +1299,8 @@ guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
-function analyze_coreg_Callback(hObject, eventdata, handles)
-% hObject    handle to analyze_coreg (see GCBO)
+function analyze_coreg_cc_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg_cc (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -1308,13 +1308,10 @@ patient = handles.patient;
 pat_index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 
-lungs = patient(pat_index).lungs(:,:,slice);
-body = patient(pat_index).body(:,:,slice);
 lungmask = patient(pat_index).lungmask(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
 
-tform = coregister_auto(lungmask, bodymask);
-%tform = coregister_steven(lungmask, bodymask);
+tform = coregister_crosscorrelation(lungmask, bodymask);
 
 for a=1:size(patient(pat_index).lungmask,3)
 	height = size(patient(pat_index).lungmask(:,:,a),1);
@@ -1802,6 +1799,42 @@ function viewleft_overlay_Callback(hObject, eventdata, handles)
 handles.leftpanel = 'O';
 handles = updateSliceSlider(handles);
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_coreg_DFTcc_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg_DFTcc (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+patient = handles.patient;
+pat_index = handles.pat_index;
+slice = round(get(handles.slider_slice, 'Value'));
+
+lungmask = patient(pat_index).lungmask(:,:,slice);
+bodymask = patient(pat_index).bodymask(:,:,slice);
+
+tform = coregister_DFTcrosscorrelation(lungmask, bodymask);
+
+for a=1:size(patient(pat_index).lungmask,3)
+	height = size(patient(pat_index).lungmask(:,:,a),1);
+	width = size(patient(pat_index).lungmask(:,:,a),2);
+	
+	patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
+	patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+end
+
+handles.patient = patient;
+
+handles = updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+
+
+
+
+
 
 
 

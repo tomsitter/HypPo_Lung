@@ -69,12 +69,25 @@
 	* Changed tag to "viewleft_overlay"
 	* Changed callback to default
 
+* Removed "Coregister (Auto)" menu button under "Analyze"
+* Removed "Coregister (Landmark)" menu button under "Analyze"
 
+* Created "Coregister" menu button under "Analyze"
+	* Changed callback to empty
+* Created "Translation" menu button under "Analyze>Coregister"
+	* Changed callback to empty
+* Created "Translation+Expansion+Rotation" menu button under "Analyze>Coregister"
+	* Changed callback to empty
 
-
-
-
-
+* Created "Cross-correlation" menu button under "Analyze>Coregister>Translation"
+	* Changed tag to "analyze_coreg_cc"
+	* Changed callback to default
+* Created "DFT cross-correlation" menu button under "Analyze>Coregister>Translation"
+	* Changed tag to "analyze_coreg_DFTcc"
+	* Changed callback to default
+* Created "Landmark" menu button under "Analyze>Coregister>Translation+Expansion+Rotation"
+	* Changed tag to "analyze_coreg_lm"
+	* Changed callback to default
 
 
 

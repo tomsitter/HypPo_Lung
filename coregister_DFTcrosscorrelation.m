@@ -1,4 +1,4 @@
-function tform = coregister_steven(baseImg, imgToRegister)
+function tform = coregister_DFTcrosscorrelation(baseImg, imgToRegister)
 	output = dftregistration(fft2(baseImg),fft2(imgToRegister),100);
 	T = [1 0 0; 0 1 0; output(4) output(3) 1];
 	tform = maketform('affine', T);

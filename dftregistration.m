@@ -46,7 +46,7 @@ if exist('usfac')~=1, usfac=1; end
 
 % Compute error for no pixel shift
 if usfac == 0,
-    CCmax = sum(sum(buf1ft.*conj(buf2ft))); 
+    CCmax = sum(sum(buf1ft.*conj(buf2ft)));
     rfzero = sum(abs(buf1ft(:)).^2);
     rgzero = sum(abs(buf2ft(:)).^2); 
     error = 1.0 - CCmax.*conj(CCmax)/(rgzero*rfzero); 

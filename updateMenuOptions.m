@@ -61,13 +61,17 @@ else
 end
 
 if lm && bm
-    set(handles.analyze_coreglm, 'Enable', 'on');
+    set(handles.analyze_coreg_lm, 'Enable', 'on');
+    set(handles.analyze_coreg_cc, 'Enable', 'on');
+    set(handles.analyze_coreg_DFTcc, 'Enable', 'on');
     set(handles.viewleft_coreg, 'Enable', 'on');
     set(handles.viewright_coreg, 'Enable', 'on');
     set(handles.viewleft_overlay, 'Enable', 'on');
     set(handles.viewright_overlay, 'Enable', 'on');
 else
-    set(handles.analyze_coreglm, 'Enable', 'off');
+    set(handles.analyze_coreg_lm, 'Enable', 'off');
+    set(handles.analyze_coreg_cc, 'Enable', 'off');
+    set(handles.analyze_coreg_DFTcc, 'Enable', 'off');
     set(handles.viewleft_coreg, 'Enable', 'off');
     set(handles.viewright_coreg, 'Enable', 'off');
     set(handles.viewleft_overlay, 'Enable', 'off');
