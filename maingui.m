@@ -663,7 +663,9 @@ if size(handles.patient,2)~=0
 			for a=1:size(patient.body,3)
 				%patient.body(:,:,a) = imtransform(patient.body(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
 				%patient.bodymask(:,:,a) = round(imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]));
-				patient.tform{a} = tform;
+				%patient.tform{a} = tform;
+				%
+				patient = applyImageTransformationToPatientData(patient, tform, a);
 			end
 			%
 			handles.patient(index) = patient;
@@ -833,13 +835,13 @@ if size(handles.patient,2)~=0
 		apply = questdlg('Do you want to apply this transform to this slice?');
 		close(resultFigure);
 		if strcmpi(apply, 'Yes')
-			patient.tform{slice} = tform;
 			%patient.body(:,:,slice) = reg_body;
 			%patient.bodymask(:,:,slice) = reg_bodymask;
+			%patient.tform{slice} = tform;
+			%
+			patient = applyImageTransformationToPatientData(patient, tform, slice);
 			%
 			handles.patient(index) = patient;
-			%
-			guidata(hObject, handles);
 		end
 		%
 		delete(handles.panelOverlayData.coreg_landmarks_lung_plot);
@@ -1331,8 +1333,10 @@ bodymask = patient(pat_index).bodymask(:,:,slice);
 tform = coregister_crosscorrelation(lungmask, bodymask);
 
 for a=1:size(patient(pat_index).lungmask,3)
-	patient(pat_index).tform{a} = tform;
+	patient = applyImageTransformationToPatientData(patient, tform, a);
 	%{
+	patient(pat_index).tform{a} = tform;
+	
 	height = size(patient(pat_index).lungmask(:,:,a),1);
 	width = size(patient(pat_index).lungmask(:,:,a),2);
 	
@@ -1738,6 +1742,8 @@ index = handles.pat_index;
 %
 handles.patient(index).body = cat(3, zeros(size(handles.patient(index).body(:,:,1))), handles.patient(index).body);
 handles.patient(index).bodymask = cat(3, zeros(size(handles.patient(index).bodymask(:,:,1))), handles.patient(index).bodymask);
+handles.patient(index).body_coreg = cat(3, zeros(size(handles.patient(index).body_coreg(:,:,1))), handles.patient(index).body_coreg);
+handles.patient(index).bodymask_coreg = cat(3, zeros(size(handles.patient(index).bodymask_coreg(:,:,1))), handles.patient(index).bodymask_coreg);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = cat(2, 0, handles.patient(index).body_SNR);
 end
@@ -1756,6 +1762,8 @@ index = handles.pat_index;
 %
 handles.patient(index).body = cat(3, handles.patient(index).body, zeros(size(handles.patient(index).body(:,:,1))));
 handles.patient(index).bodymask = cat(3, handles.patient(index).bodymask, zeros(size(handles.patient(index).bodymask(:,:,1))));
+handles.patient(index).body_coreg = cat(3, handles.patient(index).body_coreg, zeros(size(handles.patient(index).body_coreg(:,:,1))));
+handles.patient(index).bodymask_coreg = cat(3, handles.patient(index).bodymask_coreg, zeros(size(handles.patient(index).bodymask_coreg(:,:,1))));
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = cat(2, handles.patient(index).body_SNR, 0);
 end
@@ -1773,7 +1781,9 @@ function slice_body_remove_beginning_Callback(hObject, eventdata, handles)
 index = handles.pat_index;
 %
 handles.patient(index).body = handles.patient(index).body(:,:,2:end);
-handles.patient(index).bodymask = handles.patient(index).bodymask(2:end);
+handles.patient(index).bodymask = handles.patient(index).bodymask(:,:,2:end);
+handles.patient(index).body_coreg = handles.patient(index).body_coreg(:,:,2:end);
+handles.patient(index).bodymask_coreg = handles.patient(index).bodymask_coreg(:,:,2:end);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = handles.patient(index).body_SNR(2:end);
 end
@@ -1791,7 +1801,9 @@ function slice_body_remove_end_Callback(hObject, eventdata, handles)
 index = handles.pat_index;
 %
 handles.patient(index).body = handles.patient(index).body(:,:,1:end-1);
-handles.patient(index).bodymask = handles.patient(index).bodymask(1:end-1);
+handles.patient(index).bodymask = handles.patient(index).bodymask(:,:,1:end-1);
+handles.patient(index).body_coreg = handles.patient(index).body_coreg(:,:,1:end-1);
+handles.patient(index).bodymask_coreg = handles.patient(index).bodymask_coreg(:,:,1:end-1);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = handles.patient(index).body_SNR(1:end-1);
 end
@@ -1837,8 +1849,10 @@ bodymask = patient(pat_index).bodymask(:,:,slice);
 tform = coregister_DFTcrosscorrelation(lungmask, bodymask);
 
 for a=1:size(patient(pat_index).lungmask,3)
-	patient(pat_index).tform{a} = tform;
+	patient = applyImageTransformationToPatientData(patient, tform, a);
 	%{
+	patient(pat_index).tform{a} = tform;
+	
 	height = size(patient(pat_index).lungmask(:,:,a),1);
 	width = size(patient(pat_index).lungmask(:,:,a),2);
 	
