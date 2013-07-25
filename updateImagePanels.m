@@ -5,12 +5,17 @@ if nargin<2
 end
 
 if ~isempty(sliderUpdatePntr)
-	sliderUpdatePntr.Value = sliderUpdatePntr.Value+1;
-	thisPntrValue = sliderUpdatePntr.Value;
+	%%%%%%sliderUpdatePntr.Value = sliderUpdatePntr.Value+1;
+	%%%%%%thisPntrValue = sliderUpdatePntr.Value;
+	if sliderUpdatePntr.Value
+		return
+	else
+		sliderUpdatePntr.Value = 1;
+	end
 	% the purpose of the pointer is to make sure that the slices are not
 	% overwritten (an explanation is given in maingui.m in the OpeningFcn)
 else
-	thisPntrValue = [];
+	%%%%%%thisPntrValue = [];
 end
 
 slice = round(max(get(handles.slider_slice, 'Value'), 1));
@@ -110,6 +115,7 @@ for a=1:size(panels,2)
 					currentSlice = handles.patient(pat_index).lungs(:, :, slice);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
+						%{
 						if ~isempty(sliderUpdatePntr)
 							% if the pointer was given as a parameter
 							if sliderUpdatePntr.Value==thisPntrValue
@@ -126,6 +132,8 @@ for a=1:size(panels,2)
 							% the image slice
 							updateSlice = 1;
 						end
+						%}
+						updateSlice = 1;
 						if updateSlice
 							% if the above is true
 							imagesc(currentSlice);
@@ -153,6 +161,7 @@ for a=1:size(panels,2)
 					currentSlice = maskOverlay(lungs, lungmask);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
+						%{
 						if ~isempty(sliderUpdatePntr)
 							% if the pointer was given as a parameter
 							if sliderUpdatePntr.Value==thisPntrValue
@@ -169,6 +178,8 @@ for a=1:size(panels,2)
 							% the image slice
 							updateSlice = 1;
 						end
+						%}
+						updateSlice = 1;
 						if updateSlice
 							% if the above is true
 							imagesc(currentSlice);
@@ -200,6 +211,7 @@ for a=1:size(panels,2)
 					end
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
+						%{
 						if ~isempty(sliderUpdatePntr)
 							% if the pointer was given as a parameter
 							if sliderUpdatePntr.Value==thisPntrValue
@@ -216,6 +228,8 @@ for a=1:size(panels,2)
 							% the image slice
 							updateSlice = 1;
 						end
+						%}
+						updateSlice = 1;
 						if updateSlice
 							% if the above is true
 							imagesc(currentSlice);
@@ -249,6 +263,7 @@ for a=1:size(panels,2)
 					end
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
+						%{
 						if ~isempty(sliderUpdatePntr)
 							% if the pointer was given as a parameter
 							if sliderUpdatePntr.Value==thisPntrValue
@@ -265,6 +280,8 @@ for a=1:size(panels,2)
 							% the image slice
 							updateSlice = 1;
 						end
+						%}
+						updateSlice = 1;
 						if updateSlice
 							% if the above is true
 							imagesc(currentSlice);
@@ -301,6 +318,7 @@ for a=1:size(panels,2)
 					currentSlice = viewCoregistration(body, bodymask, lungmask);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
+						%{
 						if ~isempty(sliderUpdatePntr)
 							% if the pointer was given as a parameter
 							if sliderUpdatePntr.Value==thisPntrValue
@@ -317,6 +335,8 @@ for a=1:size(panels,2)
 							% the image slice
 							updateSlice = 1;
 						end
+						%}
+						updateSlice = 1;
 						if updateSlice
 							% if the above is true
 							imagesc(currentSlice);
@@ -338,6 +358,7 @@ for a=1:size(panels,2)
 					currentSlice = handles.patient(pat_index).hetero_images(:, :, slice);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
+						%{
 						if ~isempty(sliderUpdatePntr)
 							% if the pointer was given as a parameter
 							if sliderUpdatePntr.Value==thisPntrValue
@@ -354,6 +375,8 @@ for a=1:size(panels,2)
 							% the image slice
 							updateSlice = 1;
 						end
+						%}
+						updateSlice = 1;
 						if updateSlice
 							% if the above is true
 							if sum(currentSlice(:))~=0
@@ -404,6 +427,7 @@ for a=1:size(panels,2)
 							currentSlice = viewOverlay(body, lungs);
 							if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 								% if the data has changed
+								%{
 								if ~isempty(sliderUpdatePntr)
 									% if the pointer was given as a parameter
 									if sliderUpdatePntr.Value==thisPntrValue
@@ -420,6 +444,8 @@ for a=1:size(panels,2)
 									% the image slice
 									updateSlice = 1;
 								end
+								%}
+								updateSlice = 1;
 								if updateSlice
 									% if the above is true
 									imagesc(currentSlice);
@@ -445,6 +471,8 @@ for a=1:size(panels,2)
 		axesChanged = 1;
 	end
 end
+%
+sliderUpdatePntr.Value = 0;
 %
 if axesChanged
 	%handles = updatePanelOverlay(handles);

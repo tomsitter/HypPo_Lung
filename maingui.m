@@ -83,8 +83,11 @@ sliderUpdatePntr.Value = 0;
 % updateImageSlices.m script so that each callback knows if it should
 % update the image slices or not.
 %
+
+sliderStoppedMovingTimer = timer('StartDelay',10,'TimerFcn',{@updateImagePanelsSliderStop, hObject});
+
 jvscroll = findjobj(handles.slider_slice);
-jvscroll.MouseDraggedCallback = {@scrollCallback, hObject, sliderUpdatePntr};
+jvscroll.MouseDraggedCallback = {@scrollCallback, hObject, sliderUpdatePntr, sliderStoppedMovingTimer};
 handles.sliderLastUpdated = clock;
 
 % Choose default command line output for maingui
@@ -120,14 +123,23 @@ stop(hObject);
 delete(hObject);
 checkAndGetUpdates(username, repo, projectFolderPath);
 
-function scrollCallback(~, ~, mainFigure, sliderUpdatePntr)
+function scrollCallback(~, ~, mainFigure, sliderUpdatePntr, sliderStoppedMovingTimer)
 handles = guidata(mainFigure);
 if etime(clock,handles.sliderLastUpdated)>0.04%0.05
 	handles.sliderLastUpdated = clock;
 	guidata(mainFigure, handles);
 	handles = updateImagePanels(handles, sliderUpdatePntr);
 	guidata(mainFigure, handles);
+	%
+	stop(sliderStoppedMovingTimer);
+	set(sliderStoppedMovingTimer,'StartDelay',0.1);
+	start(sliderStoppedMovingTimer);
 end
+
+function updateImagePanelsSliderStop(hObject, ~, mainFigure)
+handles = guidata(mainFigure);
+handles = updateImagePanels(handles);
+guidata(mainFigure, handles);
 
 
 % --- Outputs from this function are returned to the command line.
