@@ -1,0 +1,110 @@
+Date:   Wed Jul 24 15:54:39 2013 -0400
+    (2) Renamed coregistration functions; Modified the GUI menu and modified the coregistration menu button handles.
+
+Date:   Wed Jul 24 14:20:55 2013 -0400
+    Modified coregister_auto to work with the GUI and stopped using the temporary function coregister_steven.
+
+Date:   Sat Jul 13 21:20:22 2013 -0400
+    (2) Added the ability to see the lung images overlaid on the body images (called "Overlay" in the "Left Panel" / "Right Panel" menu options); Added a temporary automatic image registration in the file named "coregister_steven.m". This function will be called from the "Coregister (auto)" menu option until Tom's automatic coregistration algorithm is working.
+
+Date:   Fri Jul 12 12:02:57 2013 -0400
+    Rounded bodymask values after coregistration (the transform caused there to be decimal numbers in the mask).
+
+Date:   Fri Jul 12 10:39:52 2013 -0400
+    Changed viewCoregistration to run faster and not use imshowpair.
+
+Date:   Thu Jul 11 15:35:55 2013 -0400
+    Disabled the slider when getting points during the landmark coregistration.
+
+Date:   Thu Jul 11 12:30:39 2013 -0400
+    Made the pop-up window showing the coregistration more informative.
+
+Date:   Thu Jul 11 11:19:25 2013 -0400
+    Changed the coregistration to use the apply / apply all buttons.
+
+Date:   Fri Jul 5 11:28:14 2013 -0400
+    Fixed code formatting (indents) only.
+
+Date:   Fri Jul 5 11:25:23 2013 -0400
+    Merged with tom (updated landmark coregistration code).
+
+Date:   Fri Jul 5 10:54:33 2013 -0400
+    (3) Added number labels to coregister_landmarks when choosing landmarks; Moved the GUI code for the lung segmentation and SNR to a new function "updatePanelOverlay". The purpose of this was to fix errors by many different functions competing to update the image panels. This function can be used whenever temporary modifications need to be made to the image panels, and should hopefully make it easier to add features in the future; Improved maskOverlay performance and prevented possible crashes.
+
+Date:   Thu Jul 4 09:55:36 2013 -0400
+    (2) Modified files using maskOverlay to display the image manually using imagesc; Made small changes to the messages during coregistration.
+
+Date:   Wed Jul 3 16:57:17 2013 -0400
+    Fixed an error when segmenting the lungs using an empty image or empty ROI.
+
+Date:   Wed Jul 3 16:02:06 2013 -0400
+    Fixed the load patient function (could not load any saved patient data because the naming convention was changed).
+
+Date:   Wed Jul 3 12:23:40 2013 -0400
+    Removed the distribution plots during segmentation.
+
+Date:   Wed Jul 3 11:20:48 2013 -0400
+    Merged with master (updated CheckForUpdates code).
+
+Date:   Wed Jul 3 11:13:14 2013 -0400
+    (4) Removes the 'v' from the version number in the versionNumber.txt if there is one; If the user hasn't installed the latest version, show a message box instead of displaying the message to the console; The maingui now checks for updates using a timer (prevents errors while checking for updates from crashing the maingui, and stops the message boxes from being hidden behind the maingui); When downloading the latest version, it deletes all the previous versions in the Latest_Version folder (so there isn't older versions downloaded to the users computer).
+
+Date:   Tue Jul 2 15:54:54 2013 -0400
+    Merged with master (updates to the heterogeneity code)
+
+Date:   Tue Jul 2 15:47:57 2013 -0400
+    (5) Modified the slider to update the slice images while it's being dragged; Modified the mask overlay code to not use a contour (runs a lot faster); Fixed a bug with the bounding box while segmenting the lungs or calculating SNR (it was not being deleted properly); Made many changes to the updateImagePanels code; Fixed a bug with the slider where the number of slices depended on the number of lung and body slices (it now depends on the number of slices in both panels instead)
+
+Date:   Wed Jun 26 09:41:22 2013 -0400
+    Removed variable print in calculateSNR.m
+
+Date:   Wed Jun 26 09:17:30 2013 -0400
+    (4) Removed the show/hide slices and slices offset menus; Added menus to add/remove slices to/from the beginning/end; Fixed bugs in the GUI code to calculate SNR (plus a few other bug fixes); Reformatted updateImagePanels.m to use 1 switch statement for both panels.
+
+Date:   Sun Jun 23 22:09:51 2013 -0400
+    Merged changes from master (the "CheckForUpdates" changes).
+
+Date:   Fri Jun 21 16:09:29 2013 -0400
+    Forgot to add file.
+
+Date:   Fri Jun 21 16:04:28 2013 -0400
+    Added timeout of 4 seconds, and added a message if the user has downloaded the latest version but hasn't installed it yet.
+
+Date:   Fri Jun 21 14:19:58 2013 -0400
+    Misc bug fixes (hopefully didn't break more things than I fixed)
+
+Date:   Thu Jun 20 12:44:52 2013 -0400
+    Modified maingui.m to use montage3 function.
+
+Date:   Thu Jun 20 12:32:15 2013 -0400
+    (2) Modified the SNR calculations to allow the user to calculate SNR with two region-bounding boxes in addition to using the segmentation. Also fixed bugs in the GUI code for the bounding boxes during the lung segmentation.
+
+Date:   Tue Jun 18 11:17:33 2013 -0400
+    Deleted a .asv file
+
+Date:   Mon Jun 17 23:14:32 2013 -0400
+    Merged with master. Hopefully the main figure works, I tried too add all the new GUI objects from master->maingui.fig, but I could have missed some.
+
+Date:   Fri Jun 14 17:10:03 2013 -0400
+    Added menu option to calculate the SNR of each image.
+
+Date:   Fri Jun 14 09:23:37 2013 -0400
+    Now uses the project directory to store files instead of the MATLAB directory.
+
+Date:   Fri Jun 14 08:56:24 2013 -0400
+    Modified to give better error message if README is not found.
+
+Date:   Thu Jun 13 17:15:54 2013 -0400
+    Added code to check for the latest version using the GitHub API.
+
+Date:   Thu Jun 13 16:28:05 2013 -0400
+    Updated the threshold mask to the latest version from Toms branch.
+
+Date:   Mon May 13 16:49:33 2013 -0400
+    (2) Added menu buttons under View to choose whether to show or hide lung/body slices without a matching body/lung slice; Fixed the slider bar to jump to integer intervals
+
+Date:   Mon May 13 14:58:50 2013 -0400
+    Added menu buttons under "View" to choose whether blank slices are added to beginning or end of range
+
+Date:   Fri May 10 12:13:12 2013 -0400
+    Added a window that can be accessed by a button in the File menu

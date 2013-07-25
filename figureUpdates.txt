@@ -89,9 +89,23 @@
 	* Changed tag to "analyze_coreg_lm"
 	* Changed callback to default
 
+* Created "Show Coregistered Images" menu button under "View>Left Panel"
+	* Changed callback to empty
+* Created "Show Coregistered Images" menu button under "View>Right Panel"
+	* Changed callback to empty
 
-
-
+* Created "Yes" menu button under "View>Left Panel>Show Coregistered Images"
+	* Changed tag to "view_left_showcoregistered_yes"
+	* Changed callback to default
+* Created "No" menu button under "View>Left Panel>Show Coregistered Images"
+	* Changed tag to "view_left_showcoregistered_no"
+	* Changed callback to default
+* Created "Yes" menu button under "View>Right Panel>Show Coregistered Images"
+	* Changed tag to "view_right_showcoregistered_yes"
+	* Changed callback to default
+* Created "No" menu button under "View>Right Panel>Show Coregistered Images"
+	* Changed tag to "view_right_showcoregistered_no"
+	* Changed callback to default
 
 
 

@@ -86,6 +86,19 @@ else
     set(handles.viewright_hetero, 'Enable', 'off');
 end
 
+if handles.leftpanelcoreg==1
+    set(handles.view_left_showcoregistered_yes, 'Checked', 'on');
+    set(handles.view_left_showcoregistered_no, 'Checked', 'off');
+else
+    set(handles.view_left_showcoregistered_yes, 'Checked', 'off');
+    set(handles.view_left_showcoregistered_no, 'Checked', 'on');
+end
 
-    
+if handles.rightpanelcoreg==1
+    set(handles.view_right_showcoregistered_yes, 'Checked', 'on');
+    set(handles.view_right_showcoregistered_no, 'Checked', 'off');
+else
+    set(handles.view_right_showcoregistered_yes, 'Checked', 'off');
+    set(handles.view_right_showcoregistered_no, 'Checked', 'on');
+end
 

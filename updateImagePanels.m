@@ -88,8 +88,8 @@ leftpanel = handles.leftpanel;
 rightpanel = handles.rightpanel;
 
 panels = cell(1,1);
-panels{1} = {leftpanel,handles.axes1};
-panels{2} = {rightpanel,handles.axes2};
+panels{1} = {leftpanel,handles.axes1,handles.leftpanelcoreg};
+panels{2} = {rightpanel,handles.axes2,handles.rightpanelcoreg};
 
 axesChanged = 0;
 
@@ -192,6 +192,12 @@ for a=1:size(panels,2)
 				if not(isempty(handles.patient(pat_index).body))
 					% if there are body images
 					currentSlice = handles.patient(pat_index).body(:, :, slice);
+					if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
+						% if the panel is set to show coregistered images and the tform exists
+						height = size(currentSlice,1);
+						width = size(currentSlice,2);
+						currentSlice = imtransform(currentSlice, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+					end
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
 						if ~isempty(sliderUpdatePntr)
@@ -235,6 +241,12 @@ for a=1:size(panels,2)
 					body = handles.patient(pat_index).body(:, :, slice);
 					bodymask = handles.patient(pat_index).bodymask(:, :, slice);
 					currentSlice = maskOverlay(body, bodymask);
+					if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
+						% if the panel is set to show coregistered images and the tform exists
+						height = size(currentSlice,1);
+						width = size(currentSlice,2);
+						currentSlice = imtransform(currentSlice, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+					end
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
 						if ~isempty(sliderUpdatePntr)
@@ -279,6 +291,13 @@ for a=1:size(panels,2)
 					body = handles.patient(pat_index).body(:, :, slice);
 					bodymask = handles.patient(pat_index).bodymask(:, :, slice);
 					lungmask = handles.patient(pat_index).lungmask(:, :, slice);
+					if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
+						% if the panel is set to show coregistered images and the tform exists
+						height = size(currentSlice,1);
+						width = size(currentSlice,2);
+						body = imtransform(body, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+						bodymask = imtransform(bodymask, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+					end
 					currentSlice = viewCoregistration(body, bodymask, lungmask);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
@@ -376,6 +395,12 @@ for a=1:size(panels,2)
 							% if there are body and lung images
 							body = handles.patient(pat_index).body(:, :, slice);
 							lungs = handles.patient(pat_index).lungs(:, :, slice);
+							if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
+								% if the panel is set to show coregistered images and the tform exists
+								height = size(currentSlice,1);
+								width = size(currentSlice,2);
+								body = imtransform(body, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+							end
 							currentSlice = viewOverlay(body, lungs);
 							if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 								% if the data has changed

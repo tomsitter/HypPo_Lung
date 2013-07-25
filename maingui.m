@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 24-Jul-2013 14:57:09
+% Last Modified by GUIDE v2.5 25-Jul-2013 09:17:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -61,6 +61,9 @@ handles.pat_index = 1;
 
 handles.leftpanel = '';
 handles.rightpanel = '';
+
+handles.leftpanelcoreg = 1;
+handles.rightpanelcoreg = 1;
 
 % handles.slice_index = 1;
 handles.state = 'idle';
@@ -646,8 +649,9 @@ if size(handles.patient,2)~=0
 		close(resultFigure);
 		if strcmpi(apply, 'Yes')
 			for a=1:size(patient.body,3)
-				patient.body(:,:,a) = imtransform(patient.body(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
-				patient.bodymask(:,:,a) = round(imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]));
+				%patient.body(:,:,a) = imtransform(patient.body(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
+				%patient.bodymask(:,:,a) = round(imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]));
+				patient.tform{a} = tform;
 			end
 			%
 			handles.patient(index) = patient;
@@ -817,8 +821,9 @@ if size(handles.patient,2)~=0
 		apply = questdlg('Do you want to apply this transform to this slice?');
 		close(resultFigure);
 		if strcmpi(apply, 'Yes')
-			patient.body(:,:,slice) = reg_body;
-			patient.bodymask(:,:,slice) = reg_bodymask;
+			patient.tform{slice} = tform;
+			%patient.body(:,:,slice) = reg_body;
+			%patient.bodymask(:,:,slice) = reg_bodymask;
 			%
 			handles.patient(index) = patient;
 			%
@@ -1314,11 +1319,14 @@ bodymask = patient(pat_index).bodymask(:,:,slice);
 tform = coregister_crosscorrelation(lungmask, bodymask);
 
 for a=1:size(patient(pat_index).lungmask,3)
+	patient(pat_index).tform{a} = tform;
+	%{
 	height = size(patient(pat_index).lungmask(:,:,a),1);
 	width = size(patient(pat_index).lungmask(:,:,a),2);
 	
 	patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
 	patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+	%}
 end
 
 handles.patient = patient;
@@ -1817,11 +1825,14 @@ bodymask = patient(pat_index).bodymask(:,:,slice);
 tform = coregister_DFTcrosscorrelation(lungmask, bodymask);
 
 for a=1:size(patient(pat_index).lungmask,3)
+	patient(pat_index).tform{a} = tform;
+	%{
 	height = size(patient(pat_index).lungmask(:,:,a),1);
 	width = size(patient(pat_index).lungmask(:,:,a),2);
 	
 	patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
 	patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+	%}
 end
 
 handles.patient = patient;
@@ -1829,6 +1840,51 @@ handles.patient = patient;
 handles = updateImagePanels(handles);
 
 guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_left_showcoregistered_yes_Callback(hObject, eventdata, handles)
+% hObject    handle to view_left_showcoregistered_yes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanelcoreg = 1;
+updateMenuOptions(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_left_showcoregistered_no_Callback(hObject, eventdata, handles)
+% hObject    handle to view_left_showcoregistered_no (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.leftpanelcoreg = 0;
+updateMenuOptions(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_right_showcoregistered_yes_Callback(hObject, eventdata, handles)
+% hObject    handle to view_right_showcoregistered_yes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanelcoreg = 1;
+updateMenuOptions(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_right_showcoregistered_no_Callback(hObject, eventdata, handles)
+% hObject    handle to view_right_showcoregistered_no (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.rightpanelcoreg = 0;
+updateMenuOptions(handles);
+handles = updateImagePanels(handles);
+guidata(hObject, handles);
+
 
 
 
