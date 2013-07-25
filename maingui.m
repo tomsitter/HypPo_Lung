@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 25-Jul-2013 09:17:14
+% Last Modified by GUIDE v2.5 25-Jul-2013 14:44:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -1912,6 +1912,22 @@ handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
+% --------------------------------------------------------------------
+function analyze_coreg_remove_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg_remove (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+pat_index = handles.pat_index;
+%
+tform = maketform('affine', eye(3));
+%
+for a=1:size(handles.patient(pat_index).body,3)
+	handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform, a);
+end
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
 
 
 

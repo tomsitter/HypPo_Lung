@@ -107,7 +107,9 @@
 	* Changed tag to "view_right_showcoregistered_no"
 	* Changed callback to default
 
-
+* Created "Remove All Transformations" menu button under "Analyze>Coregister"
+	* Changed tag to "analyze_coreg_remove"
+	* Changed callback to default
 
 
 
