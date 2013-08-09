@@ -39,7 +39,7 @@ if isempty(handles.patient)
     return;
 end
 
-patient = handles.patient(pat_index);
+% patient = handles.patient(pat_index);
 
 % the following code keeps the same panel if it exists in the patient data,
 % if not, it sets the panel to empty
@@ -203,7 +203,7 @@ for a=1:size(panels,2)
 			else
 				if not(isempty(handles.patient(pat_index).body))
 					% if there are body images
-					if panels{a}{3}&&sum(sum(patient(pat_index).body_coreg(:, :, slice)))
+					if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 						currentSlice = handles.patient(pat_index).body_coreg(:, :, slice);
 						coregisteredTitle = 1;
 					else
@@ -265,7 +265,7 @@ for a=1:size(panels,2)
 			else
 				if not(isempty(handles.patient(pat_index).bodymask))
 					% if there are body mask images
-					if panels{a}{3}&&sum(sum(patient(pat_index).body_coreg(:, :, slice)))
+					if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 						body = handles.patient(pat_index).body_coreg(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask_coreg(:, :, slice);
 						coregisteredTitle = 1;
@@ -331,7 +331,7 @@ for a=1:size(panels,2)
 				else
 					% if there are body mask and lung mask images
 					lungmask = handles.patient(pat_index).lungmask(:, :, slice);
-					if panels{a}{3}&&sum(sum(patient(pat_index).body_coreg(:, :, slice)))
+					if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 						body = handles.patient(pat_index).body_coreg(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask_coreg(:, :, slice);
 					else
@@ -449,7 +449,7 @@ for a=1:size(panels,2)
 						else
 							% if there are body and lung images
 							lungs = handles.patient(pat_index).lungs(:, :, slice);
-							if panels{a}{3}&&sum(sum(patient(pat_index).body_coreg(:, :, slice)))
+							if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 								body = handles.patient(pat_index).body_coreg(:, :, slice);
 							else
 								body = handles.patient(pat_index).body(:, :, slice);

@@ -1327,13 +1327,19 @@ patient = handles.patient;
 pat_index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 
-lungmask = patient(pat_index).lungmask(:,:,slice);
-bodymask = patient(pat_index).bodymask(:,:,slice);
+current_patient = patient(pat_index);
+
+lungmask = current_patient.lungmask(:,:,slice);
+bodymask = current_patient.bodymask(:,:,slice);
 
 tform = coregister_crosscorrelation(lungmask, bodymask);
 
-for a=1:size(patient(pat_index).lungmask,3)
-	patient = applyImageTransformationToPatientData(patient, tform, a);
+current_patient.tform = cell(1, size(current_patient.lungmask, 3));
+
+num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
+
+for a=1:num_slices
+	current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
 	%{
 	patient(pat_index).tform{a} = tform;
 	
@@ -1345,7 +1351,7 @@ for a=1:size(patient(pat_index).lungmask,3)
 	%}
 end
 
-handles.patient = patient;
+handles.patient(pat_index) = current_patient;
 
 handles = updateImagePanels(handles);
 
@@ -1510,16 +1516,6 @@ updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
 set(handles.viewleft_hetero, 'Enable', 'on');
 set(handles.viewright_hetero, 'Enable', 'on');
 guidata(hObject, handles);
-
-
-% --------------------------------------------------------------------
-function file_button_Callback(hObject, eventdata, handles)
-newFig = box;
-%set(newFig, 'MenuBar', 'none');
-
-% hObject    handle to file_button (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1843,13 +1839,20 @@ patient = handles.patient;
 pat_index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 
+current_patient = patient(pat_index);
+
+num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
+
+current_patient.tform = cell(1, num_slices);
+
 lungmask = patient(pat_index).lungmask(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
 
 tform = coregister_DFTcrosscorrelation(lungmask, bodymask);
 
-for a=1:size(patient(pat_index).lungmask,3)
-	patient = applyImageTransformationToPatientData(patient, tform, a);
+for a=1:num_slices
+	current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
+
 	%{
 	patient(pat_index).tform{a} = tform;
 	
