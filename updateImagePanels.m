@@ -48,7 +48,10 @@ panels = cell(1);
 panels{1} = {handles.leftpanel,'L'};
 panels{2} = {handles.rightpanel,'B'};
 % the second element is the default if the panel is blank
-for a=1:size(panels,2)
+a = 1;
+while a<=size(panels,2)
+	% used a while loop instead so that we can go backwards in the loop if
+	% we need to
 	switch panels{a}{1}
 		case 'L'
 			if sum(patient.lungs(:))<=0
@@ -75,16 +78,20 @@ for a=1:size(panels,2)
 				panels{a}{1} = '';
 			end
 		case 'O'
-			if sum(patient.lungmask(:))<=0&&sum(patient.bodymask(:))<=0
+			if sum(patient.lungs(:))<=0&&sum(patient.body(:))<=0
 				panels{a}{1} = '';
 			end
 		case ''
-			if sum(patient.lungs(:))>0
-				panels{a}{1} = panels{a}{2};
-			end
+			% if the panel is empty, set it to the default view and
+			% decrease the loop counter to repeat this panel. This will
+			% allow the loop to validate and make sure that it is possible
+			% to show the default panel
+			panels{a}{1} = panels{a}{2};
+			a = a-1;
 		otherwise
 			error('Unknown image state for panel: %s', panels{a}{1});
 	end
+	a = a+1;
 end
 handles.leftpanel = panels{1}{1};
 handles.rightpanel = panels{2}{1};
