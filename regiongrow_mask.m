@@ -36,6 +36,19 @@ lowerBorder = height-minSeedlength-floor(0.10 * height);
 gauss = fspecial('gaussian', blockSize, sigma);
 %Smooth image
 filter = imfilter(image,gauss,'replicate');
+%{
+figure
+subplot(1,4,1)
+imshow(image)
+
+filter = maxfilt2(image,[4 4]);
+subplot(1,4,2)
+imshow(filter)
+%filter = medfilt2(filter,[10 10]);
+%filter = medfilt2(filter,[10 10]);
+subplot(1,4,3)
+imshow(filter)
+%}
 
 [~,clusters] = kmeansModified(filter, k);
 
@@ -49,6 +62,15 @@ threshold = round((firstClusterThreshold)*2/3);
 %    threshold = round((firstClusterThreshold-firstClusterThreshold*0.01*(percentage+(abs(slice-middleNumber))))/2);
 %end
 
+
+%figure
+%(filter)
+%rg = regiongrowing(im2double(filter),1,1,0.03);
+%sum(rg(:))
+%size(rg)
+%filter(rg) = 256;
+%figure
+%imshow(filter)
 tempMask = false(size(filter));
 if ~isempty(threshold)
     tempMask(filter<threshold) = 1;
@@ -57,6 +79,10 @@ else
     return;
 end
 mask = tempMask;
+%figure
+%subplot(1,4,4)
+%imshow(mask)
+%pause(5)
 
 % Finding two seed for SRGA to find left and right lung after thresholding 
 seed1 = [1,1];
@@ -120,4 +146,5 @@ closeBW1 = imclose(mask1,se); % Applying closing function on mask1
 closeBW2 = imclose(mask2,se); % Applying closing function on mask2
 closeMask = closeBW1 | closeBW2; % Union of both mask
 closeMask = uint8(imfill(closeMask, 'holes')); % Filling holes in the final mask
-
+%N = 3;
+%closeMask = imdilate(closeMask, ones(2*N + 1, 2*N + 1));
