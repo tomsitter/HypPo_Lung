@@ -64,6 +64,7 @@ handles.rightpanel = '';
 
 handles.leftpanelcoreg = 1;
 handles.rightpanelcoreg = 1;
+handles.overridepanelnocoreg = 0;
 
 % handles.slice_index = 1;
 handles.state = 'idle';
@@ -445,6 +446,8 @@ function analyze_coreg_lm_Callback(hObject, eventdata, handles)
 updateStatusBox(handles, 'Preparing to coregister images', 1);
 
 handles.state = 'def_coreg_landmarks';
+handles.overridepanelnocoreg = 1;
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 start_coregister_landmarks_gui(hObject);
@@ -718,6 +721,7 @@ if size(handles.patient,2)~=0
 	end
 end
 
+handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
 updateMenuOptions(handles);
 %Finished with current task
@@ -898,6 +902,7 @@ if size(handles.patient,2)~=0
 	end
 end
 
+handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
 updateMenuOptions(handles);
 %Finished with current task
@@ -1144,6 +1149,9 @@ else
 	guidata(hObject, handles);
 end
 
+handles.overridepanelnocoreg = 1;
+handles = updateImagePanels(handles);
+
 index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 
@@ -1168,6 +1176,7 @@ end
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
+handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
@@ -1188,6 +1197,9 @@ else
 	handles = updateSliceSlider(handles);
 	guidata(hObject, handles);
 end
+
+handles.overridepanelnocoreg = 1;
+handles = updateImagePanels(handles);
 
 index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
@@ -1213,6 +1225,7 @@ end
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
+handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
 
 guidata(hObject, handles)
@@ -1280,6 +1293,8 @@ if strcmp(handles.state,'def_coreg_landmarks')
 	handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
 end
 set(handles.slider_slice, 'enable', 'on');
+handles.overridepanelnocoreg = 0;
+handles = updateImagePanels(handles);
 handles.state = 'idle';
 guidata(hObject, handles);
 
@@ -1405,6 +1420,7 @@ bodyimg = patient(pat_index).body(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
 
 handles.leftpanel='BM';
+handles.overridepanelnocoreg = 1;
 handles = updateImagePanels(handles);
 
 tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
@@ -1425,6 +1441,8 @@ for i = 1:length(x)
 end
 
 handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
+
+handles.overridepanelnocoreg = 0;
 
 imagesc(maskOverlay(bodyimg, bodymask));
 
@@ -1604,6 +1622,8 @@ function calculate_lung_SNR_bounding_box_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %
 handles.state = 'def_lung_signal_and_noise_region';
+handles.overridepanelnocoreg = 1;
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 initUpdatePanelOverlay(hObject);
 %
@@ -1616,6 +1636,8 @@ function calculate_body_SNR_bounding_box_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %
 handles.state = 'def_body_signal_and_noise_region';
+handles.overridepanelnocoreg = 1;
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 initUpdatePanelOverlay(hObject);
 %

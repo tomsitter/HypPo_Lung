@@ -100,8 +100,10 @@ leftpanel = handles.leftpanel;
 rightpanel = handles.rightpanel;
 
 panels = cell(1,1);
-panels{1} = {leftpanel,handles.axes1,handles.leftpanelcoreg};
-panels{2} = {rightpanel,handles.axes2,handles.rightpanelcoreg};
+panels{1} = {leftpanel,handles.axes1,~(handles.overridepanelnocoreg||~handles.leftpanelcoreg)};
+panels{2} = {rightpanel,handles.axes2,~(handles.overridepanelnocoreg||~handles.rightpanelcoreg)};
+% determines whether or not to show the coregistration depending on if
+% there is an override
 
 axesChanged = 0;
 
