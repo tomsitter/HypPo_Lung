@@ -1,5 +1,5 @@
 function patient = applyImageTransformationToPatientData(patient, tform, slice)
-	if tform.tdata.T == eye(3);
+	if isempty(tform)||isequal(tform.tdata.T,eye(3))
 		patient.tform{slice} = [];
 		patient.body_coreg(:,:,slice) = 0;
 		patient.bodymask_coreg(:,:,slice) = 0;
@@ -10,4 +10,6 @@ function patient = applyImageTransformationToPatientData(patient, tform, slice)
 		patient.body_coreg(:,:,slice) = imtransform(patient.body(:,:,slice), tform, 'xdata', [1 width], 'ydata', [1, height]);
 		patient.bodymask_coreg(:,:,slice) = round(imtransform(patient.bodymask(:,:,slice), tform, 'xdata', [1 width], 'ydata', [1, height]));
 	end
+	patient.TLV_coreg = [];
+	patient.aTLV_coreg = [];
 end

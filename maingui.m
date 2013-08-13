@@ -662,7 +662,8 @@ if size(handles.patient,2)~=0
 		%
 		apply = questdlg('Do you want to apply this transform to all slices?');
 		close(resultFigure);
-		if strcmpi(apply, 'Yes')
+		continueAnyways = displayWarningsAboutImageTransformations(patient);
+		if strcmpi(apply, 'Yes')&&continueAnyways
 			for a=1:size(patient.body,3)
 				%patient.body(:,:,a) = imtransform(patient.body(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]);
 				%patient.bodymask(:,:,a) = round(imtransform(patient.bodymask(:,:,a), tform, 'xdata', [1 width], 'ydata', [1, height]));
@@ -707,7 +708,7 @@ if size(handles.patient,2)~=0
 		for a=1:size(patient.lungmask,3)
 			patient.aVLV(a) = calculateAbsVLV(mean(roi(:)),patient.parmslung,patient.lungs(:,:,a),patient.lungmask(:,:,a));
 			totalAVLV = totalAVLV+patient.aVLV(a);
-			if patient(pat_index).aVLV(a)~=0
+			if patient.aVLV(a)~=0
 				numSlices = numSlices+1;
 			end
 			%patient.aVLV(a)
@@ -867,7 +868,8 @@ if size(handles.patient,2)~=0
 		%
 		apply = questdlg('Do you want to apply this transform to this slice?');
 		close(resultFigure);
-		if strcmpi(apply, 'Yes')
+		continueAnyways = displayWarningsAboutImageTransformations(patient);
+		if strcmpi(apply, 'Yes')&&continueAnyways
 			%patient.body(:,:,slice) = reg_body;
 			%patient.bodymask(:,:,slice) = reg_bodymask;
 			%patient.tform{slice} = tform;
@@ -1395,17 +1397,21 @@ tform = coregister_crosscorrelation(lungmask, bodymask);
 
 num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
 
-for a=1:num_slices
-	current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
-	%{
-	patient(pat_index).tform{a} = tform;
-	
-	height = size(patient(pat_index).lungmask(:,:,a),1);
-	width = size(patient(pat_index).lungmask(:,:,a),2);
-	
-	patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
-	patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
-	%}
+continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
+
+if continueAnyways
+	for a=1:num_slices
+		current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
+		%{
+		patient(pat_index).tform{a} = tform;
+
+		height = size(patient(pat_index).lungmask(:,:,a),1);
+		width = size(patient(pat_index).lungmask(:,:,a),2);
+
+		patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
+		patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+		%}
+	end
 end
 
 handles.patient(pat_index) = current_patient;
@@ -1916,18 +1922,22 @@ bodymask = patient(pat_index).bodymask(:,:,slice);
 
 tform = coregister_DFTcrosscorrelation(lungmask, bodymask);
 
-for a=1:num_slices
-	current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
+continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
 
-	%{
-	patient(pat_index).tform{a} = tform;
-	
-	height = size(patient(pat_index).lungmask(:,:,a),1);
-	width = size(patient(pat_index).lungmask(:,:,a),2);
-	
-	patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
-	patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
-	%}
+if continueAnyways
+	for a=1:num_slices
+		current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
+
+		%{
+		patient(pat_index).tform{a} = tform;
+
+		height = size(patient(pat_index).lungmask(:,:,a),1);
+		width = size(patient(pat_index).lungmask(:,:,a),2);
+
+		patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
+		patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+		%}
+	end
 end
 
 handles.patient = patient;
@@ -1990,8 +2000,12 @@ pat_index = handles.pat_index;
 %
 tform = maketform('affine', eye(3));
 %
-for a=1:size(handles.patient(pat_index).body,3)
-	handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform, a);
+continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
+%
+if continueAnyways
+	for a=1:size(handles.patient(pat_index).body,3)
+		handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform, a);
+	end
 end
 %
 handles = updateImagePanels(handles);
@@ -2025,7 +2039,7 @@ totalVLV = 0;
 numSlices = 0;
 %
 for a=1:size(patient(pat_index).lungmask,3)
-	patient(pat_index).VLV(a) = calculateVLV(patient(pat_index).parmslung, patient.lungmask(:,:,a));
+	patient(pat_index).VLV(a) = calculateVLV(patient(pat_index).parmslung, patient(pat_index).lungmask(:,:,a));
 	totalVLV = totalVLV+patient(pat_index).VLV(a);
 	if patient(pat_index).VLV(a)~=0
 		numSlices = numSlices+1;
@@ -2058,19 +2072,19 @@ numSlices = 0;
 maxSignalH = max(patient(pat_index).body(logical(patient(pat_index).bodymask)));
 %
 for a=1:size(patient(pat_index).lungmask,3)
-	patient(pat_index).aTLV(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient.body(:,:,a), patient.bodymask(:,:,a));
+	patient(pat_index).aTLV(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient(pat_index).body(:,:,a), patient(pat_index).bodymask(:,:,a));
 	totalATLV_original = totalATLV_original+patient(pat_index).aTLV(a);
 	if patient(pat_index).aTLV(a)~=0
 		numSlices = numSlices+1;
 	end
-	if sum(patient.bodymask_coreg(:))~=0
+	if sum(patient(pat_index).bodymask_coreg(:))~=0
 		% if there is at least one slice that is coregistered
-		if sum(sum(patient.bodymask_coreg(:,:,a)))~=0
+		if sum(sum(patient(pat_index).bodymask_coreg(:,:,a)))~=0
 			% if the coregistration was performed at this slice
-			patient(pat_index).aTLV_coreg(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient.body_coreg(:,:,a), patient.bodymask_coreg(:,:,a));
+			patient(pat_index).aTLV_coreg(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient(pat_index).body_coreg(:,:,a), patient(pat_index).bodymask_coreg(:,:,a));
 		else
 			% use the original image because there is no coregistered slice here
-			patient(pat_index).aTLV_coreg(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient.body(:,:,a), patient.bodymask(:,:,a));
+			patient(pat_index).aTLV_coreg(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient(pat_index).body(:,:,a), patient(pat_index).bodymask(:,:,a));
 		end
 		totalATLV_coreg = totalATLV_coreg+patient(pat_index).aTLV_coreg(a);
 	end
@@ -2078,7 +2092,7 @@ for a=1:size(patient(pat_index).lungmask,3)
 	%disp mm^3;
 end
 %
-if sum(patient.bodymask_coreg(:))~=0
+if sum(patient(pat_index).bodymask_coreg(:))~=0
 	updateStatusBox(handles, ['The total absolute TLV (before coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_original)),' mL'], 1);
 	updateStatusBox(handles, ['The total absolute TLV (after coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_coreg)),' mL'], 0);
 else
@@ -2105,19 +2119,19 @@ totalTLV_coreg = 0;
 numSlices = 0;
 %
 for a=1:size(patient(pat_index).lungmask,3)
-	patient(pat_index).TLV(a) = calculateTLV(patient(pat_index).parmsbody, patient.bodymask(:,:,a));
+	patient(pat_index).TLV(a) = calculateTLV(patient(pat_index).parmsbody, patient(pat_index).bodymask(:,:,a));
 	totalTLV_original = totalTLV_original+patient(pat_index).TLV(a);
 	if patient(pat_index).TLV(a)~=0
 		numSlices = numSlices+1;
 	end
-	if sum(patient.bodymask_coreg(:))~=0
+	if sum(patient(pat_index).bodymask_coreg(:))~=0
 		% if there is at least one slice that is coregistered
-		if sum(sum(patient.bodymask_coreg(:,:,a)))~=0
+		if sum(sum(patient(pat_index).bodymask_coreg(:,:,a)))~=0
 			% if the coregistration was performed at this slice
-			patient(pat_index).TLV_coreg(a) = calculateTLV(patient(pat_index).parmsbody, patient.bodymask_coreg(:,:,a));
+			patient(pat_index).TLV_coreg(a) = calculateTLV(patient(pat_index).parmsbody, patient(pat_index).bodymask_coreg(:,:,a));
 		else
 			% use the original image because there is no coregistered slice here
-			patient(pat_index).TLV_coreg(a) = calculateTLV(patient(pat_index).parmsbody, patient.bodymask(:,:,a));
+			patient(pat_index).TLV_coreg(a) = calculateTLV(patient(pat_index).parmsbody, patient(pat_index).bodymask(:,:,a));
 		end
 		totalTLV_coreg = totalTLV_coreg+patient(pat_index).TLV_coreg(a);
 	end
@@ -2125,7 +2139,7 @@ for a=1:size(patient(pat_index).lungmask,3)
 	%disp mm^3;
 end
 %
-if sum(patient.bodymask_coreg(:))~=0
+if sum(patient(pat_index).bodymask_coreg(:))~=0
 	updateStatusBox(handles, ['The total TLV (before coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_original)),' mL'], 1);
 	updateStatusBox(handles, ['The total TLV (after coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_coreg)),' mL'], 0);
 else
