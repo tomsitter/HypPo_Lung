@@ -117,6 +117,7 @@ elseif strcmp(type, 'body')
     handles.patient(pat_index).body_coreg = zeros(size(slices));
     handles.patient(pat_index).bodymask = zeros(size(slices));
     handles.patient(pat_index).bodymask_coreg = zeros(size(slices));
+    handles.patient(pat_index).tform = cell([size(slices, 3),1]);
 end
 
 % updateSliceSlider(handles.slider_slice, handles);

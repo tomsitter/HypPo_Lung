@@ -1370,8 +1370,6 @@ bodymask = current_patient.bodymask(:,:,slice);
 
 tform = coregister_crosscorrelation(lungmask, bodymask);
 
-current_patient.tform = cell(1, size(current_patient.lungmask, 3));
-
 num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
 
 for a=1:num_slices
@@ -1878,8 +1876,6 @@ slice = round(get(handles.slider_slice, 'Value'));
 current_patient = patient(pat_index);
 
 num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
-
-current_patient.tform = cell(1, num_slices);
 
 lungmask = patient(pat_index).lungmask(:,:,slice);
 bodymask = patient(pat_index).bodymask(:,:,slice);
