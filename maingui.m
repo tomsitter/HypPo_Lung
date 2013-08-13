@@ -2107,7 +2107,78 @@ guidata(hObject, handles);
 %
 
 
+% --------------------------------------------------------------------
+function view_overlaycolor_red_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_red (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+handles.patient(pat_index).overlayColor = [1 0 0];
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
 
+% --------------------------------------------------------------------
+function view_overlaycolor_green_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_green (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+handles.patient(pat_index).overlayColor = [0 1 0];
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_overlaycolor_blue_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_blue (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+handles.patient(pat_index).overlayColor = [0 0 1];
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_overlaycolor_yellow_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_yellow (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+handles.patient(pat_index).overlayColor = [1 1 0];
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function view_overlaycolor_white_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_white (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+handles.patient(pat_index).overlayColor = [1 1 1];
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
 
 
 

@@ -129,5 +129,28 @@
 	* Changed tag to "analyze_LV_aTLV"
 	* Changed callback to default
 
+* Created "Overlay Color" menu button under "View"
+	* Changed callback to empty
+* Created "Red" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_red"
+	* Changed callback to default
+* Created "Green" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_green"
+	* Changed callback to default
+* Created "Blue" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_blue"
+	* Changed callback to default
+* Created "Yellow" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_yellow"
+	* Changed callback to default
+* Created "White" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_white"
+	* Changed callback to default
 
 
+
+	
+	
+	
+	
+	

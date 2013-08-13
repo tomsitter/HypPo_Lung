@@ -347,7 +347,7 @@ for a=1:size(panels,2)
 						bodymask = imtransform(bodymask, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
 					end
 					%}
-					currentSlice = viewCoregistration(body, bodymask, lungmask);
+					currentSlice = viewCoregistration(body, bodymask, imresize(lungmask, size(body)));
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
 						%{
@@ -462,7 +462,7 @@ for a=1:size(panels,2)
 								body = imtransform(body, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
 							end
 							%}
-							currentSlice = viewOverlay(body, lungs);
+							currentSlice = viewOverlay(body, imresize(lungs, size(body)), handles.patient(pat_index).overlayColor);
 							if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 								% if the data has changed
 								%{

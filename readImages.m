@@ -96,6 +96,8 @@ updateStatusBox(handles, msg, 0);
 
 if strcmp(type, 'lung')
     type = 'lungs';
+elseif strcmp(type, 'body')
+    type = 'body';
 end
 
 handles.patient(pat_index).(type) = slices;
@@ -103,6 +105,14 @@ handles.patient(pat_index).(type) = slices;
 if strcmp(type, 'lungs')
     handles.patient(pat_index).lungmask = zeros(size(slices));
     handles.patient(pat_index).hetero_images = zeros(size(slices));
+	handles.patient(pat_index).overlayColor = [1 1 1];
+	if strcmp(handles.patient(pat_index).id(1),'F')
+		handles.patient(pat_index).overlayColor = [1 1 0];
+	elseif strcmp(handles.patient(pat_index).id(1:2),'He')
+		handles.patient(pat_index).overlayColor = [1 0 0];
+	elseif strcmp(handles.patient(pat_index).id(1:2),'Xe')
+		handles.patient(pat_index).overlayColor = [0 1 0];
+	end
 elseif strcmp(type, 'body')
     handles.patient(pat_index).body_coreg = zeros(size(slices));
     handles.patient(pat_index).bodymask = zeros(size(slices));
