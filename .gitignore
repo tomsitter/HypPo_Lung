@@ -24,6 +24,12 @@
 *.dcm
 *.IMA
 
+
+# Log Files #
+#############
+*.log
+
+
 # Version Information and Downloads #
 #####################################
 Updates/
