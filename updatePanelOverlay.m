@@ -184,4 +184,67 @@ function handles = updatePanelOverlay(handles)
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
+	if strcmp(handles.state, 'def_max_signal_region')
+		if handles.leftpanel == 'L'
+			lungAxes = handles.axes1;
+		elseif handles.rightpanel == 'L'
+			lungAxes = handles.axes2;
+		else
+			handles.leftpanel = 'L';
+			lungAxes = handles.axes1;
+			handles = updateSliceSlider(handles);
+		end
+		%
+		if get(handles.slider_slice, 'value')>size(handles.patient(handles.pat_index).lungs,3)
+			set(handles.slider_slice, 'value', round(size(handles.patient(handles.pat_index).lungs,3)/2));
+			handles = updateSliceSlider(handles);
+		end
+		%
+		try
+			getPosition(handles.panelOverlayData.max_signal_rect);
+			exists = 1;
+		catch
+			exists = 0;
+		end
+		%
+		if ~exists
+			%Get middle of xaxis to place region of interest
+			xaxis = floor(get(lungAxes, 'XLim'));
+			yaxis = floor(get(lungAxes, 'YLim'));
+			mid_x = round(xaxis(2) / 2);
+			size_box = xaxis(2) / 4;
+			%disp here
+			%pause(1)
+			if isfield(handles.panelOverlayData, 'max_signal_rect')
+				handles.panelOverlayData.max_signal_rect;
+			end
+			%disp a;
+			%Create a place region of interest, constrain to axis
+			handles.panelOverlayData.max_signal_rect = imrect(lungAxes, [(mid_x-size_box/2), 10, size_box, size_box,] );
+			fcn = makeConstrainToRectFcn('imrect',[xaxis(1)+1,xaxis(2)-1], [yaxis(1)+1,yaxis(2)-1]);
+			setPositionConstraintFcn(handles.panelOverlayData.max_signal_rect,fcn)
+			if isfield(handles.panelOverlayData, 'max_signal_region')
+				setConstrainedPosition(handles.panelOverlayData.max_signal_rect, handles.panelOverlayData.max_signal_region);
+			end
+		end
+		%
+		handles.panelOverlayData.max_signal_region = round(handles.panelOverlayData.max_signal_rect.getPosition);
+		%
+		try
+			set(handles.analyze_hetero, 'Enable', 'on');
+		catch err
+			if strcmp(err.message, 'Invalid or deleted object.')==0
+				rethrow(err);
+			end
+		end
+	else
+		if isfield(handles.panelOverlayData, 'max_signal_rect')
+			delete(handles.panelOverlayData.max_signal_rect);
+			handles.panelOverlayData = rmfield(handles.panelOverlayData, 'max_signal_rect');
+			handles.panelOverlayData = rmfield(handles.panelOverlayData, 'max_signal_region');
+		end
+	end
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
 end

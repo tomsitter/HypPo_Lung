@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 25-Jul-2013 14:44:51
+% Last Modified by GUIDE v2.5 13-Aug-2013 12:43:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -686,6 +686,35 @@ if size(handles.patient,2)~=0
 		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
 		%
 		updateStatusBox(handles, 'Finished Coregistration', 1);
+	elseif strcmp(state, 'def_max_signal_region')
+		dims = round(handles.panelOverlayData.max_signal_rect.getPosition);
+		[x y w h] = deal(max(1, dims(1)), max(1, dims(2)), ...
+						 max(1, dims(3)), max(1, dims(4)));
+		
+		slice = round(get(handles.slider_slice, 'Value'));
+		pat_index = handles.pat_index;
+		
+		curImage = patient.lungs(:,:,slice);
+					 
+		roi = curImage(y:y+h, x:x+w);
+		
+		totalAVLV = 0;
+		numSlices = 0;
+		
+		for a=1:size(patient.lungmask,3)
+			patient.aVLV(a) = calculateAbsVLV(mean(roi(:)),patient.parmslung,patient.lungs(:,:,a),patient.lungmask(:,:,a));
+			totalAVLV = totalAVLV+patient.aVLV(a);
+			if patient(pat_index).aVLV(a)~=0
+				numSlices = numSlices+1;
+			end
+			%patient.aVLV(a)
+			%disp mm^3;
+		end
+		
+		updateStatusBox(handles, ['The total absolute VLV (',num2str(numSlices),' slices) is: ',num2str(round(totalAVLV)),' mL'], 1);
+		
+		handles.patient(index) = patient;
+		
 	end
 end
 
@@ -859,6 +888,13 @@ if size(handles.patient,2)~=0
 		handles.panelOverlayData = rmfield(handles.panelOverlayData, 'coreg_landmarks_body_y');
 		%
 		updateStatusBox(handles, 'Finished Coregistration', 1);
+	elseif strcmp(state, 'def_max_signal_region')
+		
+		handles.state = state;
+		guidata(hObject, handles);
+		errordlg('You must apply this to all slices (click "Apply To All" instead of "Apply").', '', 'modal');
+		return;
+		
 	end
 end
 
@@ -1933,11 +1969,142 @@ handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
+% --------------------------------------------------------------------
+function analyze_LV_aVLV_Callback(hObject, ~, handles)
+% hObject    handle to analyze_LV_aVLV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+handles.state = 'def_max_signal_region';
+guidata(hObject, handles);
+initUpdatePanelOverlay(hObject);
+%
 
 
+% --------------------------------------------------------------------
+function analyze_LV_VLV_Callback(hObject, ~, handles)
+% hObject    handle to analyze_LV_VLV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+patient = handles.patient;
+pat_index = handles.pat_index;
+%
+totalVLV = 0;
+%
+numSlices = 0;
+%
+for a=1:size(patient(pat_index).lungmask,3)
+	patient(pat_index).VLV(a) = calculateVLV(patient(pat_index).parmslung, patient.lungmask(:,:,a));
+	totalVLV = totalVLV+patient(pat_index).VLV(a);
+	if patient(pat_index).VLV(a)~=0
+		numSlices = numSlices+1;
+	end
+	%patient(pat_index).VLV(a)
+	%disp mm^3;
+end
+%
+updateStatusBox(handles, ['The total VLV (',num2str(numSlices),' slices) is: ',num2str(round(totalVLV)),' mL'], 1);
+%
+handles.patient = patient;
+guidata(hObject, handles);
+%
 
 
+% --------------------------------------------------------------------
+function analyze_LV_aTLV_Callback(hObject, ~, handles)
+% hObject    handle to analyze_LV_aTLV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+patient = handles.patient;
+pat_index = handles.pat_index;
+%
+totalATLV_original = 0;
+totalATLV_coreg = 0;
+%
+numSlices = 0;
+%
+maxSignalH = max(patient(pat_index).body(logical(patient(pat_index).bodymask)));
+%
+for a=1:size(patient(pat_index).lungmask,3)
+	patient(pat_index).aTLV(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient.body(:,:,a), patient.bodymask(:,:,a));
+	totalATLV_original = totalATLV_original+patient(pat_index).aTLV(a);
+	if patient(pat_index).aTLV(a)~=0
+		numSlices = numSlices+1;
+	end
+	if sum(patient.bodymask_coreg(:))~=0
+		% if there is at least one slice that is coregistered
+		if sum(sum(patient.bodymask_coreg(:,:,a)))~=0
+			% if the coregistration was performed at this slice
+			patient(pat_index).aTLV_coreg(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient.body_coreg(:,:,a), patient.bodymask_coreg(:,:,a));
+		else
+			% use the original image because there is no coregistered slice here
+			patient(pat_index).aTLV_coreg(a) = calculateAbsTLV(maxSignalH, patient(pat_index).parmsbody, patient.body(:,:,a), patient.bodymask(:,:,a));
+		end
+		totalATLV_coreg = totalATLV_coreg+patient(pat_index).aTLV_coreg(a);
+	end
+	%patient(pat_index).TLV(a)
+	%disp mm^3;
+end
+%
+if sum(patient.bodymask_coreg(:))~=0
+	updateStatusBox(handles, ['The total absolute TLV (before coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_original)),' mL'], 1);
+	updateStatusBox(handles, ['The total absolute TLV (after coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_coreg)),' mL'], 0);
+else
+	updateStatusBox(handles, ['The total absolute TLV (',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_original)),' mL'], 1);
+end
+%
+handles.patient = patient;
+guidata(hObject, handles);
+%
 
+
+% --------------------------------------------------------------------
+function analyze_LV_TLV_Callback(hObject, ~, handles)
+% hObject    handle to analyze_LV_TLV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+patient = handles.patient;
+pat_index = handles.pat_index;
+%
+totalTLV_original = 0;
+totalTLV_coreg = 0;
+%
+numSlices = 0;
+%
+for a=1:size(patient(pat_index).lungmask,3)
+	patient(pat_index).TLV(a) = calculateTLV(patient(pat_index).parmsbody, patient.bodymask(:,:,a));
+	totalTLV_original = totalTLV_original+patient(pat_index).TLV(a);
+	if patient(pat_index).TLV(a)~=0
+		numSlices = numSlices+1;
+	end
+	if sum(patient.bodymask_coreg(:))~=0
+		% if there is at least one slice that is coregistered
+		if sum(sum(patient.bodymask_coreg(:,:,a)))~=0
+			% if the coregistration was performed at this slice
+			patient(pat_index).TLV_coreg(a) = calculateTLV(patient(pat_index).parmsbody, patient.bodymask_coreg(:,:,a));
+		else
+			% use the original image because there is no coregistered slice here
+			patient(pat_index).TLV_coreg(a) = calculateTLV(patient(pat_index).parmsbody, patient.bodymask(:,:,a));
+		end
+		totalTLV_coreg = totalTLV_coreg+patient(pat_index).TLV_coreg(a);
+	end
+	%patient(pat_index).TLV(a)
+	%disp mm^3;
+end
+%
+if sum(patient.bodymask_coreg(:))~=0
+	updateStatusBox(handles, ['The total TLV (before coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_original)),' mL'], 1);
+	updateStatusBox(handles, ['The total TLV (after coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_coreg)),' mL'], 0);
+else
+	updateStatusBox(handles, ['The total TLV (',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_original)),' mL'], 1);
+end
+%
+handles.patient = patient;
+guidata(hObject, handles);
+%
 
 
 

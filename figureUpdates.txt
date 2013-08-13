@@ -111,7 +111,23 @@
 	* Changed tag to "analyze_coreg_remove"
 	* Changed callback to default
 
+* Removed "Button" menu button under "File"
+* Removed "From Input Box" text box on the main window
 
+* Created "Lung Volume" menu button under "Analyze"
+	* Changed callback to empty
+* Created "Ventilated Lung Volume" menu button under "Analyze>Lung Volume"
+	* Changed tag to "analyze_LV_VLV"
+	* Changed callback to default
+* Created "Absolute Ventilated Lung Volume" menu button under "Analyze>Lung Volume"
+	* Changed tag to "analyze_LV_aVLV"
+	* Changed callback to default
+* Created "Total Lung Volume" menu button under "Analyze>Lung Volume"
+	* Changed tag to "analyze_LV_TLV"
+	* Changed callback to default
+* Created "Absolute Total Lung Volume" menu button under "Analyze>Lung Volume"
+	* Changed tag to "analyze_LV_aTLV"
+	* Changed callback to default
 
 
 
