@@ -1176,6 +1176,10 @@ end
 mask = mask | roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
 
+for a=1:size(handles.patient(index).bodymask,3)
+	handles.patient(index) = applyImageTransformationToPatientData(handles.patient(index), handles.patient(index).tform{a}, a);
+end
+
 handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
 
@@ -1224,6 +1228,10 @@ end
 
 mask = mask & ~roi;
 handles.patient(index).bodymask(:,:,slice) = mask;
+
+for a=1:size(handles.patient(index).bodymask,3)
+	handles.patient(index) = applyImageTransformationToPatientData(handles.patient(index), handles.patient(index).tform{a}, a);
+end
 
 handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
@@ -1441,6 +1449,10 @@ for i = 1:length(x)
 end
 
 handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
+
+for a=1:size(handles.patient(pat_index).bodymask,3)
+	handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), handles.patient(pat_index).tform{a}, a);
+end
 
 handles.overridepanelnocoreg = 0;
 
