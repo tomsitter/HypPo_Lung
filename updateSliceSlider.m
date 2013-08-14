@@ -45,8 +45,8 @@ for a=1:size(panels,2)
 				panels{a}{2} = size(patient.hetero_images, 3);
 			end
 		case 'O'
-			if sum(patient.lungmask(:))>0||sum(patient.bodymask(:))>0
-				panels{a}{2} = min(size(patient.lungmask, 3),size(patient.bodymask, 3));
+			if sum(patient.lungs(:))>0||sum(patient.body(:))>0
+				panels{a}{2} = min(size(patient.lungs, 3),size(patient.body, 3));
 			end
 		case ''
 		otherwise

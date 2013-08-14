@@ -416,7 +416,7 @@ handles = readImages(handles, 'body');
 handles = updateSliceSlider(handles);
 updateViewOptions(handles);
 updateMenuOptions(handles);
-set(handles.analyze_segbody, 'Enable', 'on');
+
 % Update handles structure
 guidata(hObject, handles)
 
@@ -1305,6 +1305,7 @@ end
 set(handles.slider_slice, 'enable', 'on');
 handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
+updateMenuOptions(handles);
 handles.state = 'idle';
 guidata(hObject, handles);
 
@@ -1813,6 +1814,7 @@ handles.patient(index).body = cat(3, zeros(size(handles.patient(index).body(:,:,
 handles.patient(index).bodymask = cat(3, zeros(size(handles.patient(index).bodymask(:,:,1))), handles.patient(index).bodymask);
 handles.patient(index).body_coreg = cat(3, zeros(size(handles.patient(index).body_coreg(:,:,1))), handles.patient(index).body_coreg);
 handles.patient(index).bodymask_coreg = cat(3, zeros(size(handles.patient(index).bodymask_coreg(:,:,1))), handles.patient(index).bodymask_coreg);
+handles.patient(index).tform = cat(1, [], handles.patient(index).tform);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = cat(2, 0, handles.patient(index).body_SNR);
 end
@@ -1833,6 +1835,7 @@ handles.patient(index).body = cat(3, handles.patient(index).body, zeros(size(han
 handles.patient(index).bodymask = cat(3, handles.patient(index).bodymask, zeros(size(handles.patient(index).bodymask(:,:,1))));
 handles.patient(index).body_coreg = cat(3, handles.patient(index).body_coreg, zeros(size(handles.patient(index).body_coreg(:,:,1))));
 handles.patient(index).bodymask_coreg = cat(3, handles.patient(index).bodymask_coreg, zeros(size(handles.patient(index).bodymask_coreg(:,:,1))));
+handles.patient(index).tform = cat(1, handles.patient(index).tform, []);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = cat(2, handles.patient(index).body_SNR, 0);
 end
@@ -1853,6 +1856,7 @@ handles.patient(index).body = handles.patient(index).body(:,:,2:end);
 handles.patient(index).bodymask = handles.patient(index).bodymask(:,:,2:end);
 handles.patient(index).body_coreg = handles.patient(index).body_coreg(:,:,2:end);
 handles.patient(index).bodymask_coreg = handles.patient(index).bodymask_coreg(:,:,2:end);
+handles.patient(index).tform = handles.patient(index).tform(2:end);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = handles.patient(index).body_SNR(2:end);
 end
@@ -1873,6 +1877,7 @@ handles.patient(index).body = handles.patient(index).body(:,:,1:end-1);
 handles.patient(index).bodymask = handles.patient(index).bodymask(:,:,1:end-1);
 handles.patient(index).body_coreg = handles.patient(index).body_coreg(:,:,1:end-1);
 handles.patient(index).bodymask_coreg = handles.patient(index).bodymask_coreg(:,:,1:end-1);
+handles.patient(index).tform = handles.patient(index).tform(1:end-1);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = handles.patient(index).body_SNR(1:end-1);
 end
