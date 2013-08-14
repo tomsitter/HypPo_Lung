@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 13-Aug-2013 12:43:34
+% Last Modified by GUIDE v2.5 13-Aug-2013 21:40:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -1384,24 +1384,24 @@ function analyze_coreg_cc_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-patient = handles.patient;
 pat_index = handles.pat_index;
-slice = round(get(handles.slider_slice, 'Value'));
 
-current_patient = patient(pat_index);
+num_slices = min(size(handles.patient(pat_index).lungmask, 3), size(handles.patient(pat_index).bodymask, 3));
 
-lungmask = current_patient.lungmask(:,:,slice);
-bodymask = current_patient.bodymask(:,:,slice);
+tform = cell(1);
 
-tform = coregister_crosscorrelation(lungmask, bodymask);
+for a=1:num_slices
+	lungmask = handles.patient(pat_index).lungmask(:,:,a);
+	bodymask = handles.patient(pat_index).bodymask(:,:,a);
 
-num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
+	tform{a} = coregister_crosscorrelation(imresize(lungmask,size(bodymask)), bodymask);
+end
 
 continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
 
 if continueAnyways
 	for a=1:num_slices
-		current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
+		handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform{a}, a);
 		%{
 		patient(pat_index).tform{a} = tform;
 
@@ -1414,11 +1414,10 @@ if continueAnyways
 	end
 end
 
-handles.patient(pat_index) = current_patient;
-
 handles = updateImagePanels(handles);
 
 guidata(hObject, handles);
+
 
 % --------------------------------------------------------------------
 function manual_addseed_Callback(hObject, eventdata, handles)
@@ -1909,25 +1908,24 @@ function analyze_coreg_DFTcc_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-patient = handles.patient;
 pat_index = handles.pat_index;
-slice = round(get(handles.slider_slice, 'Value'));
 
-current_patient = patient(pat_index);
+num_slices = min(size(handles.patient(pat_index).lungmask, 3), size(handles.patient(pat_index).bodymask, 3));
 
-num_slices = min(size(current_patient.lungmask, 3), size(current_patient.bodymask, 3));
+tform = cell(1);
 
-lungmask = patient(pat_index).lungmask(:,:,slice);
-bodymask = patient(pat_index).bodymask(:,:,slice);
+for a=1:num_slices
+	lungmask = handles.patient(pat_index).lungmask(:,:,a);
+	bodymask = handles.patient(pat_index).bodymask(:,:,a);
 
-tform = coregister_DFTcrosscorrelation(lungmask, bodymask);
+	tform{a} = coregister_DFTcrosscorrelation(imresize(lungmask,size(bodymask)), bodymask);
+end
 
 continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
 
 if continueAnyways
 	for a=1:num_slices
-		current_patient = applyImageTransformationToPatientData(current_patient, tform, a);
-
+		handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform{a}, a);
 		%{
 		patient(pat_index).tform{a} = tform;
 
@@ -1939,8 +1937,6 @@ if continueAnyways
 		%}
 	end
 end
-
-handles.patient = patient;
 
 handles = updateImagePanels(handles);
 
@@ -2225,6 +2221,88 @@ handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
+% --------------------------------------------------------------------
+function analyze_coreg_expand_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg_expand (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+pat_index = handles.pat_index;
+
+num_slices = min(size(handles.patient(pat_index).lungmask, 3), size(handles.patient(pat_index).bodymask, 3));
+
+tform = cell(1);
+
+for a=1:num_slices
+	lungmask = handles.patient(pat_index).lungmask(:,:,a);
+	bodymask = handles.patient(pat_index).bodymask(:,:,a);
+
+	tform{a} = coregister_expand(imresize(lungmask,size(bodymask)), bodymask);
+end
+
+%
+continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
+
+if continueAnyways
+	for a=1:num_slices
+		handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform{a}, a);
+		%{
+		patient(pat_index).tform{a} = tform;
+
+		height = size(patient(pat_index).lungmask(:,:,a),1);
+		width = size(patient(pat_index).lungmask(:,:,a),2);
+
+		patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
+		patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+		%}
+	end
+end
+
+handles = updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function analyze_coreg_invert_Callback(hObject, eventdata, handles)
+% hObject    handle to analyze_coreg_invert (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+pat_index = handles.pat_index;
+
+num_slices = min(size(handles.patient(pat_index).lungmask, 3), size(handles.patient(pat_index).bodymask, 3));
+
+tform = cell(1);
+
+for a=1:num_slices
+	lungmask = handles.patient(pat_index).lungmask(:,:,a);
+	bodymask = handles.patient(pat_index).bodymask(:,:,a);
+	lungs = handles.patient(pat_index).lungs(:,:,a);
+	body = handles.patient(pat_index).body(:,:,a);
+	tform{a} = coregister_invert(imresize(lungs,size(body)), body, imresize(lungmask,size(bodymask)), bodymask);
+end
+
+continueAnyways = displayWarningsAboutImageTransformations(handles.patient(pat_index));
+
+if continueAnyways
+	for a=1:num_slices
+		handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), tform{a}, a);
+		%{
+		patient(pat_index).tform{a} = tform;
+
+		height = size(patient(pat_index).lungmask(:,:,a),1);
+		width = size(patient(pat_index).lungmask(:,:,a),2);
+
+		patient(pat_index).bodymask(:,:,a) = round(imtransform(patient(pat_index).bodymask(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]));
+		patient(pat_index).body(:,:,a) = imtransform(patient(pat_index).body(:,:,a), tform, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
+		%}
+	end
+end
+
+handles = updateImagePanels(handles);
+
+guidata(hObject, handles);
 
 
 

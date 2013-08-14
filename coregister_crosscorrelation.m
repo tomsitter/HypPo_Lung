@@ -1,10 +1,15 @@
 %function [volume, uplo_stat] = coregister_auto(lungs, lungmask, body, bodymask, fov, thk)
 function tform = coregister_crosscorrelation(lungmask, bodymask)
 
+if sum(lungmask(:))==0||sum(bodymask(:))==0
+	tform = [];
+	return;
+end
+
 %%%%%%%%%%%%xdim = size(lungs, 1);
 %%%%%%%%%%%%ydim = size(lungs, 2);
-xdim = size(lungmask, 1);
-ydim = size(lungmask, 2);
+xdim = size(lungmask, 2);
+ydim = size(lungmask, 1);
 
 %%%%%%%%%%%%pixeldim = fov/xdim; % mm
 %%%%%%%%%%%%voxelvol = pixeldim^2*thk*1e-6; %[L]

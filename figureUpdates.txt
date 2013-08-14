@@ -147,8 +147,14 @@
 	* Changed tag to "view_overlaycolor_white"
 	* Changed callback to default
 
-
-
+* Renamed "Cross-correlation" menu button to "Cross-Correlate"
+* Renamed "DFT cross-correlation" menu button to "DFT Cross-Correlate"
+* Created "Expand and DFT Cross-Correlate" menu button under "Analyze>Coregister>Translation"
+	* Changed tag to "analyze_coreg_expand"
+	* Changed callback to default
+* Created "Invert and DFT Cross-Correlate" menu button under "Analyze>Coregister>Translation"
+	* Changed tag to "analyze_coreg_invert"
+	* Changed callback to default
 	
 	
 	
