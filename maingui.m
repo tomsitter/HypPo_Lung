@@ -1785,6 +1785,12 @@ end
 if size(handles.patient(index).lung_SNR,2)~=0
 	handles.patient(index).lung_SNR = cat(2, 0, handles.patient(index).lung_SNR);
 end
+if size(handles.patient(index).VLV,2)~=0
+	handles.patient(index).VLV = cat(2, 0, handles.patient(index).VLV);
+end
+if size(handles.patient(index).aVLV,2)~=0
+	handles.patient(index).aVLV = cat(2, 0, handles.patient(index).aVLV);
+end
 %
 handles = updateSliceSlider(handles);
 %
@@ -1809,6 +1815,12 @@ if size(handles.patient(index).threshold,2)~=0
 end
 if size(handles.patient(index).lung_SNR,2)~=0
 	handles.patient(index).lung_SNR = cat(2, handles.patient(index).lung_SNR, 0);
+end
+if size(handles.patient(index).VLV,2)~=0
+	handles.patient(index).VLV = cat(2, handles.patient(index).VLV, 0);
+end
+if size(handles.patient(index).aVLV,2)~=0
+	handles.patient(index).aVLV = cat(2, handles.patient(index).aVLV, 0);
 end
 %
 handles = updateSliceSlider(handles);
@@ -1835,6 +1847,12 @@ end
 if size(handles.patient(index).lung_SNR,2)~=0
 	handles.patient(index).lung_SNR = handles.patient(index).lung_SNR(2:end);
 end
+if size(handles.patient(index).VLV,2)~=0
+	handles.patient(index).VLV = handles.patient(index).VLV(2:end);
+end
+if size(handles.patient(index).aVLV,2)~=0
+	handles.patient(index).aVLV = handles.patient(index).aVLV(2:end);
+end
 %
 handles = updateSliceSlider(handles);
 %
@@ -1860,6 +1878,12 @@ end
 if size(handles.patient(index).lung_SNR,2)~=0
 	handles.patient(index).lung_SNR = handles.patient(index).lung_SNR(1:end-1);
 end
+if size(handles.patient(index).VLV,2)~=0
+	handles.patient(index).VLV = handles.patient(index).VLV(1:end-1);
+end
+if size(handles.patient(index).aVLV,2)~=0
+	handles.patient(index).aVLV = handles.patient(index).aVLV(1:end-1);
+end
 %
 handles = updateSliceSlider(handles);
 %
@@ -1880,6 +1904,18 @@ handles.patient(index).bodymask_coreg = cat(3, zeros(size(handles.patient(index)
 handles.patient(index).tform = cat(1, [], handles.patient(index).tform);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = cat(2, 0, handles.patient(index).body_SNR);
+end
+if size(handles.patient(index).TLV,2)~=0
+	handles.patient(index).TLV = cat(2, 0, handles.patient(index).TLV);
+end
+if size(handles.patient(index).aTLV,2)~=0
+	handles.patient(index).aTLV = cat(2, 0, handles.patient(index).aTLV);
+end
+if size(handles.patient(index).TLV_coreg,2)~=0
+	handles.patient(index).TLV_coreg = cat(2, 0, handles.patient(index).TLV_coreg);
+end
+if size(handles.patient(index).aTLV_coreg,2)~=0
+	handles.patient(index).aTLV_coreg = cat(2, 0, handles.patient(index).aTLV_coreg);
 end
 %
 handles = updateSliceSlider(handles);
@@ -1902,6 +1938,18 @@ handles.patient(index).tform = cat(1, handles.patient(index).tform, []);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = cat(2, handles.patient(index).body_SNR, 0);
 end
+if size(handles.patient(index).TLV,2)~=0
+	handles.patient(index).TLV = cat(2, handles.patient(index).TLV, 0);
+end
+if size(handles.patient(index).aTLV,2)~=0
+	handles.patient(index).aTLV = cat(2, handles.patient(index).aTLV, 0);
+end
+if size(handles.patient(index).TLV_coreg,2)~=0
+	handles.patient(index).TLV_coreg = cat(2, handles.patient(index).TLV_coreg, 0);
+end
+if size(handles.patient(index).aTLV_coreg,2)~=0
+	handles.patient(index).aTLV_coreg = cat(2, handles.patient(index).aTLV_coreg, 0);
+end
 %
 handles = updateSliceSlider(handles);
 %
@@ -1923,6 +1971,18 @@ handles.patient(index).tform = handles.patient(index).tform(2:end);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = handles.patient(index).body_SNR(2:end);
 end
+if size(handles.patient(index).TLV,2)~=0
+	handles.patient(index).TLV = handles.patient(index).TLV(2:end);
+end
+if size(handles.patient(index).aTLV,2)~=0
+	handles.patient(index).aTLV = handles.patient(index).aTLV(2:end);
+end
+if size(handles.patient(index).TLV_coreg,2)~=0
+	handles.patient(index).TLV_coreg = handles.patient(index).TLV_coreg(2:end);
+end
+if size(handles.patient(index).aTLV_coreg,2)~=0
+	handles.patient(index).aTLV_coreg = handles.patient(index).aTLV_coreg(2:end);
+end
 %
 handles = updateSliceSlider(handles);
 %
@@ -1943,6 +2003,18 @@ handles.patient(index).bodymask_coreg = handles.patient(index).bodymask_coreg(:,
 handles.patient(index).tform = handles.patient(index).tform(1:end-1);
 if size(handles.patient(index).body_SNR,2)~=0
 	handles.patient(index).body_SNR = handles.patient(index).body_SNR(1:end-1);
+end
+if size(handles.patient(index).TLV,2)~=0
+	handles.patient(index).TLV = handles.patient(index).TLV(1:end-1);
+end
+if size(handles.patient(index).aTLV,2)~=0
+	handles.patient(index).aTLV = handles.patient(index).aTLV(1:end-1);
+end
+if size(handles.patient(index).TLV_coreg,2)~=0
+	handles.patient(index).TLV_coreg = handles.patient(index).TLV_coreg(1:end-1);
+end
+if size(handles.patient(index).aTLV_coreg,2)~=0
+	handles.patient(index).aTLV_coreg = handles.patient(index).aTLV_coreg(1:end-1);
 end
 %
 handles = updateSliceSlider(handles);
