@@ -496,22 +496,28 @@ if size(handles.patient,2)~=0
 
 		close(montageFigure);
 		axes(handles.axes2);
-		%calculate optimal threshold value and threshold image
-		wb = waitbar(0, 'Segmentation in Progress');
-		numImages = size(curImages, 3);
-		for slice = 1:numImages
-			roi = curImages(y:y+h, x:x+w, slice);
-			[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
-			handles.patient(index).threshold{slice} = threshold;
-			handles.patient(index).mean_noise{slice} = mean_noise;
-			%handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-			handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
-			waitbar(slice/numImages, wb);
+		%
+		continueAnyways = displayWarningsAboutLungMasks(handles.patient(index));
+		%
+		if continueAnyways
+			handles.patient(index).VLV = [];
+			handles.patient(index).aVLV = [];
+			wb = waitbar(0, 'Segmentation in Progress');
+			numImages = size(curImages, 3);
+			for slice = 1:numImages
+				roi = curImages(y:y+h, x:x+w, slice);
+				[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
+				handles.patient(index).threshold{slice} = threshold;
+				handles.patient(index).mean_noise{slice} = mean_noise;
+				%handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
+				handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+				waitbar(slice/numImages, wb);
+			end
+			close(wb);
+			handles.leftpanel='L';
+			handles.rightpanel='LM';
+			updateStatusBox(handles, 'Images thresholded', 0);
 		end
-		close(wb);
-		handles.leftpanel='L';
-		handles.rightpanel='LM';
-		updateStatusBox(handles, 'Images thresholded', 0);
 
 		%set(handles.analyze_threshold, 'Enable', 'on');
 	elseif strcmp(state, 'def_lung_signal_and_noise_region')||strcmp(state, 'def_body_signal_and_noise_region')
@@ -1051,7 +1057,14 @@ if isempty(roi)
 end
 
 mask = mask | roi;
-handles.patient(index).lungmask(:,:,slice) = mask;
+
+continueAnyways = displayWarningsAboutLungMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).VLV = [];
+	handles.patient(index).aVLV = [];
+	handles.patient(index).lungmask(:,:,slice) = mask;
+end
 
 handles = updateImagePanels(handles);
 
@@ -1095,7 +1108,14 @@ if isempty(roi)
 end
 
 mask = mask & ~roi;
-handles.patient(index).lungmask(:,:,slice) = mask;
+
+continueAnyways = displayWarningsAboutLungMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).VLV = [];
+	handles.patient(index).aVLV = [];
+	handles.patient(index).lungmask(:,:,slice) = mask;
+end
 
 handles = updateImagePanels(handles);
 
@@ -1115,7 +1135,13 @@ if slice == 0
 	return;
 end
 
-handles.patient(index).lungmask(:,:,slice) = zeros(size(handles.patient(index).lungmask(:,:,slice)));
+continueAnyways = displayWarningsAboutLungMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).VLV = [];
+	handles.patient(index).aVLV = [];
+	handles.patient(index).lungmask(:,:,slice) = zeros(size(handles.patient(index).lungmask(:,:,slice)));
+end
 
 handles = updateImagePanels(handles);
 
@@ -1176,12 +1202,21 @@ if isempty(roi)
 end
 
 mask = mask | roi;
-handles.patient(index).bodymask(:,:,slice) = mask;
 
-for a=1:size(handles.patient(index).bodymask,3)
-	handles.patient(index) = applyImageTransformationToPatientData(handles.patient(index), handles.patient(index).tform{a}, a);
+continueAnyways = displayWarningsAboutBodyMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).TLV = [];
+	handles.patient(index).aTLV = [];
+	handles.patient(index).TLV_coreg = [];
+	handles.patient(index).aTLV_coreg = [];
+	
+	handles.patient(index).bodymask(:,:,slice) = mask;
+
+	for a=1:size(handles.patient(index).bodymask,3)
+		handles.patient(index) = applyImageTransformationToPatientData(handles.patient(index), handles.patient(index).tform{a}, a);
+	end
 end
-
 handles.overridepanelnocoreg = 0;
 handles = updateImagePanels(handles);
 
@@ -1229,10 +1264,20 @@ if isempty(roi)
 end
 
 mask = mask & ~roi;
-handles.patient(index).bodymask(:,:,slice) = mask;
 
-for a=1:size(handles.patient(index).bodymask,3)
-	handles.patient(index) = applyImageTransformationToPatientData(handles.patient(index), handles.patient(index).tform{a}, a);
+continueAnyways = displayWarningsAboutBodyMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).TLV = [];
+	handles.patient(index).aTLV = [];
+	handles.patient(index).TLV_coreg = [];
+	handles.patient(index).aTLV_coreg = [];
+	
+	handles.patient(index).bodymask(:,:,slice) = mask;
+
+	for a=1:size(handles.patient(index).bodymask,3)
+		handles.patient(index) = applyImageTransformationToPatientData(handles.patient(index), handles.patient(index).tform{a}, a);
+	end
 end
 
 handles.overridepanelnocoreg = 0;
@@ -1253,27 +1298,36 @@ index = handles.pat_index;
 patient = handles.patient(index);
 body_images = patient.body;
 
-updateStatusBox(handles, 'Preparing to segment body', 1);
-updateStatusBox(handles, 'Attempting to segment automatically', 0);
+continueAnyways = displayWarningsAboutBodyMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).TLV = [];
+	handles.patient(index).aTLV = [];
+	handles.patient(index).TLV_coreg = [];
+	handles.patient(index).aTLV_coreg = [];
+	
+	updateStatusBox(handles, 'Preparing to segment body', 1);
+	updateStatusBox(handles, 'Attempting to segment automatically', 0);
 
-% handles.state = 'def_autobodyseg';
+	% handles.state = 'def_autobodyseg';
 
-axes(handles.axes2);
-numImages = size(body_images, 3);
-wb = waitbar(0, 'Segmenting Lung Cavities');
-for slice = 1:numImages
-	waitbar(slice/numImages, wb);
-	patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
-	% NOTE: bodymask is still a double, even though it was set to uint8 in regiongrow_mask
+	axes(handles.axes2);
+	numImages = size(body_images, 3);
+	wb = waitbar(0, 'Segmenting Lung Cavities');
+	for slice = 1:numImages
+		waitbar(slice/numImages, wb);
+		patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+		% NOTE: bodymask is still a double, even though it was set to uint8 in regiongrow_mask
+	end
+	close(wb);
+
+	handles.patient(index) = patient;
+	handles.leftpanel = 'B';
+	handles.rightpanel = 'BM';
+
+	handles = updateSliceSlider(handles);
+	updateMenuOptions(handles);
 end
-close(wb);
-
-handles.patient(index) = patient;
-handles.leftpanel = 'B';
-handles.rightpanel = 'BM';
-
-handles = updateSliceSlider(handles);
-updateMenuOptions(handles);
 
 guidata(hObject, handles);
 
@@ -1430,39 +1484,48 @@ patient = handles.patient;
 pat_index = handles.pat_index;
 slice = round(get(handles.slider_slice, 'Value'));
 
-bodyimg = patient(pat_index).body(:,:,slice);
-bodymask = patient(pat_index).bodymask(:,:,slice);
+continueAnyways = displayWarningsAboutBodyMasks(handles.patient(pat_index));
+%
+if continueAnyways
+	handles.patient(index).TLV = [];
+	handles.patient(index).aTLV = [];
+	handles.patient(index).TLV_coreg = [];
+	handles.patient(index).aTLV_coreg = [];
+	
+	bodyimg = patient(pat_index).body(:,:,slice);
+	bodymask = patient(pat_index).bodymask(:,:,slice);
 
-handles.leftpanel='BM';
-handles.overridepanelnocoreg = 1;
-handles = updateImagePanels(handles);
+	handles.leftpanel='BM';
+	handles.overridepanelnocoreg = 1;
+	handles = updateImagePanels(handles);
 
-tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
+	tolerance = uint8(str2double(get(handles.edit_tolerance, 'String')));
 
 
-%newbodymask = manual_regiongrow( image, oldmask, seed )
-[x, y] = getpts(handles.axes1);
-x = uint16(x);
-y = uint16(y);
+	%newbodymask = manual_regiongrow( image, oldmask, seed )
+	[x, y] = getpts(handles.axes1);
+	x = uint16(x);
+	y = uint16(y);
 
-set(handles.push_undoseed, 'UserData', bodymask);
+	set(handles.push_undoseed, 'UserData', bodymask);
 
-for i = 1:length(x)
-	newbodymask = segmentRegion(tolerance, bodyimg, y(i), x(i));
-%     newbodymask2 = BWregionGrowing(bodyimg, x(i), y(i));
+	for i = 1:length(x)
+		newbodymask = segmentRegion(tolerance, bodyimg, y(i), x(i));
+	%     newbodymask2 = BWregionGrowing(bodyimg, x(i), y(i));
 
-	bodymask = bodymask | newbodymask;
+		bodymask = bodymask | newbodymask;
+	end
+
+	handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
+
+	for a=1:size(handles.patient(pat_index).bodymask,3)
+		handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), handles.patient(pat_index).tform{a}, a);
+	end
+
+	handles.overridepanelnocoreg = 0;
+	
+	imagesc(maskOverlay(bodyimg, bodymask));
 end
-
-handles.patient(pat_index).bodymask(:,:,slice) = bodymask;
-
-for a=1:size(handles.patient(pat_index).bodymask,3)
-	handles.patient(pat_index) = applyImageTransformationToPatientData(handles.patient(pat_index), handles.patient(pat_index).tform{a}, a);
-end
-
-handles.overridepanelnocoreg = 0;
-
-imagesc(maskOverlay(bodyimg, bodymask));
 
 guidata(hObject, handles);
 
