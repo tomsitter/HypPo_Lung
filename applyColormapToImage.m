@@ -9,6 +9,12 @@ function imageWithColormap = applyColormapToImage(image, map)
 	end
 	%}
 	image(isnan(image)) = 0;
+	if sum(image(:))==0
+		imageWithColormap(:,:,1) = map(1,1);
+		imageWithColormap(:,:,2) = map(1,2);
+		imageWithColormap(:,:,3) = map(1,3);
+		return;
+	end
 	rangeMax = max(image(:));%256
 	locations = ceil(double(image(:))./(double(rangeMax)/double(size(map,1))));
 	%locations = (image(:)-mod(image(:),(double(rangeMax)/double(size(map,1))))) / (double(rangeMax)/double(size(map,1)));

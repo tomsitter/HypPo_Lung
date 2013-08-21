@@ -126,7 +126,7 @@ checkAndGetUpdates(username, repo, projectFolderPath);
 
 function scrollCallback(~, ~, mainFigure, sliderUpdatePntr, sliderStoppedMovingTimer)
 handles = guidata(mainFigure);
-if etime(clock,handles.sliderLastUpdated)>0.04%0.05
+if etime(clock,handles.sliderLastUpdated)>0.06%0.05
 	handles.sliderLastUpdated = clock;
 	guidata(mainFigure, handles);
 	handles = updateImagePanels(handles, sliderUpdatePntr);
