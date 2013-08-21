@@ -110,6 +110,7 @@ axesChanged = 0;
 for a=1:size(panels,2)
 	axes(panels{a}{2});
 	initData = get(imhandles(panels{a}{2}),'CData');
+	
 	switch panels{a}{1}
 		case ''
 			imagesc(gray);
@@ -391,12 +392,21 @@ for a=1:size(panels,2)
 			end
 			title('Coregistration');
 		case 'H'
+			bw = 0;
+			if bw==1
+				map = [1 1 1; 0.92 0.92 0.92; 0.84 0.84 0.84; 0.76 0.76 0.76; 0.68 0.68 0.68; 0.6 0.6 0.6; ...
+					   0.52 0.52 0.52; 0.44 0.44 0.44; 0.36 0.36 0.36; 0.28 0.28 0.28; 0.2 0.2 0.2; 0 0 0];
+			else
+				map = [0 0 0; 1/3 0 1/2; 0 0 1; 0 1/2 1; 0 1 1; 0 1 0; ...
+					   2/3 1 0; 1 1 0; 1 3/4 0; 1 1/2 0; 1 0 0; 0.85 0 0];
+			end
 			numslices = size(handles.patient(pat_index).hetero_images, 3);
 			if slice>numslices || slice<=0
 				imagesc(gray);
 			else
 				if not(isempty(handles.patient(pat_index).hetero_images(:, :, slice)));
 					currentSlice = handles.patient(pat_index).hetero_images(:, :, slice);
+					currentSlice = applyColormapToImage(currentSlice, map);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
 						%{
@@ -420,19 +430,9 @@ for a=1:size(panels,2)
 						updateSlice = 1;
 						if updateSlice
 							% if the above is true
-							if sum(currentSlice(:))~=0
-								imagesc(currentSlice);
-								bw = 0;
-								if bw==1
-									map = [1 1 1; 0.92 0.92 0.92; 0.84 0.84 0.84; 0.76 0.76 0.76; 0.68 0.68 0.68; 0.6 0.6 0.6; ...
-										   0.52 0.52 0.52; 0.44 0.44 0.44; 0.36 0.36 0.36; 0.28 0.28 0.28; 0.2 0.2 0.2; 0 0 0];
-								else
-									map = [0 0 0; 1/3 0 1/2; 0 0 1; 0 1/2 1; 0 1 1; 0 1 0; ...
-										   2/3 1 0; 1 1 0; 1 3/4 0; 1 1/2 0; 1 0 0; 0.85 0 0];
-								end
-								colormap(panels{a}{2},map);
-							else
-								imagesc(currentSlice);
+							imagesc(currentSlice);
+							if sum(currentSlice(:))==0
+								% if the slice is completely black
 								set(panels{a}{2}, 'clim', [0,1]);
 							end
 						end
