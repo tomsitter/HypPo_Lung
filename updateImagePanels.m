@@ -333,6 +333,7 @@ for a=1:size(panels,2)
 				title('Proton Mask');
 			end
 		case 'C'
+			coregisteredTitle = 0;
 			if slice>size(handles.patient(pat_index).bodymask, 3) || slice<=0
 				imagesc(gray);
 			else
@@ -344,6 +345,7 @@ for a=1:size(panels,2)
 					if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 						body = handles.patient(pat_index).body_coreg(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask_coreg(:, :, slice);
+						coregisteredTitle = 1;
 					else
 						body = handles.patient(pat_index).body(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask(:, :, slice);
@@ -390,7 +392,11 @@ for a=1:size(panels,2)
 					end
 				end
 			end
-			title('Coregistration');
+			if coregisteredTitle
+				title('Coregistered Coregistration');
+			else
+				title('Coregistration');
+			end
 		case 'H'
 			bw = 0;
 			if bw==1
@@ -444,6 +450,7 @@ for a=1:size(panels,2)
 			end
 			title('Heterogeneity');
 		case 'O'
+			coregisteredTitle = 0;
 			if isempty(handles.patient(pat_index).lungs)
 				imagesc(gray);
 			else
@@ -460,6 +467,7 @@ for a=1:size(panels,2)
 							lungs = handles.patient(pat_index).lungs(:, :, slice);
 							if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 								body = handles.patient(pat_index).body_coreg(:, :, slice);
+								coregisteredTitle = 1;
 							else
 								body = handles.patient(pat_index).body(:, :, slice);
 							end
@@ -506,7 +514,11 @@ for a=1:size(panels,2)
 					end
 				end
 			end
-			title('Overlay');
+			if coregisteredTitle
+				title('Coregistered Overlay');
+			else
+				title('Overlay');
+			end
 		otherwise
 			msg = sprintf('Unknown image state for panel: %s', panels(a,1));
 			updateStatusBox(handles,msg, 1);
