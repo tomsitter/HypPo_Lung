@@ -2228,7 +2228,7 @@ for a=1:size(patient(pat_index).lungmask,3)
 	%disp mm^3;
 end
 %
-if sum(patient(pat_index).bodymask_coreg(:))~=0
+if sum(patient(pat_index).bodymask_coreg(:))~=0&&round(totalTLV_original)~=round(totalTLV_coreg)
 	updateStatusBox(handles, ['The total absolute TLV (before coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_original)),' mL'], 1);
 	updateStatusBox(handles, ['The total absolute TLV (after coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalATLV_coreg)),' mL'], 0);
 else
@@ -2275,7 +2275,7 @@ for a=1:size(patient(pat_index).lungmask,3)
 	%disp mm^3;
 end
 %
-if sum(patient(pat_index).bodymask_coreg(:))~=0
+if sum(patient(pat_index).bodymask_coreg(:))~=0&&totalTLV_original~=totalTLV_coreg
 	updateStatusBox(handles, ['The total TLV (before coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_original)),' mL'], 1);
 	updateStatusBox(handles, ['The total TLV (after coregistration; ',num2str(numSlices),' slices) is: ',num2str(round(totalTLV_coreg)),' mL'], 0);
 else
