@@ -1,7 +1,7 @@
 function imageWithColormap = applyColormapToImage(image, map)
 	imageWithColormap = zeros([size(image,1),size(image,2),3]);
-	interval = 256/size(map,1);
 	%{
+	interval = 256/size(map,1);
 	for a=1:size(map,1)
 		imageWithColormap(logical([image>=(interval*(a-1))&image<=(interval*(a)),zeros(size(image)),zeros(size(image))])) = map(a,1);
 		imageWithColormap(logical([zeros(size(image)),image>=(interval*(a-1))&image<=(interval*(a)),zeros(size(image))])) = map(a,2);
@@ -16,7 +16,7 @@ function imageWithColormap = applyColormapToImage(image, map)
 		return;
 	end
 	rangeMax = max(image(:));%256
-	locations = ceil(double(image(:))./(double(rangeMax)/double(size(map,1))));
+	locations = ceil(round((double(image(:))./(double(rangeMax)/double(size(map,1))))*1000.0)/1000.0);
 	%locations = (image(:)-mod(image(:),(double(rangeMax)/double(size(map,1))))) / (double(rangeMax)/double(size(map,1)));
 	locations(locations==0) = 1;
 	%
