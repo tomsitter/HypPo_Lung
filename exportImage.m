@@ -22,7 +22,7 @@ function varargout = exportImage(varargin)
 
 % Edit the above text to modify the response to help exportImage
 
-% Last Modified by GUIDE v2.5 17-Apr-2013 13:33:00
+% Last Modified by GUIDE v2.5 22-Aug-2013 12:09:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,13 +52,31 @@ function exportImage_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to exportImage (see VARARGIN)
 
-
 handles.maingui = varargin{1};
 handles.panel = varargin{2};
+handles.firstSlice = round(max(get(handles.maingui.slider_slice, 'Value'), 1));
+handles.lastSlice = handles.firstSlice;
+handles.numColumns = 1;
+if strcmp(handles.panel, 'left')
+	handles.imageType = handles.maingui.leftpanel;
+elseif strcmp(handles.panel, 'right')
+	handles.imageType = handles.maingui.rightpanel;
+end
+
+slicesCellArray = cell(1);
+for a=1:getNumOfSlices(handles.maingui.patient(handles.maingui.pat_index), handles.imageType)
+	slicesCellArray{a} = num2str(a);
+end
+set(handles.menu_firstSlice, 'String', slicesCellArray);
+set(handles.menu_lastSlice, 'String', slicesCellArray);
+set(handles.menu_numOfColumns, 'String', slicesCellArray);
+set(handles.menu_firstSlice, 'Value', handles.firstSlice);
+set(handles.menu_lastSlice, 'Value', handles.lastSlice);
+set(handles.menu_numOfColumns, 'Value', 1);
+set(handles.menu_multipleFiles, 'enable', 'off');
 
 % Choose default command line output for exportImage
 handles.output = hObject;
-
 
 handles = displayImage(handles);
 
@@ -94,48 +112,34 @@ function push_save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% popup_sel_index = get(handles.menu_format, 'Value');
-% switch popup_sel_index
-%     case 1
-%         plot(rand(5));
-%     case 2
-%         plot(sin(1:0.01:25.99));
-%     case 3
-%         bar(1:.5:10);
-%     case 4
-%         plot(membrane);
-%     case 5
-%         surf(peaks);
-% end
+filetypes = {'*.png';'*.jpeg';'*.tiff';'*.bmp';'*.gif';'*.jpeg2000';'*.hdf';'*.pbm';'*.pcx';'*.pgm';'*.pnm';'*.ppm';'*.rasS';'*.xwd'};
 
-formatchoice = get(handles.menu_format, 'Value');
-switch formatchoice
-    case 1
-        format = 'tif';
-    case 2
-        format = 'bmp';
-    case 3
-        format = 'jpg';
-    case 4
-        format = 'fig';
-    case 5
-        format = 'pdf';
-    case 6
-        format = 'm';
-    case 7
-        format = 'png';
+if get(handles.menu_multipleFiles, 'Value')==1
+	[filename, pathname] = uiputfile(filetypes, 'Image Save Location');
+	if ~isequal(filename,0) && ~isequal(pathname,0)
+		%imwrite(baseImg,fullfile(pathname,filename),'png');
+		imwrite(handles.imagesToExport, fullfile(pathname,filename));
+	end
+elseif get(handles.menu_multipleFiles, 'Value')==2
+	fileName = inputdlg('File name (without extension):','File Name',1);
+	if ~isempty(fileName)
+		fileName = fileName{1};
+		if ~strcmp(fileName,'')
+			fileName = [fileName,'_'];
+		end
+		[extIndex,clickedOkay] = listdlg('ListString',filetypes,'SelectionMode','single');
+		if clickedOkay
+			fileExt = filetypes{extIndex};
+			folder_name = uigetdir();
+			if ~isequal(folder_name,0)
+				for a=1:size(handles.imagesToExport,4)
+					imwrite(handles.imagesToExport(:,:,:,a), fullfile(folder_name,[fileName,num2str(a),fileExt(2:end)]));
+				end
+				msgbox('The images have been saved.','Success');
+			end
+		end
+	end
 end
-
-filename = get(handles.edit_filename, 'String');
-% filename = filename{1};
-
-filename = strcat(filename, '.', format);
-
-F = getframe(handles.axes_preview);
-imshow(F.cdata);
-imwrite(F.cdata, filename, format);
-%saveas(handles.axes_preview, filename, format);
-
 
 end
 
@@ -207,29 +211,6 @@ end
 
 end
 
-function edit_filename_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_filename (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit_filename as text
-%        str2double(get(hObject,'String')) returns contents of edit_filename as a double
-end
-
-% --- Executes during object creation, after setting all properties.
-function edit_filename_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_filename (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-end
-
 % --- Executes on selection change in menu_colormap.
 function menu_colormap_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_colormap (see GCBO)
@@ -258,84 +239,153 @@ end
 
 end
 
-function  handles = displayImage( handles )
+function handles = displayImage( handles )
 %SAVEIMAGE Summary of this function goes here
 %   Detailed explanation goes here
-
-maingui = handles.maingui;
-
-colorchoice = get(handles.menu_colormap, 'Value');
-
-switch colorchoice
-    case 1
-        color = 'gray';
-    case 2
-        color = 'jet';
-    case 3
-        color = 'hsv';
-    otherwise
-        color = 'gray';
+%
+colormapInt = get(handles.menu_colormap, 'Value');
+%
+pat_index = handles.maingui.pat_index;
+%
+exportArrayBW = [];
+%
+for a=1:(handles.lastSlice-handles.firstSlice+1)
+	onSlice = handles.firstSlice-1+a;
+	switch handles.imageType
+		case 'L'
+			numslices = size(handles.maingui.patient(pat_index).lungs, 3);
+			if onSlice>numslices || onSlice<=0
+				exportArrayBW(:,:,a) = zeros(size(handles.maingui.patient(pat_index).lungs(:,:,1)));
+			else
+				exportArrayBW(:,:,a) = handles.maingui.patient(pat_index).lungs(:,:,onSlice);
+			end
+		case 'B'
+			numslices = size(handles.maingui.patient(pat_index).body, 3);
+			if onSlice>numslices || onSlice<=0
+				exportArrayBW(:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
+			else
+				exportArrayBW(:,:,a) = handles.maingui.patient(pat_index).body(:,:,onSlice);
+			end
+		otherwise
+			disp 'Not Available!';
+	end
 end
-colormap(color);
+%
+exportArrayColor = [];
+%
+for a=1:(handles.lastSlice-handles.firstSlice+1)
+	if colormapInt==1
+		switch handles.imageType
+			case 'L'
+				colormapToApply = gray;
+			case 'B'
+				colormapToApply = gray;
+		end
+	elseif colormapInt==2
+		colormapToApply = gray;
+	elseif colormapInt==3
+		colormapToApply = jet;
+	elseif colormapInt==4
+		colormapToApply = hsv;
+	end
+	colormapToApply = colormapToApply(1:round(end*max(max(exportArrayBW(:,:,a)))/max(exportArrayBW(:))),:);
+	exportArrayColor(:,:,:,a) = applyColormapToImage(exportArrayBW(:,:,a), colormapToApply);
+end
+%
+combinedImage = [];
+%
+for a=1:(handles.lastSlice-handles.firstSlice+1)
+	%onSlice = handles.firstSlice-1+a;
+	width = size(exportArrayColor(:,:,:,a),1);
+	height = size(exportArrayColor(:,:,:,a),2);
+	y = floor((a-1)/handles.numColumns);
+	x = mod(a-1,handles.numColumns);
+	combinedImage((height*y+1):(height*(y+1)),(width*x+1):(width*(x+1)),:,:) = exportArrayColor(:,:,:,a);
+end
+%
+if get(handles.menu_multipleFiles, 'Value')==1
+	handles.imagesToExport = combinedImage;
+elseif get(handles.menu_multipleFiles, 'Value')==2
+	handles.imagesToExport = exportArrayColor;
+end
+%{
 
-slice = max(get(maingui.slider_slice, 'Value'), 1);
+if colormapInt==1
+	switch handles.imageType
+		case 'L'
+			exportArray(:,:,:,a) = applyColormapToImage(currentImage, gray);
+		case 'B'
+			exportArray(:,:,:,a) = applyColormapToImage(currentImage, gray);
+	end
+elseif colormapInt==2
+	exportArray(:,:,:,a) = applyColormapToImage(currentImage, gray);
+elseif colormapInt==3
+	exportArray(:,:,:,a) = applyColormapToImage(currentImage, jet);
+elseif colormapInt==4
+	exportArray(:,:,:,a) = applyColormapToImage(currentImage, hsv);
+end
 
-pat_index = maingui.pat_index;
-
+%}
+%
+imshow(combinedImage);
+%
+%{
 panel = handles.panel;
 if strcmp(panel, 'left')
-    imgtype = maingui.leftpanel;
+    imgtype = handles.maingui.leftpanel;
 else
-    imgtype = maingui.rightpanel;
+    imgtype = handles.maingui.rightpanel;
 end
-
+%}
+%
+%{
 switch imgtype
     case 'L'
-            numslices = size(maingui.patient(pat_index).lungs, 3);
+            numslices = size(handles.maingui.patient(pat_index).lungs, 3);
             tslice = min(slice, numslices);
-            if not(isempty(maingui.patient(pat_index).lungs))
-                imagesc(maingui.patient(pat_index).lungs(:, :, tslice));
+            if not(isempty(handles.maingui.patient(pat_index).lungs))
+                imagesc(handles.maingui.patient(pat_index).lungs(:, :, tslice));
             else
-%                 updateStatusBox(maingui, 'No lung images loaded', 0);
+%                 updateStatusBox(handles.maingui, 'No lung images loaded', 0);
                 imagesc(gray);
             end
     case 'LM'
-        numslices = size(maingui.patient(pat_index).lungmask, 3);
+        numslices = size(handles.maingui.patient(pat_index).lungmask, 3);
         tslice = min(slice, numslices);
-        if not(isempty(maingui.patient(pat_index).lungmask))
-            lungs = maingui.patient(pat_index).lungs(:, :, tslice);
-            lungmask = maingui.patient(pat_index).lungmask(:, :, tslice);
+        if not(isempty(handles.maingui.patient(pat_index).lungmask))
+            lungs = handles.maingui.patient(pat_index).lungs(:, :, tslice);
+            lungmask = handles.maingui.patient(pat_index).lungmask(:, :, tslice);
             imagesc(maskOverlay(lungs, lungmask));
-            %imagesc(maingui.patient(pat_index).lungmask(:, :, val));
+            %imagesc(handles.maingui.patient(pat_index).lungmask(:, :, val));
         else
-%             updateStatusBox(maingui, 'No lung mask found', 0);
+%             updateStatusBox(handles.maingui, 'No lung mask found', 0);
             imagesc(gray);
         end
     case 'B'
-        numslices = size(maingui.patient(pat_index).body, 3);
+        numslices = size(handles.maingui.patient(pat_index).body, 3);
         tslice = min(slice, numslices);
-        if not(isempty(maingui.patient(pat_index).body))
-            imagesc(maingui.patient(pat_index).body(:, :, tslice));
+        if not(isempty(handles.maingui.patient(pat_index).body))
+            imagesc(handles.maingui.patient(pat_index).body(:, :, tslice));
         else
-%             updateStatusBox(maingui, 'No body images loaded', 0);
+%             updateStatusBox(handles.maingui, 'No body images loaded', 0);
             imagesc(gray);
         end
     case 'BM'
-        numslices = size(maingui.patient(pat_index).bodymask, 3);
+        numslices = size(handles.maingui.patient(pat_index).bodymask, 3);
         tslice = min(slice, numslices);
-        if not(isempty(maingui.patient(pat_index).bodymask))
-%             imagesc(maingui.patient(pat_index).bodymask(:, :, val));
-            body = maingui.patient(pat_index).body(:, :, tslice);
-            bodymask = maingui.patient(pat_index).bodymask(:, :, tslice);
+        if not(isempty(handles.maingui.patient(pat_index).bodymask))
+%             imagesc(handles.maingui.patient(pat_index).bodymask(:, :, val));
+            body = handles.maingui.patient(pat_index).body(:, :, tslice);
+            bodymask = handles.maingui.patient(pat_index).bodymask(:, :, tslice);
             imagesc(maskOverlay(body, bodymask));
         else
-%             updateStatusBox(maingui, 'No body mask found', 0);
+%             updateStatusBox(handles.maingui, 'No body mask found', 0);
             imagesc(gray);
         end
     case 'C'
-        body = maingui.patient(pat_index).body(:, :, slice);
-        bodymask = maingui.patient(pat_index).bodymask(:, :, slice);
-        lungmask = maingui.patient(pat_index).lungmask(:, :, slice);
+        body = handles.maingui.patient(pat_index).body(:, :, slice);
+        bodymask = handles.maingui.patient(pat_index).bodymask(:, :, slice);
+        lungmask = handles.maingui.patient(pat_index).lungmask(:, :, slice);
         rgbImage = repmat(body,[1 1 3]);
         imshowpair(bodymask, lungmask);
         overlap = getimage(gca);
@@ -348,6 +398,132 @@ switch imgtype
 %         msg = sprintf('Unknown image state for left panel: %s', leftpanel);
 %         updateStatusBox(handes,msg, 1);
 end
-
+%}
 
 end
+
+
+% --- Executes on selection change in menu_multipleFiles.
+function menu_multipleFiles_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_multipleFiles (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns menu_multipleFiles contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from menu_multipleFiles
+end
+
+% --- Executes during object creation, after setting all properties.
+function menu_multipleFiles_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_multipleFiles (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+% --- Executes on selection change in menu_firstSlice.
+function menu_firstSlice_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_firstSlice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns menu_firstSlice contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from menu_firstSlice
+handles.firstSlice = get(hObject,'Value');
+handles = displayImage(handles);
+if handles.lastSlice>handles.firstSlice
+	set(handles.menu_multipleFiles, 'enable', 'on');
+else
+	set(handles.menu_multipleFiles, 'enable', 'off');
+end
+if handles.lastSlice<handles.firstSlice
+	set(handles.push_save, 'enable', 'off');
+else
+	set(handles.push_save, 'enable', 'on');
+end
+guidata(hObject, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function menu_firstSlice_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_firstSlice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+% --- Executes on selection change in menu_lastSlice.
+function menu_lastSlice_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_lastSlice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns menu_lastSlice contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from menu_lastSlice
+handles.lastSlice = get(hObject,'Value');
+handles = displayImage(handles);
+if handles.lastSlice>handles.firstSlice
+	set(handles.menu_multipleFiles, 'enable', 'on');
+else
+	set(handles.menu_multipleFiles, 'enable', 'off');
+end
+if handles.lastSlice<handles.firstSlice
+	set(handles.push_save, 'enable', 'off');
+else
+	set(handles.push_save, 'enable', 'on');
+end
+guidata(hObject, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function menu_lastSlice_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_lastSlice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+% --- Executes on selection change in text7.
+function menu_numOfColumns_Callback(hObject, eventdata, handles)
+% hObject    handle to text7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns text7 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from text7
+handles.numColumns = get(hObject,'Value');
+handles = displayImage(handles);
+guidata(hObject, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function menu_numOfColumns_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to text7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
