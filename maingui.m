@@ -654,7 +654,10 @@ if size(handles.patient,2)~=0
 		subplotAxes = tight_subplot(1,3,[.01 .03],[.1 .01],[.01 .01]);
 		%
 		axes(subplotAxes(1));
-		imshow(maskOverlay(patient.lungs(:,:,slice),patient.lungmask(:,:,slice)));
+		lungsDouble = patient.lungs(:,:,slice);
+		lungsDouble = double(lungsDouble);
+		lungsDouble = (lungsDouble-min(lungsDouble(:)))/(max(lungsDouble(:))-min(lungsDouble(:)));
+		imshow(maskOverlay(lungsDouble,patient.lungmask(:,:,slice)));
 		hold on;
 		for a=1:size(handles.panelOverlayData.coreg_landmarks_lungs_x)
 			plot(handles.panelOverlayData.coreg_landmarks_lungs_x, handles.panelOverlayData.coreg_landmarks_lungs_y, 'y+');
@@ -662,7 +665,10 @@ if size(handles.patient,2)~=0
 		hold off;
 		%
 		axes(subplotAxes(2));
-		imshow(maskOverlay(patient.body(:,:,slice),patient.bodymask(:,:,slice)));
+		bodyDouble = patient.body(:,:,slice);
+		bodyDouble = double(bodyDouble);
+		bodyDouble = (bodyDouble-min(bodyDouble(:)))/(max(bodyDouble(:))-min(bodyDouble(:)));
+		imshow(maskOverlay(bodyDouble,patient.bodymask(:,:,slice)));
 		hold on;
 		for a=1:size(handles.panelOverlayData.coreg_landmarks_body_x)
 			plot(handles.panelOverlayData.coreg_landmarks_body_x, handles.panelOverlayData.coreg_landmarks_body_y, 'y+');
@@ -860,7 +866,10 @@ if size(handles.patient,2)~=0
 		subplotAxes = tight_subplot(1,3,[.01 .03],[.1 .01],[.01 .01]);
 		%
 		axes(subplotAxes(1));
-		imshow(maskOverlay(patient.lungs(:,:,slice),patient.lungmask(:,:,slice)));
+		lungDouble = patient.lungs(:,:,slice);
+		lungDouble = double(lungDouble);
+		lungDouble = (lungDoublemin(lungDouble(:)))/(max(lungDouble(:))-min(lungDouble(:)));
+		imshow(maskOverlay(lungDouble,patient.lungmask(:,:,slice)));
 		hold on;
 		for a=1:size(handles.panelOverlayData.coreg_landmarks_lungs_x)
 			plot(handles.panelOverlayData.coreg_landmarks_lungs_x, handles.panelOverlayData.coreg_landmarks_lungs_y, 'y+');
@@ -868,7 +877,10 @@ if size(handles.patient,2)~=0
 		hold off;
 		%
 		axes(subplotAxes(2));
-		imshow(maskOverlay(patient.body(:,:,slice),patient.bodymask(:,:,slice)));
+		bodyDouble = patient.body(:,:,slice);
+		bodyDouble = double(bodyDouble);
+		bodyDouble = (bodyDouble-min(bodyDouble(:)))/(max(bodyDouble(:))-min(bodyDouble(:)));
+		imshow(maskOverlay(bodyDouble,patient.bodymask(:,:,slice)));
 		hold on;
 		for a=1:size(handles.panelOverlayData.coreg_landmarks_body_x)
 			plot(handles.panelOverlayData.coreg_landmarks_body_x, handles.panelOverlayData.coreg_landmarks_body_y, 'y+');
@@ -1530,7 +1542,9 @@ if continueAnyways
 
 	handles.overridepanelnocoreg = 0;
 	
-	imagesc(maskOverlay(bodyimg, bodymask));
+	bodyDouble = double(bodyimg);
+	bodyDouble = (bodyDouble-min(bodyDouble(:)))/(max(bodyDouble(:))-min(bodyDouble(:)));
+	imagesc(maskOverlay(bodyDouble, bodymask));
 end
 
 guidata(hObject, handles);
@@ -1584,8 +1598,7 @@ function export_left_Callback(hObject, eventdata, handles)
 % hObject    handle to export_left (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% saveImage(handles, 'left', 'tif') 
-
+% saveImage(handles, 'left', 'tif')
 exportImage(handles, 'left');
 
 % --------------------------------------------------------------------

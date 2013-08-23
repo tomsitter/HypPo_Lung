@@ -167,6 +167,8 @@ for a=1:size(panels,2)
 				if not(isempty(handles.patient(pat_index).lungmask))
 					% if there are lung mask images
 					lungs = handles.patient(pat_index).lungs(:, :, slice);
+					lungs = double(lungs);
+					lungs = (lungs-min(lungs(:)))/(max(lungs(:))-min(lungs(:)));
 					lungmask = handles.patient(pat_index).lungmask(:, :, slice);
 					currentSlice = maskOverlay(lungs, lungmask);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
@@ -283,6 +285,8 @@ for a=1:size(panels,2)
 						body = handles.patient(pat_index).body(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask(:, :, slice);
 					end
+					body = double(body);
+					body = (body-min(body(:)))/(max(body(:))-min(body(:)));
 					currentSlice = maskOverlay(body, bodymask);
 					%{
 					if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})

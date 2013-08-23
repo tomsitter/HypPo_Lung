@@ -247,40 +247,62 @@ colormapInt = get(handles.menu_colormap, 'Value');
 %
 pat_index = handles.maingui.pat_index;
 %
-exportArrayBW = [];
+exportArrayColor = [];
 %
 for a=1:(handles.lastSlice-handles.firstSlice+1)
 	onSlice = handles.firstSlice-1+a;
+	colormapToApply = [];
 	switch handles.imageType
 		case 'L'
 			numslices = size(handles.maingui.patient(pat_index).lungs, 3);
+			maxIntensity = max(handles.maingui.patient(pat_index).lungs(:));
 			if onSlice>numslices || onSlice<=0
-				exportArrayBW(:,:,a) = zeros(size(handles.maingui.patient(pat_index).lungs(:,:,1)));
+				exportImageBW = zeros(size(handles.maingui.patient(pat_index).lungs(:,:,1)));
 			else
-				exportArrayBW(:,:,a) = handles.maingui.patient(pat_index).lungs(:,:,onSlice);
+				exportImageBW = handles.maingui.patient(pat_index).lungs(:,:,onSlice);
+			end
+			colormapToApply = gray;
+		case 'LM'
+			set(handles.menu_colormap, 'enable', 'off');
+			numslices = size(handles.maingui.patient(pat_index).lungmask, 3);
+			maxIntensity = max(handles.maingui.patient(pat_index).lungs(:));
+			if onSlice>numslices || onSlice<=0
+				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).lungs(:,:,1)));
+			else
+				lungs = handles.maingui.patient(pat_index).lungs(:, :, onSlice);
+				lungs = double(lungs);
+				lungs = lungs/double(maxIntensity);
+				lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
+				exportArrayColor(:,:,:,a) = maskOverlay(lungs, lungmask);
 			end
 		case 'B'
 			numslices = size(handles.maingui.patient(pat_index).body, 3);
+			maxIntensity = max(handles.maingui.patient(pat_index).body(:));
 			if onSlice>numslices || onSlice<=0
-				exportArrayBW(:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
+				exportImageBW = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
 			else
-				exportArrayBW(:,:,a) = handles.maingui.patient(pat_index).body(:,:,onSlice);
+				exportImageBW = handles.maingui.patient(pat_index).body(:,:,onSlice);
+			end
+			colormapToApply = gray;
+		case 'BM'
+			set(handles.menu_colormap, 'enable', 'off');
+			numslices = size(handles.maingui.patient(pat_index).bodymask, 3);
+			maxIntensity = max(handles.maingui.patient(pat_index).body(:));
+			if onSlice>numslices || onSlice<=0
+				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
+			else
+				body = handles.maingui.patient(pat_index).body(:, :, onSlice);
+				body = double(body);
+				body = body/double(maxIntensity);
+				bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
+				exportArrayColor(:,:,:,a) = maskOverlay(body, bodymask);
 			end
 		otherwise
 			disp 'Not Available!';
 	end
-end
-%
-exportArrayColor = [];
-%
-for a=1:(handles.lastSlice-handles.firstSlice+1)
+	
 	if colormapInt==1
-		switch handles.imageType
-			case 'L'
-				colormapToApply = gray;
-			case 'B'
-				colormapToApply = gray;
-		end
+		% default
 	elseif colormapInt==2
 		colormapToApply = gray;
 	elseif colormapInt==3
@@ -288,8 +310,11 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 	elseif colormapInt==4
 		colormapToApply = hsv;
 	end
-	colormapToApply = colormapToApply(1:round(end*max(max(exportArrayBW(:,:,a)))/max(exportArrayBW(:))),:);
-	exportArrayColor(:,:,:,a) = applyColormapToImage(exportArrayBW(:,:,a), colormapToApply);
+	
+	if ~isempty(colormapToApply)
+		colormapToApply = colormapToApply(1:round(end*double(max(max(exportImageBW)))/double(maxIntensity)),:);
+		exportArrayColor(:,:,:,a) = applyColormapToImage(exportImageBW, colormapToApply);
+	end
 end
 %
 combinedImage = [];
@@ -308,24 +333,6 @@ if get(handles.menu_multipleFiles, 'Value')==1
 elseif get(handles.menu_multipleFiles, 'Value')==2
 	handles.imagesToExport = exportArrayColor;
 end
-%{
-
-if colormapInt==1
-	switch handles.imageType
-		case 'L'
-			exportArray(:,:,:,a) = applyColormapToImage(currentImage, gray);
-		case 'B'
-			exportArray(:,:,:,a) = applyColormapToImage(currentImage, gray);
-	end
-elseif colormapInt==2
-	exportArray(:,:,:,a) = applyColormapToImage(currentImage, gray);
-elseif colormapInt==3
-	exportArray(:,:,:,a) = applyColormapToImage(currentImage, jet);
-elseif colormapInt==4
-	exportArray(:,:,:,a) = applyColormapToImage(currentImage, hsv);
-end
-
-%}
 %
 imshow(combinedImage);
 %
