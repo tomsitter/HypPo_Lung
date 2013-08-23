@@ -85,7 +85,7 @@ sliderUpdatePntr.Value = 0;
 % update the image slices or not.
 %
 
-sliderStoppedMovingTimer = timer('StartDelay',10,'TimerFcn',{@updateImagePanelsSliderStop, hObject});
+sliderStoppedMovingTimer = timer('StartDelay',10,'TimerFcn',{@updateImagePanelsSliderStop, hObject, sliderUpdatePntr});
 
 jvscroll = findjobj(handles.slider_slice);
 jvscroll.MouseDraggedCallback = {@scrollCallback, hObject, sliderUpdatePntr, sliderStoppedMovingTimer};
@@ -137,9 +137,15 @@ if etime(clock,handles.sliderLastUpdated)>0.06%0.05
 	start(sliderStoppedMovingTimer);
 end
 
-function updateImagePanelsSliderStop(hObject, ~, mainFigure)
+function updateImagePanelsSliderStop(hObject, ~, mainFigure, sliderUpdatePntr)
 handles = guidata(mainFigure);
-handles = updateImagePanels(handles);
+if sliderUpdatePntr.Value
+	stop(hObject);
+	set(hObject,'StartDelay',0.1);
+	start(hObject);
+else
+	handles = updateImagePanels(handles);
+end
 guidata(mainFigure, handles);
 
 
