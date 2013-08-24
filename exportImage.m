@@ -297,6 +297,35 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 				bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
 				exportArrayColor(:,:,:,a) = maskOverlay(body, bodymask);
 			end
+		case 'C'
+			set(handles.menu_colormap, 'enable', 'off');
+			numslices = min(size(handles.maingui.patient(pat_index).lungmask, 3), size(handles.maingui.patient(pat_index).bodymask, 3));
+			maxIntensity = max(handles.maingui.patient(pat_index).body(:));
+			if onSlice>numslices || onSlice<=0
+				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
+			else
+				lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
+				if 0
+				%if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
+					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
+					bodymask = handles.maingui.patient(pat_index).bodymask_coreg(:, :, onSlice);
+				else
+					body = handles.maingui.patient(pat_index).body(:, :, onSlice);
+					bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
+				end
+				body = double(body);
+				body = body/double(maxIntensity);
+				exportArrayColor(:,:,:,a) = viewCoregistration(body, bodymask, imresize(lungmask, size(body)));
+			end
+		case 'H'
+			numslices = size(handles.maingui.patient(pat_index).hetero_images, 3);
+			maxIntensity = max(handles.maingui.patient(pat_index).hetero_images(:));
+			if onSlice>numslices || onSlice<=0
+				exportImageBW = zeros(size(handles.maingui.patient(pat_index).hetero_images(:,:,1)));
+			else
+				exportImageBW = handles.maingui.patient(pat_index).hetero_images(:,:,onSlice);
+			end
+			colormapToApply = heteroColormap();
 		otherwise
 			disp 'Not Available!';
 	end
@@ -309,10 +338,12 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 		colormapToApply = jet;
 	elseif colormapInt==4
 		colormapToApply = hsv;
+	elseif colormapInt==5
+		colormapToApply = heteroColormap();
 	end
 	
 	if ~isempty(colormapToApply)
-		colormapToApply = colormapToApply(1:round(end*double(max(max(exportImageBW)))/double(maxIntensity)),:);
+		colormapToApply = colormapToApply(1:round((size(colormapToApply,1)-1)*double(max(max(exportImageBW)))/double(maxIntensity))+1,:);
 		exportArrayColor(:,:,:,a) = applyColormapToImage(exportImageBW, colormapToApply);
 	end
 end

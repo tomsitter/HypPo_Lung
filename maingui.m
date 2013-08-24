@@ -676,6 +676,8 @@ if size(handles.patient,2)~=0
 		hold off;
 		%
 		axes(subplotAxes(3));
+		reg_body = double(reg_body);
+		reg_body = (reg_body-min(reg_body(:)))/(max(reg_body(:))-min(reg_body(:)));
 		imshow(viewCoregistration(reg_body, reg_bodymask, lungmask));
 		%
 		apply = questdlg('Do you want to apply this transform to all slices?');
@@ -888,6 +890,8 @@ if size(handles.patient,2)~=0
 		hold off;
 		%
 		axes(subplotAxes(3));
+		reg_body = double(reg_body);
+		reg_body = (reg_body-min(reg_body(:)))/(max(reg_body(:))-min(reg_body(:)));
 		imshow(viewCoregistration(reg_body, reg_bodymask, lungmask));
 		%
 		apply = questdlg('Do you want to apply this transform to this slice?');

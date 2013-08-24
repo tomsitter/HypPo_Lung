@@ -22,7 +22,7 @@ function numOfSlices = getNumOfSlices(patient, imageType)
 				numOfSlices = min(size(patient.lungmask, 3),size(patient.bodymask, 3));
 			end
 		case 'H'
-			if sum(patient.hetero_images(:))>0||isnan(sum(patient.hetero_images(:)))==0
+			if nansum(patient.hetero_images(:))>0
 				numOfSlices = size(patient.hetero_images, 3);
 			end
 		case 'O'

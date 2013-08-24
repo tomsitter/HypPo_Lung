@@ -354,6 +354,8 @@ for a=1:size(panels,2)
 						body = handles.patient(pat_index).body(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask(:, :, slice);
 					end
+					body = double(body);
+					body = (body-min(body(:)))/(max(body(:))-min(body(:)));
 					%{
 					if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
 						% if the panel is set to show coregistered images and the tform exists
@@ -402,21 +404,13 @@ for a=1:size(panels,2)
 				title('Coregistration');
 			end
 		case 'H'
-			bw = 0;
-			if bw==1
-				map = [1 1 1; 0.92 0.92 0.92; 0.84 0.84 0.84; 0.76 0.76 0.76; 0.68 0.68 0.68; 0.6 0.6 0.6; ...
-					   0.52 0.52 0.52; 0.44 0.44 0.44; 0.36 0.36 0.36; 0.28 0.28 0.28; 0.2 0.2 0.2; 0 0 0];
-			else
-				map = [0 0 0; 1/3 0 1/2; 0 0 1; 0 1/2 1; 0 1 1; 0 1 0; ...
-					   2/3 1 0; 1 1 0; 1 3/4 0; 1 1/2 0; 1 0 0; 0.85 0 0];
-			end
 			numslices = size(handles.patient(pat_index).hetero_images, 3);
 			if slice>numslices || slice<=0
 				imagesc(gray);
 			else
 				if not(isempty(handles.patient(pat_index).hetero_images(:, :, slice)));
 					currentSlice = handles.patient(pat_index).hetero_images(:, :, slice);
-					currentSlice = applyColormapToImage(currentSlice, map);
+					currentSlice = applyColormapToImage(currentSlice, heteroColormap());
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
 						%{
