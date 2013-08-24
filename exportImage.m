@@ -306,7 +306,7 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 			else
 				lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
 				if 0
-				%if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
+				%if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, onSlice)))
 					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
 					bodymask = handles.maingui.patient(pat_index).bodymask_coreg(:, :, onSlice);
 				else
@@ -326,6 +326,27 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 				exportImageBW = handles.maingui.patient(pat_index).hetero_images(:,:,onSlice);
 			end
 			colormapToApply = heteroColormap();
+		case 'O'
+			set(handles.menu_colormap, 'enable', 'off');
+			numslices = min(size(handles.maingui.patient(pat_index).lungs, 3), size(handles.maingui.patient(pat_index).body, 3));
+			maxIntensityLungs = max(handles.maingui.patient(pat_index).lungs(:));
+			maxIntensityBody = max(handles.maingui.patient(pat_index).body(:));
+			if onSlice>numslices || onSlice<=0
+				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
+			else
+				lungs = handles.maingui.patient(pat_index).lungs(:, :, onSlice);
+				if 0
+				%if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, onSlice)))
+					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
+				else
+					body = handles.maingui.patient(pat_index).body(:, :, onSlice);
+				end
+				body = double(body);
+				body = body/double(maxIntensityBody);
+				lungs = double(lungs);
+				lungs = lungs/double(maxIntensityLungs);
+				exportArrayColor(:,:,:,a) = viewOverlay(body, imresize(lungs, size(body)), handles.maingui.patient(pat_index).overlayColor);
+			end
 		otherwise
 			disp 'Not Available!';
 	end

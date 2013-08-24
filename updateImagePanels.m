@@ -469,6 +469,10 @@ for a=1:size(panels,2)
 							else
 								body = handles.patient(pat_index).body(:, :, slice);
 							end
+							body = double(body);
+							body = (body-min(body(:)))/(max(body(:))-min(body(:)));
+							lungs = double(lungs);
+							lungs = (lungs-min(lungs(:)))/(max(lungs(:))-min(lungs(:)));
 							%{
 							if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
 								% if the panel is set to show coregistered images and the tform exists
