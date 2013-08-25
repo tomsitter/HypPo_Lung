@@ -124,6 +124,7 @@ if get(handles.menu_multipleFiles, 'Value')==1
 	if ~isequal(filename,0) && ~isequal(pathname,0)
 		%imwrite(baseImg,fullfile(pathname,filename),'png');
 		imwrite(handles.imagesToExport, fullfile(pathname,filename));
+		msgbox('The images have been saved.','Success');
 	end
 elseif get(handles.menu_multipleFiles, 'Value')==2
 	fileName = inputdlg('File name (without extension):','File Name',1);
@@ -145,6 +146,25 @@ elseif get(handles.menu_multipleFiles, 'Value')==2
 		end
 	end
 end
+
+%{
+	print = 0;
+	
+	if print
+		[filename, pathname] = uiputfile('*.png','Save the PNG image');
+		if isequal(filename,0) || isequal(pathname,0)
+			% do nothing
+		else
+			imwrite(baseImg,fullfile(pathname,filename),'png');
+		end
+		[filename, pathname] = uiputfile('*.png','Save the PNG image');
+		if isequal(filename,0) || isequal(pathname,0)
+			% do nothing
+		else
+			imwrite(imgToRegister,fullfile(pathname,filename),'png');
+		end
+	end
+%}
 
 end
 
