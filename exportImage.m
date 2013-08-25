@@ -22,7 +22,7 @@ function varargout = exportImage(varargin)
 
 % Edit the above text to modify the response to help exportImage
 
-% Last Modified by GUIDE v2.5 22-Aug-2013 12:09:19
+% Last Modified by GUIDE v2.5 24-Aug-2013 14:06:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,6 +74,11 @@ set(handles.menu_firstSlice, 'Value', handles.firstSlice);
 set(handles.menu_lastSlice, 'Value', handles.lastSlice);
 set(handles.menu_numOfColumns, 'Value', 1);
 set(handles.menu_multipleFiles, 'enable', 'off');
+
+if sum(handles.maingui.patient(handles.maingui.pat_index).body_coreg(:))==0
+	set(handles.menu_showCoregImages, 'value', 2);
+	set(handles.menu_showCoregImages, 'enable', 'off');
+end
 
 % Choose default command line output for exportImage
 handles.output = hObject;
@@ -247,6 +252,8 @@ colormapInt = get(handles.menu_colormap, 'Value');
 %
 pat_index = handles.maingui.pat_index;
 %
+showCoregImages = get(handles.menu_showCoregImages, 'Value')==1;
+%
 exportArrayColor = [];
 %
 for a=1:(handles.lastSlice-handles.firstSlice+1)
@@ -281,7 +288,11 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 			if onSlice>numslices || onSlice<=0
 				exportImageBW = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
 			else
-				exportImageBW = handles.maingui.patient(pat_index).body(:,:,onSlice);
+				if showCoregImages
+					exportImageBW = handles.maingui.patient(pat_index).body_coreg(:,:,onSlice);
+				else
+					exportImageBW = handles.maingui.patient(pat_index).body(:,:,onSlice);
+				end
 			end
 			colormapToApply = gray;
 		case 'BM'
@@ -291,10 +302,15 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 			if onSlice>numslices || onSlice<=0
 				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
 			else
-				body = handles.maingui.patient(pat_index).body(:, :, onSlice);
+				if showCoregImages
+					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
+					bodymask = handles.maingui.patient(pat_index).bodymask_coreg(:, :, onSlice);
+				else
+					body = handles.maingui.patient(pat_index).body(:, :, onSlice);
+					bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
+				end
 				body = double(body);
 				body = body/double(maxIntensity);
-				bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
 				exportArrayColor(:,:,:,a) = maskOverlay(body, bodymask);
 			end
 		case 'C'
@@ -304,11 +320,14 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 			if onSlice>numslices || onSlice<=0
 				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
 			else
-				lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
-				if 0
-				%if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, onSlice)))
+				if showCoregImages
 					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
 					bodymask = handles.maingui.patient(pat_index).bodymask_coreg(:, :, onSlice);
+					if sum(body(:))
+						lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
+					else
+						lungmask = zeros(size(handles.maingui.patient(pat_index).lungmask(:, :, onSlice)));
+					end
 				else
 					body = handles.maingui.patient(pat_index).body(:, :, onSlice);
 					bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
@@ -334,12 +353,16 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 			if onSlice>numslices || onSlice<=0
 				exportArrayColor(:,:,:,a) = zeros(size(handles.maingui.patient(pat_index).body(:,:,1)));
 			else
-				lungs = handles.maingui.patient(pat_index).lungs(:, :, onSlice);
-				if 0
-				%if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, onSlice)))
+				if showCoregImages
 					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
+					if sum(body(:))
+						lungs = handles.maingui.patient(pat_index).lungs(:, :, onSlice);
+					else
+						lungs = zeros(size(handles.maingui.patient(pat_index).lungs(:, :, onSlice)));
+					end
 				else
 					body = handles.maingui.patient(pat_index).body(:, :, onSlice);
+					lungs = handles.maingui.patient(pat_index).lungs(:, :, onSlice);
 				end
 				body = double(body);
 				body = body/double(maxIntensityBody);
@@ -585,4 +608,27 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 end
 
+% --- Executes on selection change in menu_showCoregImages.
+function menu_showCoregImages_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_showCoregImages (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+% Hints: contents = cellstr(get(hObject,'String')) returns menu_showCoregImages contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from menu_showCoregImages
+handles = displayImage(handles);
+guidata(hObject, handles);
+end
+
+% --- Executes during object creation, after setting all properties.
+function menu_showCoregImages_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_showCoregImages (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
