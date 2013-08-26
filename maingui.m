@@ -506,25 +506,38 @@ if size(handles.patient,2)~=0
 		continueAnyways = displayWarningsAboutLungMasks(handles.patient(index));
 		%
 		if continueAnyways
-			handles.patient(index).VLV = [];
-			handles.patient(index).aVLV = [];
-			wb = waitbar(0, {'Segmentation in Progress.',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','setappdata(gcbf,''canceling'',1);');
+			wasCanceled = 0;
+			tempThreshold = handles.patient(index).threshold;
+			tempMeanNoise = handles.patient(index).mean_noise;
+			tempLungMask = handles.patient(index).lungmask;
+			wb = waitbar(0, {'Segmentation in Progress.',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','delete(gcbf);');
 			numImages = size(curImages, 3);
 			for slice = 1:numImages
-				if ~isempty(getappdata(wb,'canceling'))
+				if ~ishandle(wb)
+					wasCanceled = 1;
 					break;
 				end
 				roi = curImages(y:y+h, x:x+w, slice);
 				[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
-				handles.patient(index).threshold{slice} = threshold;
-				handles.patient(index).mean_noise{slice} = mean_noise;
-				handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+				tempThreshold{slice} = threshold;
+				tempMeanNoise{slice} = mean_noise;
+				tempLungMask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
 				waitbar(slice/numImages, wb);
 			end
-			delete(wb);
-			handles.leftpanel='L';
-			handles.rightpanel='LM';
-			updateStatusBox(handles, 'Images thresholded', 0);
+			if ishandle(wb)
+				delete(wb);
+			end
+			if ~wasCanceled
+				handles.patient(index).VLV = [];
+				handles.patient(index).aVLV = [];
+				handles.patient(index).threshold = tempThreshold;
+				handles.patient(index).mean_noise = tempMeanNoise;
+				handles.patient(index).lungmask = tempLungMask;
+				%
+				handles.leftpanel='L';
+				handles.rightpanel='LM';
+				updateStatusBox(handles, 'Images thresholded', 0);
+			end
 		end
 
 		%set(handles.analyze_threshold, 'Enable', 'on');
@@ -1319,39 +1332,44 @@ function analyze_segbody_Callback(hObject, eventdata, handles)
 handles = updateImagePanels(handles);
 %
 index = handles.pat_index;
-patient = handles.patient(index);
-body_images = patient.body;
+body_images = handles.patient(index).body;
 
 continueAnyways = displayWarningsAboutBodyMasks(handles.patient(index));
 %
 if continueAnyways
-	handles.patient(index).TLV = [];
-	handles.patient(index).aTLV = [];
-	handles.patient(index).TLV_coreg = [];
-	handles.patient(index).aTLV_coreg = [];
+	wasCanceled = 0;
+	
+	tempBodyMask = handles.patient(index).bodymask;
 	
 	updateStatusBox(handles, 'Preparing to segment body', 1);
 	updateStatusBox(handles, 'Attempting to segment automatically', 0);
-
+	
 	% handles.state = 'def_autobodyseg';
-
-	axes(handles.axes2);
+	
 	numImages = size(body_images, 3);
-	wb = waitbar(0, {'Segmenting Lung Cavities',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','setappdata(gcbf,''canceling'',1);');
+	wb = waitbar(0, {'Segmenting Lung Cavities',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','delete(gcbf);');
 	for slice = 1:numImages
-		if ~isempty(getappdata(wb,'canceling'))
+		if ~ishandle(wb)
+			wasCanceled = 1;
 			break;
 		end
-		waitbar(slice/numImages, wb);
-		patient.bodymask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
+		tempBodyMask(:,:,slice) = regiongrow_mask(body_images(:,:,slice));
 		% NOTE: bodymask is still a double, even though it was set to uint8 in regiongrow_mask
+		waitbar(slice/numImages, wb);
 	end
-	delete(wb);
-
-	handles.patient(index) = patient;
-	handles.leftpanel = 'B';
-	handles.rightpanel = 'BM';
-
+	if ishandle(wb)
+		delete(wb);
+	end
+	if ~wasCanceled
+		handles.patient(index).TLV = [];
+		handles.patient(index).aTLV = [];
+		handles.patient(index).TLV_coreg = [];
+		handles.patient(index).aTLV_coreg = [];
+		handles.patient(index).bodymask = tempBodyMask;
+		handles.leftpanel = 'B';
+		handles.rightpanel = 'BM';
+	end
+	
 	handles = updateSliceSlider(handles);
 	updateMenuOptions(handles);
 end
@@ -1637,48 +1655,49 @@ updateStatusBox(handles, 'Beginning heterogeneity calculation', 1);
 index = handles.pat_index;
 slice = get(handles.slider_slice, 'Value');
 
-patient = handles.patient(index);
-lungs = patient.lungs;
-lungmask = patient.lungmask;
+lungs = handles.patient(index).lungs;
+lungmask = handles.patient(index).lungmask;
 
-if length(patient.mean_noise{slice}) < slice
+if length(handles.patient(index).mean_noise{slice}) < slice
 %     threshold = 0;
 	noise = 0;
 else
-%     threshold = patient.threshold{slice};
-	noise = patient.mean_noise{slice};
+%     threshold = handles.patient(index).threshold{slice};
+	noise = handles.patient(index).mean_noise{slice};
 end
 
 if not(noise)
 	noise = 0;
 end
 
-hetero_images = zeros(size(patient.hetero_images));
-% hetero_score = zeros(size(patient.lungs, 3));
+wasCanceled = 0;
+hetero_images = zeros(size(handles.patient(index).hetero_images));
+% hetero_score = zeros(size(handles.patient(index).lungs, 3));
 
-wb = waitbar(0, {'Calculating Heterogeneity...',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','setappdata(gcbf,''canceling'',1);');
+wb = waitbar(0, {'Calculating Heterogeneity...',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','delete(gcbf);');
 for i = 1:size(lungs, 3)
-	if ~isempty(getappdata(wb,'canceling'))
+	if ~ishandle(wb)
+		wasCanceled = 1;
 		break;
 	end
 	waitbar(i/size(lungs, 3), wb);
-	hetero = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
-
-	hetero_images(:,:,i) = hetero;
-
-%     hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
+	hetero_images(:,:,i) = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
+	%hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
 end
-delete(wb);
+if ishandle(wb)
+	delete(wb);
+end
+if ~wasCanceled
+	%Normalization needs improvement if it is to be compared across patients
+	% hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
+	handles.patient(index).hetero_images = hetero_images;
+	% handles.patient(index).hetero_score = hetero_score;
+	handles.leftpanel = 'H';
+	updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
+end
 
-%Normalization needs improvement if it is to be compared across patients
-% hetero_images = hetero_images ./ max(hetero_images(:)) * 255;
-patient.hetero_images = hetero_images;
-% patient.hetero_score = hetero_score;
-handles.patient(index) = patient;
-
-updateStatusBox(handles, 'Finished heterogeneity calculation', 1);
-set(handles.viewleft_hetero, 'Enable', 'on');
-set(handles.viewright_hetero, 'Enable', 'on');
+updateMenuOptions(handles);
+handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
