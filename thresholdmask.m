@@ -45,6 +45,7 @@ if not(isreal(norm_signal))
     return;
 end
 
+%{
 % [center,member] = fcm(norm_signal,5);
 s = warning('off','stats:kmeans:EmptyCluster');
 [c, m] = kmeans(norm_segmented(:), 5, 'EmptyAction', 'singleton', 'Replicates', 5);
@@ -60,6 +61,16 @@ first_mask = zeros(size(image(:)));
 for i = 1:length(m)
     first_mask(c == m_ind(i)) = i;
 end
+%}
+avgSize = 2;
+filter = fspecial('average',avgSize);
+norm_segmented_averaged = filter2(filter,norm_segmented);
+norm_segmented_averaged = norm_segmented_averaged(1:(2*avgSize+1):end, 1:(2*avgSize+1):end);
+breaks = getJenksBreaks(norm_segmented_averaged(:), 5);
+breaks = breaks(2:end-1);
+c = clusterDataByBreaks(norm_segmented(:), breaks);
+
+first_mask = c;
 
 first_mask = reshape(first_mask, size(image));
 
@@ -71,10 +82,19 @@ cluster1 = first_mask == 1;
 
 second_signal = norm_signal(cluster1);
 
+%{
 s = warning('off','stats:kmeans:EmptyCluster');
 [c2, m2] = kmeans(second_signal, 4, 'EmptyAction', 'singleton', 'Replicates', 5);
 warning(s);
 %restore state
+%}
+avgSize = 7;
+filter = fspecial('average',avgSize);
+second_signal_averaged = filter2(filter,second_signal);
+second_signal_averaged = second_signal_averaged(1:(2*avgSize+1):end, 1:(2*avgSize+1):end);
+breaks = getJenksBreaks(second_signal_averaged(:), 5);
+breaks = breaks(2:end-1);
+c2 = clusterDataByBreaks(second_signal(:), breaks);
 
 % tmask = reshape(c2, size(image));
 
