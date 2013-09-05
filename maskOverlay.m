@@ -20,12 +20,18 @@ end
 %contour(mask,'g','LineWidth',1);
 %hold off
 
+%{
 filterOutline = fspecial('laplacian');
 maskOutline = filter2(filterOutline,mask);
 maskOutline = (maskOutline-min(maskOutline(:)))/(max(maskOutline(:))-min(maskOutline(:)));
 imgAverage = mean(maskOutline(:));
 maskOutline(maskOutline<imgAverage-imgAverage*0.3|maskOutline>imgAverage+imgAverage*0.3) = 1;
 maskOutline(maskOutline>=imgAverage-imgAverage*0.3&maskOutline<=imgAverage+imgAverage*0.3) = 0;
+%}
+
+N = 1;
+expandedMask = imdilate(mask, ones(2*N + 1, 2*N + 1));
+maskOutline = expandedMask-mask;
 
 outputImage = repmat(image,[1 1 3]);
 %outputImage = double(outputImage);
