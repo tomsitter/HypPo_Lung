@@ -343,14 +343,14 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 				if showCoregImages
 					body = handles.maingui.patient(pat_index).body_coreg(:, :, onSlice);
 					bodymask = handles.maingui.patient(pat_index).bodymask_coreg(:, :, onSlice);
-					if sum(body(:))
-						lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
-					else
-						lungmask = zeros(size(handles.maingui.patient(pat_index).lungmask(:, :, onSlice)));
-					end
 				else
 					body = handles.maingui.patient(pat_index).body(:, :, onSlice);
 					bodymask = handles.maingui.patient(pat_index).bodymask(:, :, onSlice);
+				end
+				if sum(body(:))
+					lungmask = handles.maingui.patient(pat_index).lungmask(:, :, onSlice);
+				else
+					lungmask = zeros(size(handles.maingui.patient(pat_index).lungmask(:, :, onSlice)));
 				end
 				body = double(body);
 				body = body/double(maxIntensity);
