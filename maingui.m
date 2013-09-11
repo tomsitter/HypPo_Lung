@@ -1532,10 +1532,10 @@ slice = round(get(handles.slider_slice, 'Value'));
 continueAnyways = displayWarningsAboutBodyMasks(handles.patient(pat_index));
 %
 if continueAnyways
-	handles.patient(index).TLV = [];
-	handles.patient(index).aTLV = [];
-	handles.patient(index).TLV_coreg = [];
-	handles.patient(index).aTLV_coreg = [];
+	handles.patient(pat_index).TLV = [];
+	handles.patient(pat_index).aTLV = [];
+	handles.patient(pat_index).TLV_coreg = [];
+	handles.patient(pat_index).aTLV_coreg = [];
 	
 	bodyimg = patient(pat_index).body(:,:,slice);
 	bodymask = patient(pat_index).bodymask(:,:,slice);
