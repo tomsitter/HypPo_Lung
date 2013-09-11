@@ -117,6 +117,8 @@ function push_save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = displayImage(handles);
+
 filetypes = {'*.png';'*.jpeg';'*.tiff';'*.bmp';'*.gif';'*.jpeg2000';'*.hdf';'*.pbm';'*.pcx';'*.pgm';'*.pnm';'*.ppm';'*.rasS';'*.xwd'};
 
 if get(handles.menu_multipleFiles, 'Value')==1
@@ -428,9 +430,11 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 	combinedImage((height*y+1):(height*(y+1)),(width*x+1):(width*(x+1)),:,:) = exportArrayColor(:,:,:,a);
 end
 %
+get(handles.menu_multipleFiles, 'Value')
 if get(handles.menu_multipleFiles, 'Value')==1
 	handles.imagesToExport = combinedImage;
 elseif get(handles.menu_multipleFiles, 'Value')==2
+	disp images;
 	handles.imagesToExport = exportArrayColor;
 end
 %
