@@ -122,14 +122,16 @@ handles = displayImage(handles);
 filetypes = {'*.png';'*.jpeg';'*.tiff';'*.bmp';'*.gif';'*.jpeg2000';'*.hdf';'*.pbm';'*.pcx';'*.pgm';'*.pnm';'*.ppm';'*.rasS';'*.xwd'};
 
 if get(handles.menu_multipleFiles, 'Value')==1
-	[filename, pathname] = uiputfile(filetypes, 'Image Save Location');
+	[filename, pathname] = uiputfile(filetypes, 'Image Save Location', handles.maingui.patient(handles.maingui.pat_index).id);
 	if ~isequal(filename,0) && ~isequal(pathname,0)
 		%imwrite(baseImg,fullfile(pathname,filename),'png');
 		imwrite(handles.imagesToExport, fullfile(pathname,filename));
 		msgbox('The images have been saved.','Success');
 	end
 elseif get(handles.menu_multipleFiles, 'Value')==2
-	fileName = inputdlg('File name (without extension):','File Name',1);
+	defaultInputValues = cell(1);
+	defaultInputValues{1} = handles.maingui.patient(handles.maingui.pat_index).id;
+	fileName = inputdlg('Choose a file name (without extension):','File Name',1,defaultInputValues);
 	if ~isempty(fileName)
 		fileName = fileName{1};
 		if ~strcmp(fileName,'')
@@ -430,11 +432,9 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 	combinedImage((height*y+1):(height*(y+1)),(width*x+1):(width*(x+1)),:,:) = exportArrayColor(:,:,:,a);
 end
 %
-get(handles.menu_multipleFiles, 'Value')
 if get(handles.menu_multipleFiles, 'Value')==1
 	handles.imagesToExport = combinedImage;
 elseif get(handles.menu_multipleFiles, 'Value')==2
-	disp images;
 	handles.imagesToExport = exportArrayColor;
 end
 %
