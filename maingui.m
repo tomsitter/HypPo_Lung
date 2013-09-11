@@ -2495,6 +2495,27 @@ handles = updateImagePanels(handles);
 guidata(hObject, handles);
 
 
+% --------------------------------------------------------------------
+function view_lungparams_Callback(hObject, eventdata, handles)
+% hObject    handle to view_lungparams (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+
+if length(handles.patient) < index
+    updateStatusBox(handles, 'Cannot find patient, are you sure one is loaded?', 1);
+    return;
+end
+
+patient = handles.patient(index);
+params = patient.lung_function;
+
+params = LungParameters(params);
+
+patient.lung_function = params;
+handles.patient(index) = patient;
+
+guidata(hObject, handles);
 
 
 
