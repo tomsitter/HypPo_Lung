@@ -345,7 +345,6 @@ for a=1:size(panels,2)
 					imagesc(gray);
 				else
 					% if there are body mask and lung mask images
-					lungmask = handles.patient(pat_index).lungmask(:, :, slice);
 					if panels{a}{3}&&sum(sum(handles.patient(pat_index).body_coreg(:, :, slice)))
 						body = handles.patient(pat_index).body_coreg(:, :, slice);
 						bodymask = handles.patient(pat_index).bodymask_coreg(:, :, slice);
@@ -356,6 +355,9 @@ for a=1:size(panels,2)
 					end
 					body = double(body);
 					body = (body-min(body(:)))/(max(body(:))-min(body(:)));
+					lungmask = handles.patient(pat_index).lungmask(:, :, slice);
+					lungmask = imresize(lungmask, size(body));
+					lungmask = lungmask>=0.5;
 					%{
 					if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
 						% if the panel is set to show coregistered images and the tform exists
@@ -365,7 +367,7 @@ for a=1:size(panels,2)
 						bodymask = imtransform(bodymask, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
 					end
 					%}
-					currentSlice = viewCoregistration(body, bodymask, imresize(lungmask, size(body)));
+					currentSlice = viewCoregistration(body, bodymask, lungmask);
 					if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 						% if the data has changed
 						%{
@@ -472,6 +474,7 @@ for a=1:size(panels,2)
 							body = double(body);
 							body = (body-min(body(:)))/(max(body(:))-min(body(:)));
 							lungs = double(lungs);
+							lungs = imresize(lungs, size(body));
 							lungs = (lungs-min(lungs(:)))/(max(lungs(:))-min(lungs(:)));
 							%{
 							if panels{a}{3}&&slice<=size(patient(pat_index).tform,2)&&~isempty(patient(pat_index).tform{slice})
@@ -481,7 +484,7 @@ for a=1:size(panels,2)
 								body = imtransform(body, patient(pat_index).tform{slice}, 'XYScale', 1, 'XData',[1 width],'YData',[1 height]);
 							end
 							%}
-							currentSlice = viewOverlay(body, imresize(lungs, size(body)), handles.patient(pat_index).overlayColor);
+							currentSlice = viewOverlay(body, lungs, handles.patient(pat_index).overlayColor);
 							if ~isequal(currentSlice,get(imhandles(panels{a}{2}),'CData'))
 								% if the data has changed
 								%{

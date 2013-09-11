@@ -354,7 +354,9 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 				end
 				body = double(body);
 				body = body/double(maxIntensity);
-				exportArrayColor(:,:,:,a) = viewCoregistration(body, bodymask, imresize(lungmask, size(body)));
+				lungmask = imresize(lungmask, size(body));
+				lungmask = lungmask>=0.5;
+				exportArrayColor(:,:,:,a) = viewCoregistration(body, bodymask, lungmask);
 			end
 		case 'H'
 			numslices = size(handles.maingui.patient(pat_index).hetero_images, 3);
@@ -388,7 +390,10 @@ for a=1:(handles.lastSlice-handles.firstSlice+1)
 				body = body/double(maxIntensityBody);
 				lungs = double(lungs);
 				lungs = lungs/double(maxIntensityLungs);
-				exportArrayColor(:,:,:,a) = viewOverlay(body, imresize(lungs, size(body)), handles.maingui.patient(pat_index).overlayColor);
+				lungs = imresize(lungs, size(body));
+				lungs(lungs>1) = 1;
+				lungs(lungs<0) = 0;
+				exportArrayColor(:,:,:,a) = viewOverlay(body, lungs, handles.maingui.patient(pat_index).overlayColor);
 			end
 		otherwise
 			disp 'Not Available!';
