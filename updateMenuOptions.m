@@ -33,9 +33,11 @@ end
 if p
 	set(handles.file_savepatient, 'Enable', 'on');
 	set(handles.file_changepatient, 'Enable', 'on');
+	set(handles.view_lungparams, 'Enable', 'on');
 else
 	set(handles.file_savepatient, 'Enable', 'off');
 	set(handles.file_changepatient, 'Enable', 'off');
+	set(handles.view_lungparams, 'Enable', 'off');
 end
 
 if l
