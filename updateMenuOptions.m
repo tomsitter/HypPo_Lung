@@ -1,6 +1,8 @@
 function updateMenuOptions(handles)
 
-if size(handles.patient,2)~=0
+p = size(handles.patient,2)~=0;
+
+if p
 	index = handles.pat_index;
 	patient = handles.patient(index);
 	l = sum(patient.lungs(:)) > 0;
@@ -14,6 +16,26 @@ else
 	lm = 0;
 	bm = 0;
 	h = 0;
+end
+
+if ~strcmp(handles.leftpanel,'')
+	set(handles.export_left, 'Enable', 'on');
+else
+	set(handles.export_left, 'Enable', 'off');
+end
+
+if ~strcmp(handles.rightpanel,'')
+	set(handles.export_right, 'Enable', 'on');
+else
+	set(handles.export_right, 'Enable', 'off');
+end
+
+if p
+	set(handles.file_savepatient, 'Enable', 'on');
+	set(handles.file_changepatient, 'Enable', 'on');
+else
+	set(handles.file_savepatient, 'Enable', 'off');
+	set(handles.file_changepatient, 'Enable', 'off');
 end
 
 if l

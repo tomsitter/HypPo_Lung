@@ -983,6 +983,7 @@ function viewright_lungs_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'L';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -992,6 +993,7 @@ function viewright_lungmask_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'LM';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1001,6 +1003,7 @@ function viewright_body_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'B';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1010,6 +1013,7 @@ function viewright_bodymask_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'BM';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1019,6 +1023,7 @@ function viewleft_lungs_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'L';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1028,6 +1033,7 @@ function viewleft_lungmask_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'LM';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1037,6 +1043,7 @@ function viewleft_body_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'B';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1046,6 +1053,7 @@ function viewleft_bodymask_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'BM';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 
@@ -1444,6 +1452,7 @@ function viewright_coreg_Callback(hObject, eventdata, handles)
 handles.rightpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1454,6 +1463,7 @@ function viewleft_coreg_Callback(hObject, eventdata, handles)
 handles.leftpanel = 'C';
 updateStatusBox(handles, 'Lungs: Purple, Body: Green', 1);
 handles = updateImagePanels(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 
@@ -1465,6 +1475,7 @@ function viewright_hetero_Callback(hObject, eventdata, handles)
 handles.rightpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 % --------------------------------------------------------------------
@@ -1475,6 +1486,7 @@ function viewleft_hetero_Callback(hObject, eventdata, handles)
 handles.leftpanel = 'H';
 % updateStatusBox(handles, 'Lungs: Purple Body: Green', 1);
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 
@@ -2079,6 +2091,7 @@ function viewright_overlay_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.rightpanel = 'O';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 
@@ -2089,6 +2102,7 @@ function viewleft_overlay_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.leftpanel = 'O';
 handles = updateSliceSlider(handles);
+updateMenuOptions(handles);
 guidata(hObject, handles);
 
 
