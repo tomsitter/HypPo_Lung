@@ -885,7 +885,7 @@ if size(handles.patient,2)~=0
 		axes(subplotAxes(1));
 		lungDouble = patient.lungs(:,:,slice);
 		lungDouble = double(lungDouble);
-		lungDouble = (lungDoublemin(lungDouble(:)))/(max(lungDouble(:))-min(lungDouble(:)));
+		lungDouble = (lungDouble-min(lungDouble(:)))/(max(lungDouble(:))-min(lungDouble(:)));
 		imshow(maskOverlay(lungDouble,patient.lungmask(:,:,slice)));
 		hold on;
 		for a=1:size(handles.panelOverlayData.coreg_landmarks_lungs_x)
