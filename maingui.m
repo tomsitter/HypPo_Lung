@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 13-Aug-2013 21:40:40
+% Last Modified by GUIDE v2.5 25-Sep-2013 14:50:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -1186,6 +1186,32 @@ if continueAnyways
 	handles.patient(index).VLV = [];
 	handles.patient(index).aVLV = [];
 	handles.patient(index).lungmask(:,:,slice) = zeros(size(handles.patient(index).lungmask(:,:,slice)));
+end
+
+handles = updateImagePanels(handles);
+
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function manual_bremoveall_Callback(hObject, eventdata, handles)
+% hObject    handle to manual_bremoveall (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+index = handles.pat_index;
+slice = round(get(handles.slider_slice, 'Value'));
+
+if slice == 0
+	%This must be a blank patient.
+	updateStatusBox(handles, 'No body images found.', 1);
+	return;
+end
+
+continueAnyways = displayWarningsAboutBodyMasks(handles.patient(index));
+%
+if continueAnyways
+	handles.patient(index).TLV = [];
+	handles.patient(index).aTLV = [];
+	handles.patient(index).bodymask(:,:,slice) = zeros(size(handles.patient(index).bodymask(:,:,slice)));
 end
 
 handles = updateImagePanels(handles);
@@ -2530,6 +2556,7 @@ patient.lung_function = params;
 handles.patient(index) = patient;
 
 guidata(hObject, handles);
+
 
 
 

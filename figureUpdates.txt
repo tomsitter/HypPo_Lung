@@ -163,5 +163,9 @@
 * Moved "Segment Lungs" and "Segment Body" menu buttons into the label "Analyze>Segment"
 * Renamed "Segment Lungs" menu button to "Lungs"
 * Renamed "Segment Body" menu button to "Body"
+
+* Created "Remove All" menu button under "Analyze>Manual Correction>Body Mask"
+	* Changed tag to "manual_bremoveall"
+	* Changed callback to default
 	
 	
