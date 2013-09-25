@@ -161,6 +161,7 @@
 	* Changed callback to default
 	
 * Moved "Segment Lungs" and "Segment Body" menu buttons into the label "Analyze>Segment"
-	
+* Renamed "Segment Lungs" menu button to "Lungs"
+* Renamed "Segment Body" menu button to "Body"
 	
 	
