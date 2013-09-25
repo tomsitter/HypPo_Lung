@@ -125,8 +125,12 @@ if get(handles.menu_multipleFiles, 'Value')==1
 	[filename, pathname] = uiputfile(filetypes, 'Image Save Location', handles.maingui.patient(handles.maingui.pat_index).id);
 	if ~isequal(filename,0) && ~isequal(pathname,0)
 		%imwrite(baseImg,fullfile(pathname,filename),'png');
-		imwrite(handles.imagesToExport, fullfile(pathname,filename));
-		msgbox('The images have been saved.','Success');
+		try
+			imwrite(handles.imagesToExport, fullfile(pathname,filename));
+			msgbox('The images have been saved.','Success');
+		catch e
+			msgbox('There was an error saving the images (not even going to guess why...).','Error','error');
+		end
 	end
 elseif get(handles.menu_multipleFiles, 'Value')==2
 	defaultInputValues = cell(1);
@@ -142,10 +146,19 @@ elseif get(handles.menu_multipleFiles, 'Value')==2
 			fileExt = filetypes{extIndex};
 			folder_name = uigetdir();
 			if ~isequal(folder_name,0)
+				noError = 1;
 				for a=1:size(handles.imagesToExport,4)
-					imwrite(handles.imagesToExport(:,:,:,a), fullfile(folder_name,[fileName,num2str(a),fileExt(2:end)]));
+					try
+						imwrite(handles.imagesToExport(:,:,:,a), fullfile(folder_name,[fileName,num2str(a),fileExt(2:end)]));
+					catch e
+						noError = 0;
+					end
 				end
-				msgbox('The images have been saved.','Success');
+				if noError
+					msgbox('The images have been saved.','Success');
+				else
+					msgbox('There was an error saving the image (not even going to guess why...).','Error','error');
+				end
 			end
 		end
 	end

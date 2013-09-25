@@ -160,7 +160,7 @@
 	* Changed tag to "analyze_coreg_invert"
 	* Changed callback to default
 	
-	
+* Moved "Segment Lungs" and "Segment Body" menu buttons into the label "Analyze>Segment"
 	
 	
 	
