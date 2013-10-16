@@ -144,7 +144,7 @@ for n=1:n_slices
 end
 hold off;
 % output heterogeneity values for easier input into Excel for plotting
-fid=fopen('hetscore.txt4','w');
+fid=fopen('hetscore.txt','w');
 
 fprintf(fid,'slice#\tpreMch\tpostMch\tpostDI\n');
 for n=1:n_slices

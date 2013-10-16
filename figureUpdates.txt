@@ -168,4 +168,10 @@
 	* Changed tag to "manual_bremoveall"
 	* Changed callback to default
 	
-	
+* Created "Pink" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_pink"
+	* Changed callback to default
+
+
+
+

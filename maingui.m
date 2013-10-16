@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 25-Sep-2013 14:50:21
+% Last Modified by GUIDE v2.5 16-Oct-2013 11:27:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -2452,6 +2452,21 @@ guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
+function view_overlaycolor_pink_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_pink (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+handles.patient(pat_index).overlayColor = [1 0 1];
+%
+handles = updateImagePanels(handles);
+%
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
 function analyze_coreg_expand_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_coreg_expand (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -2556,6 +2571,8 @@ patient.lung_function = params;
 handles.patient(index) = patient;
 
 guidata(hObject, handles);
+
+
 
 
 
