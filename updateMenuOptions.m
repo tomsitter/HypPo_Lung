@@ -42,6 +42,7 @@ end
 
 if l
     set(handles.analyze_seglungs, 'Enable', 'on');
+    set(handles.analyze_seglungs_contour, 'Enable', 'on');
 	set(handles.calculate_lung_SNR_bounding_box, 'Enable', 'on');
 	set(handles.slice_lung_add_beginning, 'Enable', 'on');
 	set(handles.slice_lung_add_end, 'Enable', 'on');
@@ -49,6 +50,7 @@ if l
 	set(handles.slice_lung_remove_end, 'Enable', 'on');
 else
     set(handles.analyze_seglungs, 'Enable', 'off');
+    set(handles.analyze_seglungs_contour, 'Enable', 'off');
 	set(handles.calculate_lung_SNR_bounding_box, 'Enable', 'off');
 	set(handles.slice_lung_add_beginning, 'Enable', 'off');
 	set(handles.slice_lung_add_end, 'Enable', 'off');

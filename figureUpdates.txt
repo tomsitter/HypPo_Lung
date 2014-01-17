@@ -172,6 +172,12 @@
 	* Changed tag to "view_overlaycolor_pink"
 	* Changed callback to default
 
-
+* Created "Threshold" menu button under "Analyze>Segment"
+	* Changed callback to empty
+* Created "Lungs (Contour)" menu button under "Analyze>Segment>Threshold"
+	* Changed tag to "analyze_seglungs_contour"
+	* Changed callback to default
+* Renamed "Analyze>Segment>Lungs" menu button to "Analyze>Segment>Threshold>Lungs (K-Means)"
+* Renamed "Analyze>Segment>Body" menu button to "Analyze>Segment>Body (Region Grow)"
 
 

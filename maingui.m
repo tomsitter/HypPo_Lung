@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 16-Oct-2013 11:27:28
+% Last Modified by GUIDE v2.5 09-Jan-2014 11:50:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -1719,7 +1719,10 @@ for i = 1:size(lungs, 3)
 		break;
 	end
 	waitbar(i/size(lungs, 3), wb);
-	hetero_images(:,:,i) = heterogeneity(lungs(:,:,i), lungmask(:,:,i), noise);
+	tempMask = lungmask(:,:,i);
+	%tempMask = zeros(size(tempMask));
+	%tempMask(20:end-20, 20:end-20) = 1;
+	hetero_images(:,:,i) = heterogeneity(lungs(:,:,i), tempMask, noise);
 	%hetero_score(i) = sum(hetero) / sum(lungmask(:,:,i));
 end
 if ishandle(wb)
@@ -2572,6 +2575,58 @@ handles.patient(index) = patient;
 
 guidata(hObject, handles);
 
+
+% --------------------------------------------------------------------
+function analyze_seglungs_contour_Callback(hObject, ~, handles)
+% hObject    handle to analyze_seglungs_contour (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = updateImagePanels(handles);
+%
+index = handles.pat_index;
+lung_images = handles.patient(index).lungs;
+
+continueAnyways = displayWarningsAboutLungMasks(handles.patient(index));
+%
+if continueAnyways
+	wasCanceled = 0;
+	
+	updateStatusBox(handles, 'Preparing to segment lungs', 1);
+	updateStatusBox(handles, 'Attempting to segment automatically', 0);
+	
+	numImages = size(lung_images, 3);
+	wb = waitbar(0, {'Segmentation in progress...',' If you click ''Cancel'', please wait for the function ',' to stop and the progress bar window to close ',' (it might take a few seconds). '},'createcancelbtn','delete(gcbf);');
+	tempThreshold = handles.patient(index).threshold;
+	tempLungMask = handles.patient(index).lungmask;
+	for slice = 1:numImages
+		if ~ishandle(wb)
+			wasCanceled = 1;
+			break;
+		end
+		[tempLungMask(:,:,slice), tempThreshold{slice}] = contourSegmentation(lung_images(:,:,slice));
+		% NOTE: bodymask is still a double, even though it was set to uint8 in regiongrow_mask
+		waitbar(slice/numImages, wb);
+	end
+	if ishandle(wb)
+		delete(wb);
+	end
+	if ~wasCanceled
+		handles.patient(index).VLV = [];
+		handles.patient(index).aVLV = [];
+		handles.patient(index).threshold = tempThreshold;
+		handles.patient(index).mean_noise = [];
+		handles.patient(index).lungmask = tempLungMask;
+		%
+		handles.leftpanel='L';
+		handles.rightpanel='LM';
+		updateStatusBox(handles, 'Images thresholded', 0);
+	end
+	
+	handles = updateSliceSlider(handles);
+	updateMenuOptions(handles);
+end
+
+guidata(hObject, handles);
 
 
 

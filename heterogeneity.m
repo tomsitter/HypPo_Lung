@@ -35,9 +35,9 @@ for i = 1:length(stats)
 % gyR = [floor(stats(2).BoundingBox(2)); ceil(stats(2).BoundingBox(2)+stats(2).BoundingBox(4))];
 
     upL = max(min(gyL), 1);
-    downL = max(gyL);
+    downL = min(max(gyL), size(mask,1));
     leftL = max(min(gxL), 1);
-    rightL = max(gxL);
+    rightL = min(max(gxL), size(mask,2));
 % upR=min(gyR);
 % downR=max(gyR);
 % leftR=min(gxR);
