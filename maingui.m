@@ -338,58 +338,80 @@ function file_loadpatient_Callback(hObject, ~, handles)
 
 pat_index = handles.pat_index;
 
-[fname,pname] = uigetfile('*.mat', 'Select previous patient.mat file');
+[fnames,pname] = uigetfile('*.mat', 'Select previous patient.mat file', 'MultiSelect', 'on');
 
-if isequal(fname,0) || isequal(pname,0)
-	updateStatusBox(handles, 'Cancelled by user', 0);
-	return;
+if iscell(fnames)
+	if size(fnames,1) == 0
+		% no files selected
+		updateStatusBox(handles, 'Cancelled by user', 0);
+		return;
+	end
 else
-	updateStatusBox(handles, ['User selected ', fullfile(pname, fname)], 1);
-	%return;
-end
-
-filename=[pname fname];
-
-new_experiment = load(filename);
-%new_patient = new_experiment.patient;
-
-new_patients = fieldnames(new_experiment);
-
-if size(new_patients,1)~=1
-	msg = sprintf('The file had multiple fields, are you sure this is a patient file? Check the structure and try again.');
-	updateStatusBox(handles, msg, 0);
-	return;
-end
-
-new_patient = new_experiment.(new_patients{1});
-
-if isempty(handles.patient)
-	cur_patient = handles.patient;
-else
-	cur_patient = handles.patient(pat_index);
-	pat_index = pat_index + 1;
-	handles.pat_index = pat_index;
-end
-
-fn = fieldnames(new_patient);
-for i = 1:numel(fn)
-	if isfield(cur_patient, fn{i})
-		handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
-	else
-		msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
-		updateStatusBox(handles, msg, 0);
+	if fnames == 0
+		% no files selected
+		updateStatusBox(handles, 'Cancelled by user', 0);
+		return;
 	end
 end
 
-updateViewOptions(handles);
-handles = updateSliceSlider(handles);
+numFiles = size(fnames,iscell(fnames)+1);
+% this works because MATLAB is stupid
+% numFiles = the number of files selected
 
-% Update handles structure
-guidata(hObject, handles);
+for i=1:numFiles
+	if numFiles~=1
+		% multiple files were selected
+		filename = char(fnames{i});
+	else
+		% only one file was selected
+		filename = fnames;
+	end
+	parfile = fullfile(pname, filename);
+	% the complete file path
+	updateStatusBox(handles, ['User selected: ', parfile], 1);
 
-msg = sprintf('Loaded patient %s', new_patient.id);
-updateStatusBox(handles, msg, 1);
-updateMenuOptions(handles);
+	new_experiment = load(parfile);
+	%new_patient = new_experiment.patient;
+
+	new_patients = fieldnames(new_experiment);
+
+	if size(new_patients,1)~=1
+		msg = sprintf('The file had multiple fields, are you sure this is a patient file? Check the structure and try again.');
+		updateStatusBox(handles, msg, 0);
+		return;
+	end
+
+	new_patient = new_experiment.(new_patients{1});
+
+	if isempty(handles.patient)
+		cur_patient = handles.patient;
+	else
+		cur_patient = handles.patient(pat_index);
+		pat_index = pat_index + 1;
+		handles.pat_index = pat_index;
+	end
+
+	fn = fieldnames(new_patient);
+	for i = 1:numel(fn)
+		if isfield(cur_patient, fn{i})
+			handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
+		else
+			msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
+			updateStatusBox(handles, msg, 0);
+		end
+	end
+
+	updateViewOptions(handles);
+	handles = updateSliceSlider(handles);
+
+	% Update handles structure
+	guidata(hObject, handles);
+
+	msg = sprintf('Loaded patient %s', new_patient.id);
+	updateStatusBox(handles, msg, 1);
+	updateMenuOptions(handles);
+end
+
 
 % --------------------------------------------------------------------
 function file_loadlung_Callback(hObject, ~, handles)

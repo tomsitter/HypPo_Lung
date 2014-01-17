@@ -180,4 +180,4 @@
 * Renamed "Analyze>Segment>Lungs" menu button to "Analyze>Segment>Threshold>Lungs (K-Means)"
 * Renamed "Analyze>Segment>Body" menu button to "Analyze>Segment>Body (Region Grow)"
 
-
+* Renamed "File>Load Patient" to "File>Load Patient(s)"
