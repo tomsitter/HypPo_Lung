@@ -64,12 +64,17 @@ len_ext = 0;
 if strcmp(ext, 'PAR') || strcmp(ext, 'REC')
     slices = [];
     if iscell(filename)
+		% doesn't work
+		%{
         for i = 1:length(filename)
             f = filename{i};
             filename{i} = f(1:end-len_ext(i));
             [tslices,parms,fov,matSize] = parrec2mat(path,filename{i});
             slices(:, :, i) = tslices;
         end
+		%}
+		msgbox('Can only select one PAR or REC file at a time.');
+		return;
     else
         %Potential error -- must remove filepath from filename?
         [slices,parms,fov,matSize] = parrec2mat(path,filename(1:end-len_ext));
