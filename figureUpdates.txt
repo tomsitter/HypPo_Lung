@@ -181,3 +181,7 @@
 * Renamed "Analyze>Segment>Body" menu button to "Analyze>Segment>Body (Region Grow)"
 
 * Renamed "File>Load Patient" to "File>Load Patient(s)"
+
+* Created "Custom" menu button under "View>Overlay Color"
+	* Changed tag to "view_overlaycolor_custom"
+	* Changed callback to default

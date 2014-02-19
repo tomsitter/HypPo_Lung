@@ -2492,6 +2492,24 @@ guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------
+function view_overlaycolor_custom_Callback(hObject, eventdata, handles)
+% hObject    handle to view_overlaycolor_pink (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+pat_index = handles.pat_index;
+%
+customColor = uisetcolor();
+if customColor ~= 0
+	handles.patient(pat_index).overlayColor = customColor;
+	%
+	handles = updateImagePanels(handles);
+end
+%
+guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
 function analyze_coreg_expand_Callback(hObject, eventdata, handles)
 % hObject    handle to analyze_coreg_expand (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
