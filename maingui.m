@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 09-Jan-2014 11:50:55
+% Last Modified by GUIDE v2.5 08-Mar-2014 03:07:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -57,7 +57,9 @@ handles.curdir = cd;
 
 %define a new 0x0 struct array with the fields of a patient
 handles.patient = newPatient();
-
+% create an array to store the paths of the patient files so that they can
+% be saved
+handles.patientFilePaths = cell(0);
 handles.pat_index = 0;
 
 handles.leftpanel = '';
@@ -251,6 +253,7 @@ p = newPatient();
 patientName = inputdlg('What do you want to name this patient?');
 p(1).id = patientName{1};
 handles.patient(pat_index) = p;
+handles.patientFilePaths{pat_index} = [];
 handles.leftpanel = '';
 handles.rightpanel = '';
 
@@ -304,8 +307,8 @@ end
 
 
 % --------------------------------------------------------------------
-function file_savepatient_Callback(hObject, ~, handles)
-% hObject    handle to file_savepatient (see GCBO)
+function file_savepatientas_Callback(hObject, ~, handles)
+% hObject    handle to file_savepatientas (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -322,12 +325,23 @@ if size(handles.patient,2)~=0
 	id = strrep(id, ' ', '_');
 
 	eval(sprintf('%s = patient', id));
-
-	uisave(sprintf('%s', id), id);
+	
+	pathAndName = handles.patientFilePaths{pat_index};
+	if isempty(pathAndName)
+		pathAndName = [id,'.mat'];
+	end
+	[filename, pathname] = uiputfile('*.m', 'Save Patient', pathAndName);
+	if filename(1)~=0 && pathname(1)~=0
+		path = fullfile(pathname, filename);
+		save(path, sprintf('%s', id));
+		handles.patientFilePaths{pat_index} = path;
+		%uisave(sprintf('%s', id), id);
+	end
 
 	assignin('base', id, patient);
 	msg = sprintf('Saving patient %s to workspace', id);
 	updateStatusBox(handles, msg, 1);
+	guidata(hObject, handles);
 else
 	errordlg('Cannot save patient: there is no patient loaded', 'Cannot Save Patient', 'modal');
 end
@@ -385,6 +399,8 @@ for i=1:numFiles
 
 	pat_index = size(handles.patient,2)+1;
 	handles.pat_index = pat_index;
+	
+	handles.patientFilePaths{pat_index} = parfile;
 	
 	samplePatientStructure = newPatient();
 	

@@ -185,3 +185,6 @@
 * Created "Custom" menu button under "View>Overlay Color"
 	* Changed tag to "view_overlaycolor_custom"
 	* Changed callback to default
+
+* Renamed "File>Save Patient" to "File>Save Patient As..."
+	* Changed tag to "file_savepatientas"
