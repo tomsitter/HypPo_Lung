@@ -55,9 +55,10 @@ function maingui_OpeningFcn(hObject, ~, handles, varargin)
 %Save current directory
 handles.curdir = cd;
 
-%define a new empty patient
+%define a new 0x0 struct array with the fields of a patient
 handles.patient = newPatient();
-handles.pat_index = 1;
+
+handles.pat_index = 0;
 
 handles.leftpanel = '';
 handles.rightpanel = '';
@@ -238,7 +239,7 @@ function file_newpatient_Callback(hObject, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-pat_index = length(handles.patient) + 1;
+pat_index = size(handles.patient,2) + 1;
 
 % new_patient = newPatient();
 
@@ -247,7 +248,8 @@ pat_index = length(handles.patient) + 1;
 %     handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
 % end
 p = newPatient();
-p(1).id = 'newPatient';
+patientName = inputdlg('What do you want to name this patient?');
+p(1).id = patientName{1};
 handles.patient(pat_index) = p;
 handles.leftpanel = '';
 handles.rightpanel = '';
