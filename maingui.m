@@ -336,8 +336,6 @@ function file_loadpatient_Callback(hObject, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-pat_index = handles.pat_index;
-
 [fnames,pname] = uigetfile('*.mat', 'Select previous patient.mat file', 'MultiSelect', 'on');
 
 if iscell(fnames)
@@ -383,17 +381,14 @@ for i=1:numFiles
 
 	new_patient = new_experiment.(new_patients{1});
 
-	if isempty(handles.patient)
-		cur_patient = handles.patient;
-	else
-		cur_patient = handles.patient(pat_index);
-		pat_index = pat_index + 1;
-		handles.pat_index = pat_index;
-	end
-
+	pat_index = size(handles.patient,2)+1;
+	handles.pat_index = pat_index;
+	
+	samplePatientStructure = newPatient();
+	
 	fn = fieldnames(new_patient);
 	for i = 1:numel(fn)
-		if isfield(cur_patient, fn{i})
+		if isfield(samplePatientStructure, fn{i})
 			handles.patient(pat_index).(fn{i}) = new_patient.(fn{i});
 		else
 			msg = sprintf('Found unknown field "%s", are you sure this is a patient file?', fn{i});
