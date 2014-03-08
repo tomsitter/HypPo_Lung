@@ -22,7 +22,7 @@ function varargout = maingui(varargin)
 
 % Edit the above text to modify the response to help maingui
 
-% Last Modified by GUIDE v2.5 08-Mar-2014 03:07:40
+% Last Modified by GUIDE v2.5 08-Mar-2014 03:56:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -305,6 +305,36 @@ else
 end
 
 
+% --------------------------------------------------------------------
+function file_savepatient_Callback(hObject, eventdata, handles)
+% hObject    handle to file_savepatient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if size(handles.patient,2)~=0
+	%Get current patient
+	pat_index = handles.pat_index;
+	patient = handles.patient(pat_index);
+	id = patient.id;
+	
+	if isempty(handles.patientFilePaths{pat_index})
+		file_savepatientas_Callback(hObject, eventdata, handles);
+		return;
+	end
+	
+	%Cannot have dashes in matlab variables, replace with underscore and then
+	%assign into workspace
+	id = sprintf('pat_%s', id);
+	id = strrep(id, '-', '_');
+	id = strrep(id, ' ', '_');
+	
+	eval(sprintf('%s = patient', id));
+	
+	save(handles.patientFilePaths{pat_index}, sprintf('%s', id));
+	
+	guidata(hObject, handles);
+else
+	errordlg('Cannot save patient: there is no patient loaded', 'Cannot Save Patient', 'modal');
+end
 
 % --------------------------------------------------------------------
 function file_savepatientas_Callback(hObject, ~, handles)
@@ -330,7 +360,7 @@ if size(handles.patient,2)~=0
 	if isempty(pathAndName)
 		pathAndName = [id,'.mat'];
 	end
-	[filename, pathname] = uiputfile('*.m', 'Save Patient', pathAndName);
+	[filename, pathname] = uiputfile('*.mat', ['Save Patient: ', patient.id], pathAndName);
 	if filename(1)~=0 && pathname(1)~=0
 		path = fullfile(pathname, filename);
 		save(path, sprintf('%s', id));
@@ -345,6 +375,39 @@ if size(handles.patient,2)~=0
 else
 	errordlg('Cannot save patient: there is no patient loaded', 'Cannot Save Patient', 'modal');
 end
+
+
+% --------------------------------------------------------------------
+function file_saveallpatients_Callback(hObject, eventdata, handles)
+% hObject    handle to file_saveallpatients (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+for t=1:size(handles.patient,2)
+	if isempty(handles.patientFilePaths{t})
+		msgbox('At least one of the patients has not previously been saved, so there is no location on disk to save it to. Please use "Save Patient As..." instead.');
+		return;
+	end
+end
+if size(handles.patient,2)~=0
+	for pat_index=1:size(handles.patient,2)
+		patient = handles.patient(pat_index);
+		id = patient.id;
+
+		%Cannot have dashes in matlab variables, replace with underscore and then
+		%assign into workspace
+		id = sprintf('pat_%s', id);
+		id = strrep(id, '-', '_');
+		id = strrep(id, ' ', '_');
+
+		eval(sprintf('%s = patient', id));
+
+		save(handles.patientFilePaths{pat_index}, sprintf('%s', id));
+	end
+	guidata(hObject, handles);
+else
+	errordlg('Cannot save patient: there is no patient loaded', 'Cannot Save Patient', 'modal');
+end
+
 
 % --------------------------------------------------------------------
 function file_loadpatient_Callback(hObject, ~, handles)
@@ -2680,6 +2743,8 @@ if continueAnyways
 end
 
 guidata(hObject, handles);
+
+
 
 
 

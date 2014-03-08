@@ -188,3 +188,11 @@
 
 * Renamed "File>Save Patient" to "File>Save Patient As..."
 	* Changed tag to "file_savepatientas"
+
+* Created "Save Patient" menu button under "File"
+	* Changed tag to "file_savepatient"
+	* Changed callback to default
+
+* Created "Save All Patients" menu button under "File"
+	* Changed tag to "file_saveallpatients"
+	* Changed callback to default
