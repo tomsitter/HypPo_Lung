@@ -99,18 +99,23 @@ function [binary_mask, thresh] = thresholdmask(image)
 		metrics = [metrics, perim*perim/area];
 		%}
 	end
+	
+	if isempty(metrics)==0 && sum(isnan(metrics))~=length(metrics)
+		thresh = thresholds(metrics==max(metrics));
+		thresh = thresh(1);
 
-	thresh = thresholds(metrics==max(metrics));
-	thresh = thresh(1);
-
-	%figure;
-	%imshow(image);
-	newImage = image;
-	newImage(newImage>thresh) = 1;
-	newImage(newImage<=thresh) = 0;
-	newImage = imfill(newImage,'holes');
-	newImage = bwareaopen(newImage, holeSize);
-	%figure;
-	%imshow(maskOverlay(image,newImage));
-	binary_mask = newImage;
+		%figure;
+		%imshow(image);
+		newImage = image;
+		newImage(newImage>thresh) = 1;
+		newImage(newImage<=thresh) = 0;
+		newImage = imfill(newImage,'holes');
+		newImage = bwareaopen(newImage, holeSize);
+		%figure;
+		%imshow(maskOverlay(image,newImage));
+		binary_mask = newImage;
+	else
+		binary_mask = zeros(size(image));
+		thresh = 0;
+	end
 end
