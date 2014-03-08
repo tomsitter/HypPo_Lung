@@ -77,13 +77,13 @@ if strcmp(ext, 'PAR') || strcmp(ext, 'REC')
 		return;
     else
         %Potential error -- must remove filepath from filename?
-        [slices,parms,fov,matSize] = parrec2mat(path,filename(1:end-len_ext));
+        [slices,parms] = parrec2mat(path,filename(1:end-len_ext));
     end
 else
     if iscell(filename)
-        [slices,parms,fov,matSize] = dicom2mat(path,filename);
+        [slices,parms] = dicom2mat(path,filename);
     else
-        [slices,parms,fov,matSize] = dicom2mat(path,{filename});
+        [slices,parms] = dicom2mat(path,{filename});
     end
 end
 %end
@@ -95,8 +95,8 @@ elseif isfield(parms, 'patient')
     handles.patient(pat_index).id = parms.patient;
 end
 
-msg = sprintf('Loaded %d images\n FOV: %d by %d\n matrix size: %d by %d\nPatient ID: %s', ...
-               size(slices, 3), fov, matSize, handles.patient(pat_index).id);
+msg = sprintf('Loaded %d images\n FOV: %d by %d\nPatient ID: %s', ...
+               size(slices, 3), getFOV(parms, size(slices, 3)), handles.patient(pat_index).id);
 updateStatusBox(handles, msg, 0);
 
 if strcmp(type, 'lung')

@@ -1,4 +1,5 @@
-function [data,parms,fov,matSize] = dicom2mat(path,files)
+function [data,parms] = dicom2mat(path,files)
+%returns parms of last file
 
 if not(iscell(files))
     files = {files};
@@ -13,6 +14,7 @@ max_slices_per_file = 1;
 for im = 1:num_files
     fileName = strcat(path,files{im});
     parms = dicominfo(fileName);
+	% the returned value of parms will always be the parameters of the very last file
     % Read image and convert to 8-bit
     I = dicomread(parms);
 	if size(I,4)>max_slices_per_file
@@ -51,15 +53,4 @@ for im = 1:num_files
 		% only one slice in this file
 		data(:,:,im) = uint8(mat2gray(I)*255);
 	end
-end
-
-%Extract FOV from last file
-width = double(parms.Width); %image width (e.g. 512)
-height = double(parms.Height); %image height (e.g. 512)
-matSize = [width, height];
-if isprop(parms, 'PixelSpacing')
-	resolution = double(parms.PixelSpacing);
-	fov = matSize.*resolution';
-else
-	fov = [];
 end

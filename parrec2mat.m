@@ -1,4 +1,4 @@
-function [data, parms, fov, matSize] = parrec2mat(path, file)
+function [data, parms] = parrec2mat(path, file)
 
 parfile=[path file '.PAR'];
 recfile=[path file '.REC'];
@@ -7,8 +7,8 @@ output_format = 'DV';
 
 [parms,ver] = read_parfile(parfile);
 parms.par_ver = ver;
-fov = parms.fov(1:2:3);
-matSize = parms.scan_resolution;
+%fov = parms.fov(1:2:3)
+%matSize = parms.scan_resolution;
 
 [data,~] = read_recfile(recfile,parms,ver,output_format);
 
