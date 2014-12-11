@@ -52,6 +52,8 @@ function maingui_OpeningFcn(hObject, ~, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to maingui (see VARARGIN)
 
+import algorithms.segmentation.*;
+
 %Save current directory
 handles.curdir = cd;
 
@@ -538,7 +540,7 @@ if size(handles.patient,2)~=0
 				[threshold, mean_noise] = calculate_noise(double(sort(roi(:))));
 				tempThreshold{slice} = threshold;
 				tempMeanNoise{slice} = mean_noise;
-				tempLungMask(:,:,slice) = thresholdmask(curImages(:,:,slice), threshold, mean_noise);
+				tempLungMask(:,:,slice) = algorithms.segmentation.KMeansThreshold.getBinaryImage(curImages(:,:,slice), threshold, mean_noise);
 				waitbar(slice/numImages, wb);
 			end
 			if ishandle(wb)
@@ -811,7 +813,7 @@ if size(handles.patient,2)~=0
 		handles.patient(index).threshold{slice} = threshold;
 		handles.patient(index).mean_noise{slice} = mean_noise;
 	%         handles.patient(index).seglung(:,:,slice) = curImages(:,:,slice) > threshold;
-		handles.patient(index).lungmask(:,:,slice) = thresholdmask(curImage, threshold, mean_noise);
+		handles.patient(index).lungmask(:,:,slice) = algorithms.segmentation.KMeansThreshold.getBinaryImage(curImage, threshold, mean_noise);
 
 		updateStatusBox(handles, 'Image thresholded', 0);
 
@@ -2638,7 +2640,7 @@ if continueAnyways
 			wasCanceled = 1;
 			break;
 		end
-		[tempLungMask(:,:,slice), tempThreshold{slice}] = contourSegmentation(lung_images(:,:,slice));
+		[tempLungMask(:,:,slice), tempThreshold{slice}] = algorithms.segmentation.ContourThreshold.getBinaryImage(lung_images(:,:,slice));
 		% NOTE: bodymask is still a double, even though it was set to uint8 in regiongrow_mask
 		waitbar(slice/numImages, wb);
 	end
